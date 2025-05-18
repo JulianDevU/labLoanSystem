@@ -1,13 +1,15 @@
-const express = require('express');
-const router = express.Router();
-const { protect, authorize } = require('../middleware/auth');
-const {
-  register,
-  login,
-  getMe
-} = require('../controllers/authController');
+import express from 'express';
+import { login, getPerfil, cambiarContrasena } from '../controllers/authController.js';
+import { protect } from '../middleware/auth.js';
+import { loginValidator } from '../utils/validators.js';
 
-router.post('/register', register);
-router.post('/login', login);
-router.get('/me', protect, getMe);
-module.exports = router;
+const router = express.Router();
+
+// Rutas públicas
+router.post('/login', loginValidator, login);
+
+// Rutas protegidas
+router.get('/perfil', protect, getPerfil);
+router.put('/cambiar-contrasena', protect, cambiarContrasena);
+
+export default router;

@@ -1,438 +1,539 @@
-const Loan = require('../models/Loan');
-const Equipment = require('../models/Equipment');
-const generatePDF = require('../utils/generatePDF');
+import Prestamo from '../models/Loan.js';
+import Equipo from '../models/Equipment.js';
+import Usuario from '../models/User.js';
+import Laboratorio from '../models/Laboratory.js';
+import Notificacion from '../models/Notification.js';
+import { validationResult } from 'express-validator';
+import { generarPDFPrestamo, generarReportePrestamos } from '../utils/generatePDF.js';
+import { estaVencido, calcularDiasRestantes } from '../utils/helpers.js';
 
 // @desc    Obtener todos los préstamos
-// @route   GET /api/loans
-// @access  Private/Admin/Lab_Assistant
-exports.getLoans = async (req, res) => {
+// @route   GET /api/prestamos
+// @access  Privado
+export const getPrestamos = async (req, res) => {
   try {
-    // Filtrar por usuario si es un estudiante
-    let filter = {};
-    if (req.user.role === 'student') {
-      filter.user = req.user.id;
+    // Filtros
+    const filtro = {};
+    
+    // Filtrar por estado si se proporciona
+    if (req.query.estado && req.query.estado !== 'todos') {
+      filtro.estado = req.query.estado;
     }
-
-    // Construir la consulta
-    let query = Loan.find(filter)
+    
+    // Filtrar por usuario si se proporciona
+    if (req.query.usuario_id) {
+      filtro.usuario_id = req.query.usuario_id;
+    }
+    
+    // Filtrar por equipo si se proporciona
+    if (req.query.equipo_id) {
+      filtro.equipo_id = req.query.equipo_id;
+    }
+    
+    // Filtrar por fechas si se proporcionan
+    if (req.query.desde || req.query.hasta) {
+      filtro.fecha_prestamo = {};
+      if (req.query.desde) {
+        filtro.fecha_prestamo.$gte = new Date(req.query.desde);
+      }
+      if (req.query.hasta) {
+        filtro.fecha_prestamo.$lte = new Date(req.query.hasta);
+      }
+    }
+    
+    // Si el usuario no es administrador, solo mostrar sus préstamos o los de su laboratorio
+    if (req.usuario.tipo !== 'administrador') {
+      if (req.query.todos === 'true' && req.usuario.laboratorio_id) {
+        // Obtener todos los usuarios del laboratorio
+        const usuarios = await Usuario.find({ laboratorio_id: req.usuario.laboratorio_id });
+        const usuariosIds = usuarios.map(u => u._id);
+        filtro.usuario_id = { $in: usuariosIds };
+      } else {
+        // Solo mostrar los préstamos del usuario
+        filtro.usuario_id = req.usuario._id;
+      }
+    }
+    
+    // Buscar préstamos con filtros
+    const prestamos = await Prestamo.find(filtro)
+      .populate('usuario_id', 'nombre correo tipo')
       .populate({
-        path: 'equipment',
-        select: 'name code category'
+        path: 'equipo_id',
+        select: 'nombre descripcion categoria',
+        populate: {
+          path: 'laboratorio_id',
+          select: 'nombre'
+        }
       })
-      .populate({
-        path: 'user',
-        select: 'name email documentId'
-      })
-      .populate({
-        path: 'authorizedBy',
-        select: 'name role'
-      });
-
-    // Filtrado avanzado
-    const reqQuery = { ...req.query };
-    const removeFields = ['select', 'sort', 'page', 'limit'];
-    removeFields.forEach(param => delete reqQuery[param]);
-
-    if (Object.keys(reqQuery).length > 0) {
-      let queryStr = JSON.stringify(reqQuery);
-      queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
-      
-      // Combinar con filtro de usuario
-      const parsedQuery = JSON.parse(queryStr);
-      query = Loan.find({ ...filter, ...parsedQuery })
-        .populate({
-          path: 'equipment',
-          select: 'name code category'
-        })
-        .populate({
-          path: 'user',
-          select: 'name email documentId'
-        })
-        .populate({
-          path: 'authorizedBy',
-          select: 'name role'
-        });
-    }
-
-    // Select Fields
-    if (req.query.select) {
-      const fields = req.query.select.split(',').join(' ');
-      query = query.select(fields);
-    }
-
-    // Sort
-    if (req.query.sort) {
-      const sortBy = req.query.sort.split(',').join(' ');
-      query = query.sort(sortBy);
-    } else {
-      query = query.sort('-loanDate');
-    }
-
-    // Pagination
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
-    const startIndex = (page - 1) * limit;
-    const endIndex = page * limit;
-    const total = await Loan.countDocuments(filter);
-
-    query = query.skip(startIndex).limit(limit);
-
-    // Executing query
-    const loans = await query;
-
-    // Pagination result
-    const pagination = {};
-
-    if (endIndex < total) {
-      pagination.next = {
-        page: page + 1,
-        limit
-      };
-    }
-
-    if (startIndex > 0) {
-      pagination.prev = {
-        page: page - 1,
-        limit
-      };
-    }
+      .sort({ fecha_prestamo: -1 });
 
     res.status(200).json({
       success: true,
-      count: loans.length,
-      pagination,
-      data: loans
+      count: prestamos.length,
+      data: prestamos
     });
   } catch (error) {
-    res.status(400).json({
+    console.error('Error en getPrestamos:', error);
+    res.status(500).json({
       success: false,
+      mensaje: 'Error al obtener préstamos',
       error: error.message
     });
   }
 };
 
-// @desc    Obtener un préstamo
-// @route   GET /api/loans/:id
-// @access  Private
-exports.getLoan = async (req, res) => {
+// @desc    Obtener un préstamo por ID
+// @route   GET /api/prestamos/:id
+// @access  Privado
+export const getPrestamo = async (req, res) => {
   try {
-    const loan = await Loan.findById(req.params.id)
+    const prestamo = await Prestamo.findById(req.params.id)
+      .populate('usuario_id', 'nombre correo tipo')
       .populate({
-        path: 'equipment',
-        select: 'name code category description'
-      })
-      .populate({
-        path: 'user',
-        select: 'name email documentId'
-      })
-      .populate({
-        path: 'authorizedBy',
-        select: 'name role'
+        path: 'equipo_id',
+        select: 'nombre descripcion categoria',
+        populate: {
+          path: 'laboratorio_id',
+          select: 'nombre descripcion'
+        }
       });
 
-    if (!loan) {
+    if (!prestamo) {
       return res.status(404).json({
         success: false,
-        error: 'Préstamo no encontrado'
+        mensaje: 'Préstamo no encontrado'
       });
     }
 
-    // Verificar acceso (sólo admin, lab_assistant o el propio usuario)
-    if (req.user.role === 'student' && loan.user.toString() !== req.user.id) {
+    // Verificar si el usuario tiene permiso para ver este préstamo
+    if (req.usuario.tipo !== 'administrador' && 
+        prestamo.usuario_id._id.toString() !== req.usuario._id.toString() &&
+        prestamo.equipo_id.laboratorio_id._id.toString() !== req.usuario.laboratorio_id.toString()) {
       return res.status(403).json({
         success: false,
-        error: 'No autorizado para ver este préstamo'
+        mensaje: 'No tienes permiso para ver este préstamo'
       });
     }
 
     res.status(200).json({
       success: true,
-      data: loan
+      data: prestamo
     });
   } catch (error) {
-    res.status(400).json({
+    console.error('Error en getPrestamo:', error);
+    res.status(500).json({
       success: false,
+      mensaje: 'Error al obtener préstamo',
       error: error.message
     });
   }
 };
 
-// @desc    Crear un préstamo
-// @route   POST /api/loans
-// @access  Private/Admin/Lab_Assistant
-exports.createLoan = async (req, res) => {
+// @desc    Crear un nuevo préstamo
+// @route   POST /api/prestamos
+// @access  Privado
+export const crearPrestamo = async (req, res) => {
   try {
-    // Verificar disponibilidad del equipo
-    const equipment = await Equipment.findById(req.body.equipment);
-    
-    if (!equipment) {
-      return res.status(404).json({
-        success: false,
-        error: 'Equipo no encontrado'
-      });
-    }
-
-    if (equipment.available < req.body.quantity) {
+    // Verificar errores de validación
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
-        error: `No hay suficientes unidades disponibles. Solo hay ${equipment.available} disponibles.`
+        errors: errors.array()
       });
     }
 
-    // Agregar quien autoriza el préstamo (el usuario actual)
-    req.body.authorizedBy = req.user.id;
+    const { usuario_id, equipo_id, fecha_devolucion } = req.body;
 
-    // Crear el préstamo
-    const loan = await Loan.create(req.body);
+    // Verificar si existe el usuario
+    const usuario = await Usuario.findById(usuario_id);
+    if (!usuario) {
+      return res.status(404).json({
+        success: false,
+        mensaje: 'Usuario no encontrado'
+      });
+    }
 
-    // Actualizar la cantidad disponible del equipo
-    equipment.available -= req.body.quantity;
-    await equipment.save();
+    // Verificar si existe el equipo
+    const equipo = await Equipo.findById(equipo_id);
+    if (!equipo) {
+      return res.status(404).json({
+        success: false,
+        mensaje: 'Equipo no encontrado'
+      });
+    }
 
-    // Generar recibo PDF
-    const pdfBuffer = await generatePDF(loan, equipment, req.body.user);
+    // Verificar si hay disponibilidad
+    if (equipo.cantidad_disponible <= 0) {
+      return res.status(400).json({
+        success: false,
+        mensaje: 'No hay unidades disponibles de este equipo'
+      });
+    }
 
-    // Devolver la respuesta
+    // Verificar si el usuario ya tiene un préstamo activo de este equipo
+    const prestamoExistente = await Prestamo.findOne({
+      usuario_id,
+      equipo_id,
+      estado: 'activo'
+    });
+
+    if (prestamoExistente) {
+      return res.status(400).json({
+        success: false,
+        mensaje: 'El usuario ya tiene un préstamo activo de este equipo'
+      });
+    }
+
+    // Crear préstamo
+    const prestamo = await Prestamo.create({
+      usuario_id,
+      equipo_id,
+      fecha_prestamo: new Date(),
+      fecha_devolucion: new Date(fecha_devolucion),
+      estado: 'activo'
+    });
+
+    // Actualizar disponibilidad del equipo
+    equipo.cantidad_disponible -= 1;
+    await equipo.save();
+
+    // Crear notificación para el usuario
+    await Notificacion.crearNotificacionPrestamo(
+      usuario_id,
+      equipo.nombre,
+      new Date(fecha_devolucion)
+    );
+
+    // Obtener información completa del préstamo
+    const prestamoCompleto = await Prestamo.findById(prestamo._id)
+      .populate('usuario_id', 'nombre correo tipo')
+      .populate({
+        path: 'equipo_id',
+        select: 'nombre descripcion categoria',
+        populate: {
+          path: 'laboratorio_id',
+          select: 'nombre descripcion'
+        }
+      });
+
     res.status(201).json({
       success: true,
-      data: loan,
-      pdfBuffer: pdfBuffer.toString('base64')
+      data: prestamoCompleto
     });
   } catch (error) {
-    res.status(400).json({
+    console.error('Error en crearPrestamo:', error);
+    res.status(500).json({
       success: false,
+      mensaje: 'Error al crear préstamo',
       error: error.message
     });
   }
 };
 
 // @desc    Actualizar un préstamo
-// @route   PUT /api/loans/:id
-// @access  Private/Admin/Lab_Assistant
-exports.updateLoan = async (req, res) => {
+// @route   PUT /api/prestamos/:id
+// @access  Privado
+export const actualizarPrestamo = async (req, res) => {
   try {
-    let loan = await Loan.findById(req.params.id);
-
-    if (!loan) {
-      return res.status(404).json({
-        success: false,
-        error: 'Préstamo no encontrado'
-      });
-    }
-
-    // No permitir cambiar el equipo o la cantidad en un préstamo existente
-    const protectedFields = ['equipment', 'quantity', 'user', 'authorizedBy'];
-    protectedFields.forEach(field => {
-      if (req.body[field]) {
-        delete req.body[field];
-      }
-    });
-
-    // Actualizar el préstamo
-    loan = await Loan.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true
-    });
-
-    // Si el estado cambia a "returned", actualizar la cantidad disponible
-    if (req.body.status === 'returned' && loan.status === 'returned' && !loan.returnDate) {
-      const equipment = await Equipment.findById(loan.equipment);
-      equipment.available += loan.quantity;
-      await equipment.save();
-      
-      // Actualizar fecha de devolución
-      loan.returnDate = Date.now();
-      await loan.save();
-    }
-
-    res.status(200).json({
-      success: true,
-      data: loan
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      error: error.message
-    });
-  }
-};
-
-// @desc    Procesar devolución de préstamo
-// @route   PUT /api/loans/:id/return
-// @access  Private/Admin/Lab_Assistant
-exports.returnLoan = async (req, res) => {
-  try {
-    const loan = await Loan.findById(req.params.id);
-
-    if (!loan) {
-      return res.status(404).json({
-        success: false,
-        error: 'Préstamo no encontrado'
-      });
-    }
-
-    if (loan.status === 'returned') {
+    // Verificar errores de validación
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
-        error: 'Este préstamo ya ha sido devuelto'
+        errors: errors.array()
       });
     }
 
-    // Actualizar estado del préstamo
-    loan.status = 'returned';
-    loan.returnDate = Date.now();
-    loan.comments = req.body.comments || loan.comments;
-    
-    await loan.save();
+    // Verificar si existe el préstamo
+    let prestamo = await Prestamo.findById(req.params.id);
+    if (!prestamo) {
+      return res.status(404).json({
+        success: false,
+        mensaje: 'Préstamo no encontrado'
+      });
+    }
 
-    // Actualizar la cantidad disponible del equipo
-    const equipment = await Equipment.findById(loan.equipment);
-    equipment.available += loan.quantity;
-    await equipment.save();
+    // Verificar si el usuario tiene permiso para actualizar este préstamo
+    if (req.usuario.tipo !== 'administrador' && 
+        prestamo.usuario_id.toString() !== req.usuario._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        mensaje: 'No tienes permiso para actualizar este préstamo'
+      });
+    }
+
+    // Si se está devolviendo el equipo
+    if (req.body.estado === 'devuelto' && prestamo.estado === 'activo') {
+      // Actualizar disponibilidad del equipo
+      const equipo = await Equipo.findById(prestamo.equipo_id);
+      equipo.cantidad_disponible += 1;
+      await equipo.save();
+
+      // Establecer fecha de devolución real
+      req.body.fecha_devolucion_real = new Date();
+    }
+
+    // Actualizar préstamo
+    prestamo = await Prestamo.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    ).populate('usuario_id', 'nombre correo tipo')
+     .populate({
+       path: 'equipo_id',
+       select: 'nombre descripcion categoria',
+       populate: {
+         path: 'laboratorio_id',
+         select: 'nombre descripcion'
+       }
+     });
 
     res.status(200).json({
       success: true,
-      data: loan
+      data: prestamo
     });
   } catch (error) {
-    res.status(400).json({
+    console.error('Error en actualizarPrestamo:', error);
+    res.status(500).json({
       success: false,
+      mensaje: 'Error al actualizar préstamo',
       error: error.message
     });
   }
 };
 
 // @desc    Eliminar un préstamo
-// @route   DELETE /api/loans/:id
-// @access  Private/Admin
-exports.deleteLoan = async (req, res) => {
+// @route   DELETE /api/prestamos/:id
+// @access  Privado/Admin
+export const eliminarPrestamo = async (req, res) => {
   try {
-    const loan = await Loan.findById(req.params.id);
-
-    if (!loan) {
+    // Verificar si existe el préstamo
+    const prestamo = await Prestamo.findById(req.params.id);
+    if (!prestamo) {
       return res.status(404).json({
         success: false,
-        error: 'Préstamo no encontrado'
+        mensaje: 'Préstamo no encontrado'
       });
     }
-    
-    // Si el préstamo está activo, restaurar cantidad disponible
-    if (loan.status === 'active') {
-      const equipment = await Equipment.findById(loan.equipment);
-      equipment.available += loan.quantity;
-      await equipment.save();
+
+    // Si el préstamo está activo, devolver el equipo al inventario
+    if (prestamo.estado === 'activo') {
+      const equipo = await Equipo.findById(prestamo.equipo_id);
+      equipo.cantidad_disponible += 1;
+      await equipo.save();
     }
-    
-    await loan.deleteOne();
-    
+
+    // Eliminar préstamo
+    await prestamo.deleteOne();
+
     res.status(200).json({
       success: true,
-      data: {}
+      mensaje: 'Préstamo eliminado correctamente'
     });
   } catch (error) {
-    res.status(400).json({
+    console.error('Error en eliminarPrestamo:', error);
+    res.status(500).json({
       success: false,
+      mensaje: 'Error al eliminar préstamo',
+      error: error.message
+    });
+  }
+};
+
+// @desc    Generar PDF de préstamo
+// @route   GET /api/prestamos/:id/pdf
+// @access  Privado
+export const generarPDF = async (req, res) => {
+  try {
+    // Verificar si existe el préstamo
+    const prestamo = await Prestamo.findById(req.params.id)
+      .populate('usuario_id', 'nombre correo tipo')
+      .populate({
+        path: 'equipo_id',
+        select: 'nombre descripcion categoria',
+        populate: {
+          path: 'laboratorio_id',
+          select: 'nombre descripcion'
+        }
+      });
+
+    if (!prestamo) {
+      return res.status(404).json({
+        success: false,
+        mensaje: 'Préstamo no encontrado'
+      });
+    }
+
+    // Verificar si el usuario tiene permiso para ver este préstamo
+    if (req.usuario.tipo !== 'administrador' && 
+        prestamo.usuario_id._id.toString() !== req.usuario._id.toString() &&
+        prestamo.equipo_id.laboratorio_id._id.toString() !== req.usuario.laboratorio_id.toString()) {
+      return res.status(403).json({
+        success: false,
+        mensaje: 'No tienes permiso para ver este préstamo'
+      });
+    }
+
+    // Generar PDF
+    const pdf = await generarPDFPrestamo(
+      prestamo,
+      prestamo.usuario_id,
+      prestamo.equipo_id,
+      prestamo.equipo_id.laboratorio_id
+    );
+
+    res.status(200).json({
+      success: true,
+      data: {
+        url: `/uploads/pdfs/${pdf.fileName}`,
+        fileName: pdf.fileName
+      }
+    });
+  } catch (error) {
+    console.error('Error en generarPDF:', error);
+    res.status(500).json({
+      success: false,
+      mensaje: 'Error al generar PDF',
       error: error.message
     });
   }
 };
 
 // @desc    Generar reporte de préstamos
-// @route   GET /api/loans/report
-// @access  Private/Admin/Lab_Assistant
-exports.getLoansReport = async (req, res) => {
+// @route   GET /api/prestamos/reporte
+// @access  Privado/Admin
+export const generarReporte = async (req, res) => {
   try {
-    // Obtener estadísticas de préstamos
-    const stats = await Loan.aggregate([
-      {
-        $group: {
-          _id: { 
-            equipment: '$equipment',
-            status: '$status' 
-          },
-          count: { $sum: 1 },
-          totalQuantity: { $sum: '$quantity' }
-        }
-      },
-      {
-        $lookup: {
-          from: 'equipment',
-          localField: '_id.equipment',
-          foreignField: '_id',
-          as: 'equipmentDetails'
-        }
-      },
-      {
-        $unwind: '$equipmentDetails'
-      },
-      {
-        $project: {
-          _id: 0,
-          equipment: '$equipmentDetails.name',
-          equipmentCode: '$equipmentDetails.code',
-          status: '$_id.status',
-          count: 1,
-          totalQuantity: 1
-        }
-      },
-      {
-        $sort: { equipment: 1, status: 1 }
+    // Filtros
+    const filtro = {};
+    
+    // Filtrar por estado si se proporciona
+    if (req.query.estado && req.query.estado !== 'todos') {
+      filtro.estado = req.query.estado;
+    }
+    
+    // Filtrar por fechas si se proporcionan
+    if (req.query.desde || req.query.hasta) {
+      filtro.fecha_prestamo = {};
+      if (req.query.desde) {
+        filtro.fecha_prestamo.$gte = new Date(req.query.desde);
       }
-    ]);
+      if (req.query.hasta) {
+        filtro.fecha_prestamo.$lte = new Date(req.query.hasta);
+      }
+    }
+    
+    // Filtrar por laboratorio si se proporciona
+    if (req.query.laboratorio_id) {
+      // Obtener equipos del laboratorio
+      const equipos = await Equipo.find({ laboratorio_id: req.query.laboratorio_id });
+      const equiposIds = equipos.map(e => e._id);
+      filtro.equipo_id = { $in: equiposIds };
+    }
+    
+    // Buscar préstamos con filtros
+    const prestamos = await Prestamo.find(filtro)
+      .populate('usuario_id', 'nombre correo tipo')
+      .populate({
+        path: 'equipo_id',
+        select: 'nombre descripcion categoria',
+        populate: {
+          path: 'laboratorio_id',
+          select: 'nombre'
+        }
+      })
+      .sort({ fecha_prestamo: -1 });
+
+    // Generar PDF
+    const pdf = await generarReportePrestamos(prestamos);
 
     res.status(200).json({
       success: true,
-      data: stats
+      data: {
+        url: `/uploads/pdfs/${pdf.fileName}`,
+        fileName: pdf.fileName,
+        count: prestamos.length
+      }
     });
   } catch (error) {
-    res.status(400).json({
+    console.error('Error en generarReporte:', error);
+    res.status(500).json({
       success: false,
+      mensaje: 'Error al generar reporte',
       error: error.message
     });
   }
 };
 
-// @desc    Exportar préstamos a PDF
-// @route   GET /api/loans/export
-// @access  Private/Admin/Lab_Assistant
-exports.exportLoans = async (req, res) => {
+// @desc    Verificar préstamos vencidos
+// @route   GET /api/prestamos/verificar-vencidos
+// @access  Privado/Admin
+export const verificarVencidos = async (req, res) => {
   try {
-    // Filtrar por rango de fechas si se proporciona
-    let filter = {};
-    
-    if (req.query.startDate && req.query.endDate) {
-      filter.loanDate = {
-        $gte: new Date(req.query.startDate),
-        $lte: new Date(req.query.endDate)
-      };
+    // Buscar préstamos activos
+    const prestamosActivos = await Prestamo.find({ estado: 'activo' })
+      .populate('usuario_id', 'nombre')
+      .populate('equipo_id', 'nombre');
+
+    let vencidos = 0;
+    let porVencer = 0;
+
+    // Verificar cada préstamo
+    for (const prestamo of prestamosActivos) {
+      // Verificar si está vencido
+      if (estaVencido(prestamo.fecha_devolucion)) {
+        // Marcar como vencido
+        prestamo.estado = 'vencido';
+        await prestamo.save();
+        vencidos++;
+
+        // Crear notificación de vencimiento
+        await Notificacion.crearNotificacionVencimiento(
+          prestamo.usuario_id._id,
+          prestamo.equipo_id.nombre
+        );
+      } else {
+        // Verificar si está por vencer (menos de 2 días)
+        const diasRestantes = calcularDiasRestantes(prestamo.fecha_devolucion);
+        if (diasRestantes <= 2) {
+          porVencer++;
+
+          // Crear notificación de recordatorio
+          await Notificacion.crearRecordatorio(
+            prestamo.usuario_id._id,
+            prestamo.equipo_id.nombre,
+            diasRestantes
+          );
+        }
+      }
     }
-    
-    const loans = await Loan.find(filter)
-      .populate({
-        path: 'equipment',
-        select: 'name code category'
-      })
-      .populate({
-        path: 'user',
-        select: 'name email documentId'
-      })
-      .populate({
-        path: 'authorizedBy',
-        select: 'name role'
-      })
-      .sort('-loanDate');
-      
-    // Generar PDF con todos los préstamos
-    const pdfBuffer = await generatePDF.generateLoansReport(loans);
-    
+
     res.status(200).json({
       success: true,
-      data: pdfBuffer.toString('base64')
+      data: {
+        vencidos,
+        porVencer,
+        total: prestamosActivos.length
+      }
     });
   } catch (error) {
-    res.status(400).json({
+    console.error('Error en verificarVencidos:', error);
+    res.status(500).json({
       success: false,
+      mensaje: 'Error al verificar préstamos vencidos',
       error: error.message
     });
   }
+};
+
+export default {
+  getPrestamos,
+  getPrestamo,
+  crearPrestamo,
+  actualizarPrestamo,
+  eliminarPrestamo,
+  generarPDF,
+  generarReporte,
+  verificarVencidos
 };

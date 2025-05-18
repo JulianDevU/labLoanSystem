@@ -1,22 +1,31 @@
-const express = require('express');
+import express from 'express';
+import {
+  getEquipos,
+  getEquipo,
+  crearEquipo,
+  actualizarEquipo,
+  eliminarEquipo,
+  getCategorias
+} from '../controllers/equipmentController.js';
+import { protect, authorize } from '../middleware/auth.js';
+import {
+  crearEquipoValidator,
+  actualizarEquipoValidator
+} from '../utils/validators.js';
+
 const router = express.Router();
-const { protect, authorize } = require('../middleware/auth');
-const {
-  getEquipment,
-  createEquipment,
-  updateEquipment,
-  deleteEquipment
-} = require('../controllers/equipmentController');
 
-router
-  .route('/')
-  .get(getEquipment)
-  .post(protect, authorize('admin', 'lab_assistant'), createEquipment);
+// Proteger todas las rutas
+router.use(protect);
 
-router
-  .route('/:id')
-  .get(getEquipment)
-  .put(protect, authorize('admin', 'lab_assistant'), updateEquipment)
-  .delete(protect, authorize('admin'), deleteEquipment);
+// Rutas para todos los usuarios
+router.get('/', getEquipos);
+router.get('/categorias', getCategorias);
+router.get('/:id', getEquipo);
 
-module.exports = router;
+// Rutas solo para administradores
+router.post('/', authorize('administrador'), crearEquipoValidator, crearEquipo);
+router.put('/:id', authorize('administrador'), actualizarEquipoValidator, actualizarEquipo);
+router.delete('/:id', authorize('administrador'), eliminarEquipo);
+
+export default router;

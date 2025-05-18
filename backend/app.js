@@ -1,100 +1,57 @@
-const express = require('express');
-const path = require('path');
-const dotenv = require('dotenv');
-const morgan = require('morgan');
-const colors = require('colors');
-const fileupload = require('express-fileupload');
-const cookieParser = require('cookie-parser');
-const cors = require('cors');
-const mongoSanitize = require('express-mongo-sanitize');
-const helmet = require('helmet');
-const xss = require('xss-clean');
-const rateLimit = require('express-rate-limit');
-const hpp = require('hpp');
-const errorHandler = require('./middleware/error');
-const connectDB = require('./config/db');
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
 
-// Cargar variables de entorno
+// Importar rutas
+import authRoutes from './routes/auth.js';
+import laboratorioRoutes from './routes/laboratorio.js';
+import equipoRoutes from './routes/equipo.js';
+import prestamoRoutes from './routes/prestamo.js';
+import usuarioRoutes from './routes/usuario.js';
+import notificacionRoutes from './routes/notificacion.js';
+
+// Importar middleware de errores
+import { errorHandler, notFound } from './middleware/error.js';
+
+// Configuración de variables de entorno
 dotenv.config();
 
-// Conectar a la base de datos
-connectDB();
-
-// Archivos de rutas
-const auth = require('./routes/auth');
-const users = require('./routes/user');
-const equipment = require('./routes/equipment');
-const loans = require('./routes/loan');
-
+// Crear aplicación Express
 const app = express();
 
-// Body parser
+// Configuración de middleware
 app.use(express.json());
-
-// Cookie parser
-app.use(cookieParser());
-
-// Logging de desarrollo
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
-}
-
-// File uploading
-app.use(fileupload());
-
-// Sanitize data
-app.use(mongoSanitize());
-
-// Set security headers
-app.use(helmet());
-
-// Prevent XSS attacks
-app.use(xss());
-
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 minutos
-  max: 100
-});
-app.use(limiter);
-
-// Prevenir http param pollution
-app.use(hpp());
-
-// Habilitar CORS
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
+app.use(helmet());
+app.use(morgan('dev'));
 
-// Establecer carpeta estática
-app.use(express.static(path.join(__dirname, 'public')));
+// Configuración para archivos estáticos
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Montar rutas
-app.use('/api/auth', auth);
-app.use('/api/users', users);
-app.use('/api/equipment', equipment);
-app.use('/api/loans', loans);
+// Rutas
+app.use('/api/auth', authRoutes);
+app.use('/api/laboratorios', laboratorioRoutes);
+app.use('/api/equipos', equipoRoutes);
+app.use('/api/prestamos', prestamoRoutes);
+app.use('/api/usuarios', usuarioRoutes);
+app.use('/api/notificaciones', notificacionRoutes);
 
-// Middleware de manejo de errores
+// Ruta de prueba
+app.get('/', (req, res) => {
+  res.json({ mensaje: 'API del Sistema de Préstamos de Laboratorio' });
+});
+
+// Middleware para manejo de rutas no encontradas
+app.use(notFound);
+
+// Middleware para manejo de errores
 app.use(errorHandler);
 
-// Ruta de verificación
-app.get('/', (req, res) => {
-  res.send('API de Sistema de Laboratorio de Física funcionando correctamente');
-});
-
-const PORT = process.env.PORT || 5000;
-
-const server = app.listen(
-  PORT,
-  console.log(
-    `Servidor corriendo en modo ${process.env.NODE_ENV} en puerto ${PORT}`.yellow.bold
-  )
-);
-
-// Manejo de rechazo de promesa no controlada
-process.on('unhandledRejection', (err, promise) => {
-  console.log(`Error: ${err.message}`.red);
-  // Cerrar servidor y salir del proceso
-  server.close(() => process.exit(1));
-});
-
-module.exports = app;
+export default app;

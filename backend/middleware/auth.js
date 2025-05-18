@@ -1,41 +1,59 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+import jwt from 'jsonwebtoken';
+import Usuario from '../models/User.js';
 
-exports.protect = async (req, res, next) => {
-  let token;
-
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
-    token = req.headers.authorization.split(' ')[1];
-  }
-
-  if (!token) {
-    return res.status(401).json({
-      success: false,
-      error: 'No está autorizado para acceder a esta ruta'
-    });
-  }
-
+// Middleware para proteger rutas
+export const protect = async (req, res, next) => {
   try {
+    let token;
+
+    // Verificar si hay token en los headers
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+      token = req.headers.authorization.split(' ')[1];
+    }
+
+    // Verificar si el token existe
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        mensaje: 'No estás autorizado para acceder a este recurso'
+      });
+    }
+
+    // Verificar el token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    req.user = await User.findById(decoded.id);
+    // Buscar el usuario
+    const usuario = await Usuario.findById(decoded.id);
+
+    if (!usuario) {
+      return res.status(401).json({
+        success: false,
+        mensaje: 'El usuario ya no existe'
+      });
+    }
+
+    // Agregar el usuario a la solicitud
+    req.usuario = usuario;
     next();
-  } catch (err) {
+  } catch (error) {
     return res.status(401).json({
       success: false,
-      error: 'No está autorizado para acceder a esta ruta'
+      mensaje: 'No estás autorizado para acceder a este recurso'
     });
   }
 };
 
-exports.authorize = (...roles) => {
+// Middleware para verificar roles
+export const authorize = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: 'No autorizado para acceder a esta ruta' });
+    if (!roles.includes(req.usuario.tipo)) {
+      return res.status(403).json({
+        success: false,
+        mensaje: `El rol ${req.usuario.tipo} no está autorizado para realizar esta acción`
+      });
     }
     next();
   };
 };
+
+export default { protect, authorize };

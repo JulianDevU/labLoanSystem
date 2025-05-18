@@ -1,23 +1,29 @@
-const express = require('express');
+import express from 'express';
+import {
+  getUsuarios,
+  getUsuario,
+  crearUsuario,
+  actualizarUsuario,
+  eliminarUsuario
+} from '../controllers/userController.js';
+import { protect, authorize } from '../middleware/auth.js';
+import {
+  crearUsuarioValidator,
+  actualizarUsuarioValidator
+} from '../utils/validators.js';
+
 const router = express.Router();
-const { protect, authorize } = require('../middleware/auth');
-const {
-  getUsers,
-  getUser,
-  createUser,
-  updateUser,
-  deleteUser
-} = require('../controllers/userController');
 
-router
-  .route('/')
-  .get(protect, authorize('admin'), getUsers)
-  .post(protect, authorize('admin'), createUser);
+// Proteger todas las rutas
+router.use(protect);
 
-router
-  .route('/:id')
-  .get(protect, authorize('admin'), getUser)
-  .put(protect, authorize('admin'), updateUser)
-  .delete(protect, authorize('admin'), deleteUser);
+// Rutas para todos los usuarios
+router.get('/:id', getUsuario);
 
-module.exports = router;
+// Rutas solo para administradores
+router.get('/', authorize('administrador'), getUsuarios);
+router.post('/', authorize('administrador'), crearUsuarioValidator, crearUsuario);
+router.put('/:id', actualizarUsuarioValidator, actualizarUsuario);
+router.delete('/:id', authorize('administrador'), eliminarUsuario);
+
+export default router;

@@ -1,157 +1,229 @@
-const { body, validationResult } = require('express-validator');
+import { body, param, query } from 'express-validator';
 
-// Validaciones para creación/actualización de usuario
-exports.validateUser = [
-  body('name')
-    .trim()
-    .not()
-    .isEmpty()
-    .withMessage('El nombre es requerido')
-    .isLength({ min: 3, max: 50 })
-    .withMessage('El nombre debe tener entre 3 y 50 caracteres'),
-  
-  body('email')
-    .trim()
+// Validadores para autenticación
+export const loginValidator = [
+  body('correo')
     .isEmail()
-    .withMessage('Por favor ingrese un email válido')
-    .normalizeEmail(),
-  
-  body('documentId')
-    .trim()
-    .not()
-    .isEmpty()
-    .withMessage('El número de documento es requerido')
-    .isLength({ min: 5, max: 20 })
-    .withMessage('El documento debe tener entre 5 y 20 caracteres'),
-  
-  body('password')
-    .trim()
+    .withMessage('Ingrese un correo electrónico válido'),
+  body('contrasena')
+    .isLength({ min: 6 })
+    .withMessage('La contraseña debe tener al menos 6 caracteres')
+];
+
+// Validadores para usuarios
+export const crearUsuarioValidator = [
+  body('nombre')
+    .notEmpty()
+    .withMessage('El nombre es obligatorio'),
+  body('correo')
+    .isEmail()
+    .withMessage('Ingrese un correo electrónico válido'),
+  body('contrasena')
     .isLength({ min: 6 })
     .withMessage('La contraseña debe tener al menos 6 caracteres'),
-  
-  body('role')
+  body('tipo')
+    .isIn(['personal', 'administrador'])
+    .withMessage('El tipo debe ser personal o administrador'),
+  body('laboratorio_id')
+    .isMongoId()
+    .withMessage('ID de laboratorio inválido')
+];
+
+export const actualizarUsuarioValidator = [
+  param('id')
+    .isMongoId()
+    .withMessage('ID de usuario inválido'),
+  body('nombre')
     .optional()
-    .isIn(['student', 'lab_assistant', 'admin'])
-    .withMessage('Rol no válido')
+    .notEmpty()
+    .withMessage('El nombre no puede estar vacío'),
+  body('correo')
+    .optional()
+    .isEmail()
+    .withMessage('Ingrese un correo electrónico válido'),
+  body('tipo')
+    .optional()
+    .isIn(['personal', 'administrador'])
+    .withMessage('El tipo debe ser personal o administrador'),
+  body('laboratorio_id')
+    .optional()
+    .isMongoId()
+    .withMessage('ID de laboratorio inválido')
 ];
 
-// Validaciones para creación/actualización de equipo
-exports.validateEquipment = [
-  body('name')
-    .trim()
-    .not()
-    .isEmpty()
-    .withMessage('El nombre es requerido')
-    .isLength({ min: 3, max: 100 })
-    .withMessage('El nombre debe tener entre 3 y 100 caracteres'),
-  
-  body('description')
-    .trim()
-    .not()
-    .isEmpty()
-    .withMessage('La descripción es requerida')
-    .isLength({ min: 10, max: 500 })
-    .withMessage('La descripción debe tener entre 10 y 500 caracteres'),
-  
-  body('code')
-    .trim()
-    .not()
-    .isEmpty()
-    .withMessage('El código es requerido')
-    .matches(/^[A-Z0-9-]+$/)
-    .withMessage('El código debe contener solo letras mayúsculas, números y guiones'),
-  
-  body('category')
-    .isIn(['mechanic', 'electric', 'electronic', 'optic', 'lab', 'other'])
-    .withMessage('Categoría no válida'),
-  
-  body('stock')
-    .isInt({ min: 0 })
-    .withMessage('El stock debe ser un número entero no negativo'),
-  
-  body('available')
-    .isInt({ min: 0 })
-    .withMessage('La cantidad disponible debe ser un número entero no negativo'),
-  
-  body('location')
-    .trim()
-    .not()
-    .isEmpty()
-    .withMessage('La ubicación es requerida')
+// Validadores para laboratorios
+export const crearLaboratorioValidator = [
+  body('nombre')
+    .notEmpty()
+    .withMessage('El nombre es obligatorio'),
+  body('descripcion')
+    .optional()
+    .notEmpty()
+    .withMessage('La descripción no puede estar vacía')
 ];
 
-// Validaciones para creación de préstamo
-exports.validateLoan = [
-  body('equipment')
-    .trim()
-    .not()
-    .isEmpty()
-    .withMessage('El ID del equipo es requerido')
+export const actualizarLaboratorioValidator = [
+  param('id')
     .isMongoId()
-    .withMessage('ID de equipo no válido'),
-  
-  body('user')
-    .trim()
-    .not()
-    .isEmpty()
-    .withMessage('El ID del usuario es requerido')
+    .withMessage('ID de laboratorio inválido'),
+  body('nombre')
+    .optional()
+    .notEmpty()
+    .withMessage('El nombre no puede estar vacío'),
+  body('descripcion')
+    .optional()
+    .notEmpty()
+    .withMessage('La descripción no puede estar vacía')
+];
+
+// Validadores para equipos
+export const crearEquipoValidator = [
+  body('nombre')
+    .notEmpty()
+    .withMessage('El nombre es obligatorio'),
+  body('descripcion')
+    .optional()
+    .notEmpty()
+    .withMessage('La descripción no puede estar vacía'),
+  body('categoria')
+    .notEmpty()
+    .withMessage('La categoría es obligatoria'),
+  body('cantidad_total')
+    .isInt({ min: 0 })
+    .withMessage('La cantidad total debe ser un número entero no negativo'),
+  body('cantidad_disponible')
+    .isInt({ min: 0 })
+    .withMessage('La cantidad disponible debe ser un número entero no negativo')
+    .custom((value, { req }) => {
+      if (value > req.body.cantidad_total) {
+        throw new Error('La cantidad disponible no puede ser mayor que la cantidad total');
+      }
+      return true;
+    }),
+  body('laboratorio_id')
     .isMongoId()
-    .withMessage('ID de usuario no válido'),
-  
-  body('quantity')
-    .isInt({ min: 1 })
-    .withMessage('La cantidad debe ser al menos 1'),
-  
-  body('dueDate')
+    .withMessage('ID de laboratorio inválido')
+];
+
+export const actualizarEquipoValidator = [
+  param('id')
+    .isMongoId()
+    .withMessage('ID de equipo inválido'),
+  body('nombre')
+    .optional()
+    .notEmpty()
+    .withMessage('El nombre no puede estar vacío'),
+  body('descripcion')
+    .optional()
+    .notEmpty()
+    .withMessage('La descripción no puede estar vacía'),
+  body('categoria')
+    .optional()
+    .notEmpty()
+    .withMessage('La categoría no puede estar vacía'),
+  body('cantidad_total')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage('La cantidad total debe ser un número entero no negativo'),
+  body('cantidad_disponible')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage('La cantidad disponible debe ser un número entero no negativo')
+];
+
+// Validadores para préstamos
+export const crearPrestamoValidator = [
+  body('usuario_id')
+    .isMongoId()
+    .withMessage('ID de usuario inválido'),
+  body('equipo_id')
+    .isMongoId()
+    .withMessage('ID de equipo inválido'),
+  body('fecha_devolucion')
     .isISO8601()
-    .withMessage('Fecha de devolución no válida')
+    .withMessage('Fecha de devolución inválida')
     .custom((value) => {
-      const dueDate = new Date(value);
-      const now = new Date();
-      if (dueDate <= now) {
+      const fechaDevolucion = new Date(value);
+      const fechaActual = new Date();
+      if (fechaDevolucion <= fechaActual) {
         throw new Error('La fecha de devolución debe ser posterior a la fecha actual');
       }
       return true;
     })
 ];
 
-// Middleware para verificar resultados de validación
-exports.checkValidationResults = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      success: false,
-      errors: errors.array()
-    });
-  }
-  next();
+export const actualizarPrestamoValidator = [
+  param('id')
+    .isMongoId()
+    .withMessage('ID de préstamo inválido'),
+  body('estado')
+    .optional()
+    .isIn(['activo', 'devuelto', 'vencido'])
+    .withMessage('El estado debe ser activo, devuelto o vencido'),
+  body('fecha_devolucion_real')
+    .optional()
+    .isISO8601()
+    .withMessage('Fecha de devolución real inválida')
+];
+
+// Validadores para notificaciones
+export const crearNotificacionValidator = [
+  body('usuario_id')
+    .isMongoId()
+    .withMessage('ID de usuario inválido'),
+  body('mensaje')
+    .notEmpty()
+    .withMessage('El mensaje es obligatorio')
+];
+
+export const actualizarNotificacionValidator = [
+  param('id')
+    .isMongoId()
+    .withMessage('ID de notificación inválido'),
+  body('leido')
+    .isBoolean()
+    .withMessage('El campo leído debe ser un booleano')
+];
+
+// Validadores para filtros
+export const filtroPrestamoValidator = [
+  query('estado')
+    .optional()
+    .isIn(['activo', 'devuelto', 'vencido', 'todos'])
+    .withMessage('Estado inválido'),
+  query('desde')
+    .optional()
+    .isISO8601()
+    .withMessage('Fecha desde inválida'),
+  query('hasta')
+    .optional()
+    .isISO8601()
+    .withMessage('Fecha hasta inválida'),
+  query('usuario_id')
+    .optional()
+    .isMongoId()
+    .withMessage('ID de usuario inválido'),
+  query('equipo_id')
+    .optional()
+    .isMongoId()
+    .withMessage('ID de equipo inválido'),
+  query('laboratorio_id')
+    .optional()
+    .isMongoId()
+    .withMessage('ID de laboratorio inválido')
+];
+
+export default {
+  loginValidator,
+  crearUsuarioValidator,
+  actualizarUsuarioValidator,
+  crearLaboratorioValidator,
+  actualizarLaboratorioValidator,
+  crearEquipoValidator,
+  actualizarEquipoValidator,
+  crearPrestamoValidator,
+  actualizarPrestamoValidator,
+  crearNotificacionValidator,
+  actualizarNotificacionValidator,
+  filtroPrestamoValidator
 };
-
-// Validación de login
-exports.validateLogin = [
-  body('email')
-    .trim()
-    .isEmail()
-    .withMessage('Por favor ingrese un email válido')
-    .normalizeEmail(),
-  
-  body('password')
-    .trim()
-    .not()
-    .isEmpty()
-    .withMessage('La contraseña es requerida')
-];
-
-// Validación para actualización de contraseña
-exports.validatePasswordUpdate = [
-  body('currentPassword')
-    .trim()
-    .not()
-    .isEmpty()
-    .withMessage('La contraseña actual es requerida'),
-  
-  body('newPassword')
-    .trim()
-    .isLength({ min: 6 })
-    .withMessage('La nueva contraseña debe tener al menos 6 caracteres')
-];

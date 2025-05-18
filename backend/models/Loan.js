@@ -1,62 +1,65 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const LoanSchema = new mongoose.Schema({
-  equipment: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'Equipment',
-    required: true
+const prestamoSchema = new Schema({
+  usuario_id: {
+    type: Schema.Types.ObjectId,
+    ref: 'Usuario',
+    required: [true, 'El usuario es obligatorio']
   },
-  user: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'User',
-    required: true
+  equipo_id: {
+    type: Schema.Types.ObjectId,
+    ref: 'Equipo',
+    required: [true, 'El equipo es obligatorio']
   },
-  authorizedBy: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  quantity: {
-    type: Number,
-    required: [true, 'Por favor ingrese la cantidad prestada'],
-    min: [1, 'Debe prestar al menos 1 unidad']
-  },
-  loanDate: {
+  fecha_prestamo: {
     type: Date,
+    required: [true, 'La fecha de préstamo es obligatoria'],
     default: Date.now
   },
-  expectedReturnDate: {
+  fecha_devolucion: {
     type: Date,
-    required: [true, 'Por favor ingrese la fecha esperada de devolución']
+    required: [true, 'La fecha de devolución planificada es obligatoria']
   },
-  returnDate: {
-    type: Date
+  fecha_devolucion_real: {
+    type: Date,
+    default: null
   },
-  status: {
+  estado: {
     type: String,
-    enum: ['active', 'returned', 'overdue', 'lost'],
-    default: 'active'
+    enum: ['activo', 'devuelto', 'vencido'],
+    default: 'activo'
   },
-  comments: {
-    type: String
-  },
-  receiptId: {
+  evidencia_foto: {
     type: String,
-    unique: true
+    trim: true
   }
+}, {
+  timestamps: true,
+  versionKey: false
 });
 
-// Generar ID de recibo automáticamente
-LoanSchema.pre('save', async function(next) {
-  if (!this.receiptId) {
-    const date = new Date();
-    const year = date.getFullYear().toString().slice(-2);
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-    this.receiptId = `L${year}${month}${day}-${random}`;
+// Índices para mejorar el rendimiento de consultas comunes
+prestamoSchema.index({ usuario_id: 1, estado: 1 });
+prestamoSchema.index({ equipo_id: 1, estado: 1 });
+prestamoSchema.index({ fecha_devolucion: 1, estado: 1 });
+
+// Método para verificar si un préstamo está vencido
+prestamoSchema.methods.estaVencido = function() {
+  if (this.estado === 'devuelto') return false;
+  return this.fecha_devolucion < new Date();
+};
+
+// Middleware para actualizar el estado antes de guardar
+prestamoSchema.pre('save', function(next) {
+  if (this.fecha_devolucion_real) {
+    this.estado = 'devuelto';
+  } else if (this.fecha_devolucion < new Date() && this.estado === 'activo') {
+    this.estado = 'vencido';
   }
   next();
 });
 
-module.exports = mongoose.model('Loan', LoanSchema);
+const Prestamo = mongoose.model('Prestamo', prestamoSchema);
+
+module.exports = Prestamo;
