@@ -28,28 +28,28 @@ export function EquipmentSelector({ lab, value, onChange }: EquipmentSelectorPro
   // This would normally fetch data from an API
   const availableEquipment = {
     physics: [
-      { id: "PH001", name: "Digital Oscilloscope", available: 5 },
-      { id: "PH002", name: "Function Generator", available: 3 },
-      { id: "PH003", name: "Digital Multimeter", available: 10 },
-      { id: "PH004", name: "Laser Kit", available: 2 },
-      { id: "PH005", name: "Optical Bench", available: 3 },
-      { id: "PH006", name: "Circuit Components Kit", available: 15 },
-      { id: "PH007", name: "Force Sensor", available: 5 },
+      { id: "PH001", name: "Osciloscopio Digital", available: 5 },
+      { id: "PH002", name: "Generador de Funciones", available: 3 },
+      { id: "PH003", name: "Multímetro Digital", available: 10 },
+      { id: "PH004", name: "Kit de Láser", available: 2 },
+      { id: "PH005", name: "Banco Óptico", available: 3 },
+      { id: "PH006", name: "Kit de Componentes de Circuito", available: 15 },
+      { id: "PH007", name: "Sensor de Fuerza", available: 5 },
     ],
     telecommunications: [
-      { id: "TC001", name: "Spectrum Analyzer", available: 2 },
-      { id: "TC002", name: "Network Analyzer", available: 2 },
+      { id: "TC001", name: "Analizador de Espectro", available: 2 },
+      { id: "TC002", name: "Analizador de Red", available: 2 },
       { id: "TC003", name: "Router", available: 5 },
       { id: "TC004", name: "Switch", available: 8 },
-      { id: "TC005", name: "Fiber Optic Kit", available: 3 },
-      { id: "TC006", name: "Antenna Kit", available: 4 },
+      { id: "TC005", name: "Kit de Fibra Óptica", available: 3 },
+      { id: "TC006", name: "Kit de Antenas", available: 4 },
     ],
     software: [
       { id: "SW001", name: "Raspberry Pi", available: 8 },
-      { id: "SW002", name: "Arduino Kit", available: 10 },
-      { id: "SW003", name: "Sensor Kit", available: 5 },
-      { id: "SW004", name: "VR Headset", available: 2 },
-      { id: "SW005", name: "Graphics Tablet", available: 4 },
+      { id: "SW002", name: "Kit de Arduino", available: 10 },
+      { id: "SW003", name: "Kit de Sensores", available: 5 },
+      { id: "SW004", name: "Visor de Realidad Virtual", available: 2 },
+      { id: "SW005", name: "Tableta Gráfica", available: 4 },
     ],
   }
 
@@ -145,8 +145,8 @@ export function EquipmentSelector({ lab, value, onChange }: EquipmentSelectorPro
       )}
 
       <div className="space-y-2">
-        <Label>Available Equipment</Label>
-        <Input placeholder="Search equipment..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+        <Label>Equipos Disponibles</Label>
+        <Input placeholder="Buscar equipo..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
         <Card>
           <CardContent className="p-2">
             <ScrollArea className="h-60 pr-4">
@@ -166,7 +166,7 @@ export function EquipmentSelector({ lab, value, onChange }: EquipmentSelectorPro
                           <div className="flex items-center gap-2">
                             <p className="text-xs text-muted-foreground">{item.id}</p>
                             <Badge variant="outline" className="text-xs">
-                              {remainingQuantity} available
+                              {remainingQuantity} disponibles
                             </Badge>
                           </div>
                         </div>
@@ -179,7 +179,7 @@ export function EquipmentSelector({ lab, value, onChange }: EquipmentSelectorPro
                           onClick={() => addEquipment(item.id, item.name)}
                         >
                           <Plus className="h-4 w-4" />
-                          Add
+                          Agregar
                         </Button>
                       </div>
                       <Separator />
