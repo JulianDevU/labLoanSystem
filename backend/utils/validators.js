@@ -22,11 +22,9 @@ export const crearUsuarioValidator = [
     .isLength({ min: 6 })
     .withMessage('La contraseña debe tener al menos 6 caracteres'),
   body('tipo')
+    .optional()
     .isIn(['personal', 'administrador'])
     .withMessage('El tipo debe ser personal o administrador'),
-  body('laboratorio_id')
-    .isMongoId()
-    .withMessage('ID de laboratorio inválido')
 ];
 
 export const actualizarUsuarioValidator = [
@@ -45,10 +43,6 @@ export const actualizarUsuarioValidator = [
     .optional()
     .isIn(['personal', 'administrador'])
     .withMessage('El tipo debe ser personal o administrador'),
-  body('laboratorio_id')
-    .optional()
-    .isMongoId()
-    .withMessage('ID de laboratorio inválido')
 ];
 
 // Validadores para laboratorios
@@ -100,9 +94,6 @@ export const crearEquipoValidator = [
       }
       return true;
     }),
-  body('laboratorio_id')
-    .isMongoId()
-    .withMessage('ID de laboratorio inválido')
 ];
 
 export const actualizarEquipoValidator = [
@@ -206,11 +197,7 @@ export const filtroPrestamoValidator = [
   query('equipo_id')
     .optional()
     .isMongoId()
-    .withMessage('ID de equipo inválido'),
-  query('laboratorio_id')
-    .optional()
-    .isMongoId()
-    .withMessage('ID de laboratorio inválido')
+    .withMessage('ID de equipo inválido')
 ];
 
 export default {
