@@ -8,11 +8,11 @@ import dotenv from 'dotenv';
 
 // Importar rutas
 import authRoutes from './routes/auth.js';
-import laboratorioRoutes from './routes/laboratorio.js';
-import equipoRoutes from './routes/equipo.js';
-import prestamoRoutes from './routes/prestamo.js';
-import usuarioRoutes from './routes/usuario.js';
-import notificacionRoutes from './routes/notificacion.js';
+import laboratorioRoutes from './routes/laboratory.js';
+import equipoRoutes from './routes/equipment.js';
+import prestamoRoutes from './routes/loan.js';
+import usuarioRoutes from './routes/user.js';
+import notificacionRoutes from './routes/notification.js';
 
 // Importar middleware de errores
 import { errorHandler, notFound } from './middleware/error.js';
