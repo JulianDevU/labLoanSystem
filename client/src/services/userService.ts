@@ -1,8 +1,8 @@
 // src/services/userService.ts
 export async function registerUser(data: {
-  name: string
-  email: string
-  password: string
+  nombre: string
+  correo: string
+  contrasena: string
 }) {
   const response = await fetch("http://localhost:5000/api/usuarios", {
     method: "POST",

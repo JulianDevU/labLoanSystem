@@ -22,6 +22,7 @@ export const crearUsuarioValidator = [
     .isLength({ min: 6 })
     .withMessage('La contraseña debe tener al menos 6 caracteres'),
   body('tipo')
+    .optional()
     .isIn(['personal', 'administrador'])
     .withMessage('El tipo debe ser personal o administrador'),
 ];

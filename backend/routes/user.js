@@ -14,7 +14,7 @@ import {
 
 const router = express.Router();
 
-router.post('/', authorize('administrador'), crearUsuarioValidator, crearUsuario);
+router.post('/', crearUsuarioValidator, crearUsuario);
 
 // Proteger todas las rutas
 router.use(protect);

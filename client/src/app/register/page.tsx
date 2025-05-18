@@ -35,9 +35,9 @@ export default function RegisterPage() {
 
     try {
       await registerUser({
-        name: data.name,
-        email: data.email,
-        password: data.password
+        nombre: data.name,
+        correo: data.email,
+        contrasena: data.password
       })
 
       toast({
