@@ -15,12 +15,12 @@ import { useToast } from "@/hooks/use-toast"
 
 export default function ActiveLoansPage() {
   const { toast } = useToast()
-  const [selectedLab, setSelectedLab] = useState("physics")
+  const [selectedLab, setSelectedLab] = useState("fisica")
   const [searchQuery, setSearchQuery] = useState("")
 
   // This would normally fetch data from an API
   const activeLoans = {
-    physics: [
+    fisica: [
       {
         id: "PH-1001",
         beneficiary: {
@@ -67,7 +67,7 @@ export default function ActiveLoansPage() {
         status: "overdue",
       },
     ],
-    telecommunications: [
+    telecomunicaciones: [
       {
         id: "TC-2001",
         beneficiary: {
@@ -150,7 +150,7 @@ export default function ActiveLoansPage() {
     ],
   }
 
-  const currentLoans = activeLoans[selectedLab as keyof typeof activeLoans]
+  const currentLoans = activeLoans[selectedLab as keyof typeof activeLoans] || []
 
   // Filter loans based on search query
   const filteredLoans = currentLoans.filter(

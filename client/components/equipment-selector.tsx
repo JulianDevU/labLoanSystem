@@ -27,7 +27,7 @@ export function EquipmentSelector({ lab, value, onChange }: EquipmentSelectorPro
 
   // This would normally fetch data from an API
   const availableEquipment = {
-    physics: [
+    fisica: [
       { id: "PH001", name: "Osciloscopio Digital", available: 5 },
       { id: "PH002", name: "Generador de Funciones", available: 3 },
       { id: "PH003", name: "Multímetro Digital", available: 10 },
@@ -36,7 +36,7 @@ export function EquipmentSelector({ lab, value, onChange }: EquipmentSelectorPro
       { id: "PH006", name: "Kit de Componentes de Circuito", available: 15 },
       { id: "PH007", name: "Sensor de Fuerza", available: 5 },
     ],
-    telecommunications: [
+    telecomunicaciones: [
       { id: "TC001", name: "Analizador de Espectro", available: 2 },
       { id: "TC002", name: "Analizador de Red", available: 2 },
       { id: "TC003", name: "Router", available: 5 },
@@ -53,7 +53,7 @@ export function EquipmentSelector({ lab, value, onChange }: EquipmentSelectorPro
     ],
   }
 
-  const currentEquipment = availableEquipment[lab as keyof typeof availableEquipment]
+  const currentEquipment = availableEquipment[lab as keyof typeof availableEquipment] || []
 
   // Filter equipment based on search query
   const filteredEquipment = currentEquipment.filter(

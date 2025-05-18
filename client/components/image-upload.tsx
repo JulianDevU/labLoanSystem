@@ -115,23 +115,23 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
         <Card>
           <CardContent className="p-4 flex flex-col items-center justify-center gap-4 h-[200px]">
             <div className="flex gap-4">
-              <Button type="button" variant="outline" onClick={startCamera} className="flex gap-2">
-                <Camera className="h-4 w-4" />
-                Take Photo
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex gap-2"
-              >
-                <Upload className="h-4 w-4" />
-                Upload Image
-              </Button>
+            <Button type="button" variant="outline" onClick={startCamera} className="flex gap-2">
+              <Camera className="h-4 w-4" />
+              Tomar Foto
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              className="flex gap-2"
+            >
+              <Upload className="h-4 w-4" />
+              Subir Imagen
+            </Button>
               <input type="file" ref={fileInputRef} accept="image/*" className="hidden" onChange={handleFileUpload} />
             </div>
             <p className="text-sm text-muted-foreground text-center">
-              Take a photo or upload an image as evidence for this loan
+              Toma una foto o sube una imagen como evidencia para este préstamo
             </p>
           </CardContent>
         </Card>

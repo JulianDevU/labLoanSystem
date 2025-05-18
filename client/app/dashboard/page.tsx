@@ -11,7 +11,7 @@ import { InventorySummary } from "@/components/inventory-summary"
 import { LabSelector } from "@/components/lab-selector"
 
 export default function DashboardPage() {
-  const [selectedLab, setSelectedLab] = useState("physics")
+  const [selectedLab, setSelectedLab] = useState("fisica")
 
   return (
     <DashboardShell>
@@ -31,7 +31,7 @@ export default function DashboardPage() {
               <Card className="col-span-4">
                 <CardHeader>
                   <CardTitle>Préstamos recientes</CardTitle>
-                  <CardDescription>Últimos préstamos de equipos en el laboratorio de {selectedLab}.</CardDescription>
+                  <CardDescription>Últimos préstamos de equipos en el laboratorio de {selectedLab === "fisica" ? "Física" : selectedLab === "telecomunicaciones" ? "Telecomunicaciones" : "Software"}.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <RecentLoans lab={selectedLab} />
@@ -40,7 +40,7 @@ export default function DashboardPage() {
               <Card className="col-span-3">
                 <CardHeader>
                   <CardTitle>Resumen de inventario</CardTitle>
-                  <CardDescription>Inventario actual del laboratorio de {selectedLab}.</CardDescription>
+                <CardDescription>Inventario actual del laboratorio de {selectedLab === "fisica" ? "Física" : selectedLab === "telecomunicaciones" ? "Telecomunicaciones" : "Software"}.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <InventorySummary lab={selectedLab} />
@@ -52,7 +52,7 @@ export default function DashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Préstamos activos</CardTitle>
-                <CardDescription>Listado de todos los préstamos de equipos vigentes para el laboratorio de {selectedLab}.</CardDescription>
+                <CardDescription>Listado de todos los préstamos de equipos vigentes para el laboratorio de {selectedLab === "fisica" ? "Física" : selectedLab === "telecomunicaciones" ? "Telecomunicaciones" : "Software"}.</CardDescription>
               </CardHeader>
               <CardContent>
                 {/* Aquí se implementará la tabla de préstamos activos */}
@@ -64,7 +64,7 @@ export default function DashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Inventario</CardTitle>
-                <CardDescription>Inventario completo del laboratorio de {selectedLab}.</CardDescription>
+                <CardDescription>Inventario completo del laboratorio de {selectedLab === "fisica" ? "Física" : selectedLab === "telecomunicaciones" ? "Telecomunicaciones" : "Software"}.</CardDescription>
               </CardHeader>
               <CardContent>
                 {/* Aquí se implementará la tabla de inventario */}

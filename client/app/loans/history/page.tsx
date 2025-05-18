@@ -154,7 +154,7 @@ export default function LoanHistoryPage() {
     ],
   }
 
-  const currentHistory = loanHistory[selectedLab as keyof typeof loanHistory]
+  const currentHistory = loanHistory[selectedLab as keyof typeof loanHistory] || []
 
   // Filter loans based on search query and time filter
   const filteredLoans = currentHistory.filter((loan) => {

@@ -59,7 +59,7 @@ export function InventoryTable({ lab, searchQuery }: InventoryTableProps) {
     ],
   }
 
-  const currentItems = inventoryItems[lab as keyof typeof inventoryItems]
+  const currentItems = inventoryItems[lab as keyof typeof inventoryItems] || []
 
   // Filter items based on search query
   const filteredItems = currentItems.filter(

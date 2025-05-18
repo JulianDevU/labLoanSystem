@@ -15,13 +15,13 @@ export function LabSelector({ value, onValueChange }: LabSelectorProps) {
         <SelectValue placeholder="Selecciona laboratorio" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="physics" className="flex items-center">
+        <SelectItem value="fisica" className="flex items-center">
           <div className="flex items-center">
             <BeakerIcon className="mr-2 h-4 w-4" />
             Laboratorio de Física
           </div>
         </SelectItem>
-        <SelectItem value="telecommunications">
+        <SelectItem value="telecomunicaciones">
           <div className="flex items-center">
             <NetworkIcon className="mr-2 h-4 w-4" />
             Laboratorio de Telecomunicaciones

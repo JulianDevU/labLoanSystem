@@ -8,23 +8,23 @@ interface OverviewStatsProps {
 export function OverviewStats({ lab }: OverviewStatsProps) {
   // This would normally fetch data from an API
   const stats = {
-    physics: {
+    fisica: {
       activeLoans: 12,
       inventoryItems: 87,
       overdueLoans: 3,
-      averageLoanDuration: "4 days",
+      averageLoanDuration: "4 días",
     },
-    telecommunications: {
+    telecomunicaciones: {
       activeLoans: 8,
       inventoryItems: 64,
       overdueLoans: 1,
-      averageLoanDuration: "6 days",
+      averageLoanDuration: "6 días",
     },
     software: {
       activeLoans: 15,
       inventoryItems: 42,
       overdueLoans: 2,
-      averageLoanDuration: "3 days",
+      averageLoanDuration: "3 días",
     },
   }
 

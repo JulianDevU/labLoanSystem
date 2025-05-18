@@ -8,7 +8,7 @@ interface RecentLoansProps {
 export function RecentLoans({ lab }: RecentLoansProps) {
   // This would normally fetch data from an API
   const loans = {
-    physics: [
+    fisica: [
       {
         id: "PH-1001",
         beneficiary: {
@@ -46,7 +46,7 @@ export function RecentLoans({ lab }: RecentLoansProps) {
         status: "overdue",
       },
     ],
-    telecommunications: [
+    telecomunicaciones: [
       {
         id: "TC-2001",
         beneficiary: {
@@ -126,12 +126,12 @@ export function RecentLoans({ lab }: RecentLoansProps) {
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium">{loan.beneficiary.name}</p>
               <Badge variant={loan.status === "overdue" ? "destructive" : "default"}>
-                {loan.status === "overdue" ? "Overdue" : "Active"}
+                {loan.status === "overdue" ? "Vencido" : "Activo"}
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground">{loan.items.join(", ")}</p>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span>Due: {new Date(loan.returnDate).toLocaleDateString()}</span>
+              <span>Devolución: {new Date(loan.returnDate).toLocaleDateString()}</span>
               <span>•</span>
               <span>ID: {loan.id}</span>
             </div>
