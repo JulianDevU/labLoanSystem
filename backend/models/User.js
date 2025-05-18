@@ -25,7 +25,7 @@ const usuarioSchema = new Schema({
   tipo: {
     type: String,
     enum: ['personal', 'administrador'],
-    default: 'personal'
+    default: 'administrador',
   },
   laboratorio_id: {
     type: Schema.Types.ObjectId,
