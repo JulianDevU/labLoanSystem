@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+import mongoose from 'mongoose';
+const { Schema } = mongoose;
 
 const prestamoSchema = new Schema({
   usuario_id: {
@@ -62,4 +62,4 @@ prestamoSchema.pre('save', function(next) {
 
 const Prestamo = mongoose.model('Prestamo', prestamoSchema);
 
-module.exports = Prestamo;
+export default Prestamo;

@@ -1,6 +1,7 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
-const bcrypt = require('bcryptjs');
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+
+const { Schema } = mongoose;
 
 const usuarioSchema = new Schema({
   nombre: {
@@ -56,4 +57,4 @@ usuarioSchema.methods.compararContrasena = async function(contrasenaIngresada) {
 
 const Usuario = mongoose.model('Usuario', usuarioSchema);
 
-module.exports = Usuario;
+export default Usuario;

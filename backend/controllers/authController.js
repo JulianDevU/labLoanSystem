@@ -1,4 +1,4 @@
-import Usuario from '../modelos/Usuario.js';
+import Usuario from '../models/User.js';
 import { validationResult } from 'express-validator';
 import { generarToken } from '../utils/helpers.js';
 
