@@ -26,11 +26,6 @@ const usuarioSchema = new Schema({
     type: String,
     enum: ['personal', 'administrador'],
     default: 'administrador',
-  },
-  laboratorio_id: {
-    type: Schema.Types.ObjectId,
-    ref: 'Laboratorio',
-    required: [true, 'El laboratorio es obligatorio']
   }
 }, {
   timestamps: true,

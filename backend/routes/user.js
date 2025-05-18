@@ -14,6 +14,8 @@ import {
 
 const router = express.Router();
 
+router.post('/', authorize('administrador'), crearUsuarioValidator, crearUsuario);
+
 // Proteger todas las rutas
 router.use(protect);
 
@@ -22,7 +24,6 @@ router.get('/:id', getUsuario);
 
 // Rutas solo para administradores
 router.get('/', authorize('administrador'), getUsuarios);
-router.post('/', authorize('administrador'), crearUsuarioValidator, crearUsuario);
 router.put('/:id', actualizarUsuarioValidator, actualizarUsuario);
 router.delete('/:id', authorize('administrador'), eliminarUsuario);
 
