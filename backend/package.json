@@ -3,12 +3,21 @@
   "version": "1.0.0",
   "description": "API para el sistema de gestión de préstamos del laboratorio de física",
   "main": "app.js",
+  "type": "module",
   "scripts": {
     "start": "node app.js",
     "start:prod": "set NODE_ENV=production&& node app",
     "dev": "nodemon app",
+    "init-db": "node scripts/inicializar-db.js",
     "test": "jest"
   },
+  "keywords": [
+    "mongodb",
+    "mongoose",
+    "express",
+    "laboratorio",
+    "prestamos"
+  ],
   "author": "Estudiantes Base de Datos II y Optativa I",
   "license": "MIT",
   "dependencies": {
@@ -16,7 +25,7 @@
     "colors": "^1.4.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
+    "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-fileupload": "^1.4.0",
     "express-mongo-sanitize": "^2.2.0",
@@ -24,10 +33,11 @@
     "express-validator": "^7.0.1",
     "helmet": "^7.0.0",
     "hpp": "^0.2.3",
-    "jsonwebtoken": "^9.0.0",
+    "jsonwebtoken": "^9.0.1",
     "moment": "^2.29.4",
-    "mongoose": "^7.2.0",
+    "mongoose": "^7.5.0",
     "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.2",
     "pdfkit": "^0.13.0",
     "slugify": "^1.6.6",
@@ -35,7 +45,7 @@
   },
   "devDependencies": {
     "jest": "^29.5.0",
-    "nodemon": "^2.0.22",
+    "nodemon": "^3.0.1",
     "supertest": "^6.3.3"
   }
 }

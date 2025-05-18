@@ -1,67 +1,47 @@
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-const EquipmentSchema = new mongoose.Schema({
-  name: {
+const equipoSchema = new Schema({
+  nombre: {
     type: String,
-    required: [true, 'Por favor ingrese un nombre de equipo'],
-    trim: true,
-    maxlength: [100, 'El nombre no puede tener más de 100 caracteres']
-  },
-  code: {
-    type: String,
-    required: [true, 'Por favor ingrese un código'],
-    unique: true,
+    required: [true, 'El nombre del equipo es obligatorio'],
     trim: true
   },
-  category: {
+  descripcion: {
     type: String,
-    required: [true, 'Por favor ingrese una categoría'],
-    enum: [
-      'Mecánica',
-      'Electricidad',
-      'Óptica',
-      'Termodinámica',
-      'Electrónica',
-      'Instrumentos de medición',
-      'Otros'
-    ]
+    trim: true
   },
-  description: {
+  categoria: {
     type: String,
-    required: [true, 'Por favor ingrese una descripción']
+    required: [true, 'La categoría es obligatoria'],
+    trim: true
   },
-  quantity: {
+  cantidad_total: {
     type: Number,
-    required: [true, 'Por favor ingrese la cantidad disponible'],
-    min: [0, 'La cantidad no puede ser negativa']
+    required: [true, 'La cantidad total es obligatoria'],
+    min: [0, 'La cantidad total no puede ser negativa']
   },
-  available: {
+  cantidad_disponible: {
     type: Number,
-    required: true,
-    default: function() {
-      return this.quantity;
+    required: [true, 'La cantidad disponible es obligatoria'],
+    min: [0, 'La cantidad disponible no puede ser negativa'],
+    validate: {
+      validator: function(value) {
+        return value <= this.cantidad_total;
+      },
+      message: 'La cantidad disponible no puede ser mayor que la cantidad total'
     }
   },
-  location: {
-    type: String,
-    required: [true, 'Por favor ingrese la ubicación del equipo']
-  },
-  condition: {
-    type: String,
-    enum: ['Nuevo', 'Buen estado', 'Regular', 'Requiere mantenimiento'],
-    default: 'Buen estado'
-  },
-  image: {
-    type: String,
-    default: 'no-photo.jpg'
-  },
-  lastMaintenance: {
-    type: Date
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
+  laboratorio_id: {
+    type: Schema.Types.ObjectId,
+    ref: 'Laboratorio',
+    required: [true, 'El laboratorio es obligatorio']
   }
+}, {
+  timestamps: true,
+  versionKey: false
 });
 
-module.exports = mongoose.model('Equipment', EquipmentSchema);
+const Equipo = mongoose.model('Equipo', equipoSchema);
+
+module.exports = Equipo;

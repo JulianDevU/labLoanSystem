@@ -1,16 +1,38 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
 
-const connectDB = async () => {
+// Cargar variables de entorno
+dotenv.config();
+
+// URL de conexión a MongoDB
+const MONGODB_URI = process.env.MONGODB_URI;
+
+// Opciones de conexión
+const options = {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+};
+
+// Función para conectar a la base de datos
+export const conectarDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    await mongoose.connect(MONGODB_URI, options);
+    console.log('Conexión a MongoDB establecida con éxito');
+    return mongoose.connection;
   } catch (error) {
-    console.error(`Error: ${error.message}`);
+    console.error('Error al conectar a MongoDB:', error.message);
     process.exit(1);
   }
 };
 
-module.exports = connectDB;
+// Función para cerrar la conexión
+export const cerrarConexion = async () => {
+  try {
+    await mongoose.connection.close();
+    console.log('Conexión a MongoDB cerrada con éxito');
+  } catch (error) {
+    console.error('Error al cerrar la conexión a MongoDB:', error.message);
+  }
+};
+
+export default { conectarDB, cerrarConexion };

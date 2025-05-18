@@ -1,140 +1,146 @@
-const User = require('../models/User');
+import Usuario from '../modelos/Usuario.js';
+import { validationResult } from 'express-validator';
+import { generarToken } from '../utils/helpers.js';
 
-// @desc    Registrar usuario
-// @route   POST /api/auth/register
-// @access  Public
-exports.register = async (req, res) => {
-  try {
-    const { name, email, password, documentId, role, career, phone } = req.body;
-
-    // Verificar si el usuario ya existe
-    const userExists = await User.findOne({ email });
-
-    if (userExists) {
-      return res.status(400).json({
-        success: false,
-        error: 'El email ya está registrado'
-      });
-    }
-
-    // Crear usuario
-    const user = await User.create({
-      name,
-      email,
-      password,
-      documentId,
-      role,
-      career,
-      phone
-    });
-
-    sendTokenResponse(user, 201, res);
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      error: error.message
-    });
-  }
-};
-
-// @desc    Login usuario
+// @desc    Iniciar sesión
 // @route   POST /api/auth/login
-// @access  Public
-exports.login = async (req, res) => {
+// @access  Público
+export const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
-
-    // Validar email y password
-    if (!email || !password) {
+    // Verificar errores de validación
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
-        error: 'Por favor ingrese email y contraseña'
+        errors: errors.array()
       });
     }
 
-    // Verificar usuario
-    const user = await User.findOne({ email }).select('+password');
+    const { correo, contrasena } = req.body;
 
-    if (!user) {
+    // Buscar usuario por correo
+    const usuario = await Usuario.findOne({ correo });
+
+    // Verificar si el usuario existe
+    if (!usuario) {
       return res.status(401).json({
         success: false,
-        error: 'Credenciales inválidas'
+        mensaje: 'Credenciales inválidas'
       });
     }
 
     // Verificar contraseña
-    const isMatch = await user.matchPassword(password);
-
-    if (!isMatch) {
+    const esContrasenaCorrecta = usuario.verificarContrasena(contrasena);
+    if (!esContrasenaCorrecta) {
       return res.status(401).json({
         success: false,
-        error: 'Credenciales inválidas'
+        mensaje: 'Credenciales inválidas'
       });
     }
 
-    sendTokenResponse(user, 200, res);
+    // Generar token
+    const token = generarToken(usuario._id);
+
+    // Enviar respuesta
+    res.status(200).json({
+      success: true,
+      token,
+      usuario: {
+        id: usuario._id,
+        nombre: usuario.nombre,
+        correo: usuario.correo,
+        tipo: usuario.tipo,
+        laboratorio_id: usuario.laboratorio_id
+      }
+    });
   } catch (error) {
-    res.status(400).json({
+    console.error('Error en login:', error);
+    res.status(500).json({
       success: false,
+      mensaje: 'Error al iniciar sesión',
       error: error.message
     });
   }
 };
 
-// @desc    Obtener usuario actual
-// @route   GET /api/auth/me
-// @access  Private
-exports.getMe = async (req, res) => {
+// @desc    Obtener perfil del usuario actual
+// @route   GET /api/auth/perfil
+// @access  Privado
+export const getPerfil = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const usuario = await Usuario.findById(req.usuario._id).select('-contrasena');
+
+    if (!usuario) {
+      return res.status(404).json({
+        success: false,
+        mensaje: 'Usuario no encontrado'
+      });
+    }
 
     res.status(200).json({
       success: true,
-      data: user
+      usuario
     });
   } catch (error) {
-    res.status(400).json({
+    console.error('Error en getPerfil:', error);
+    res.status(500).json({
       success: false,
+      mensaje: 'Error al obtener perfil',
       error: error.message
     });
   }
 };
 
-// @desc    Cerrar sesión
-// @route   GET /api/auth/logout
-// @access  Private
-exports.logout = async (req, res) => {
-  res.status(200).json({
-    success: true,
-    data: {}
-  });
-};
+// @desc    Actualizar contraseña
+// @route   PUT /api/auth/cambiar-contrasena
+// @access  Privado
+export const cambiarContrasena = async (req, res) => {
+  try {
+    const { contrasenaActual, nuevaContrasena } = req.body;
 
-// Función para generar token y enviar respuesta
-const sendTokenResponse = (user, statusCode, res) => {
-  const token = user.getSignedJwtToken();
+    // Validar datos
+    if (!contrasenaActual || !nuevaContrasena) {
+      return res.status(400).json({
+        success: false,
+        mensaje: 'Todos los campos son obligatorios'
+      });
+    }
 
-  const options = {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
-    ),
-    httpOnly: true
-  };
+    if (nuevaContrasena.length < 6) {
+      return res.status(400).json({
+        success: false,
+        mensaje: 'La nueva contraseña debe tener al menos 6 caracteres'
+      });
+    }
 
-  if (process.env.NODE_ENV === 'production') {
-    options.secure = true;
-  }
+    // Buscar usuario
+    const usuario = await Usuario.findById(req.usuario._id);
 
-  res
-    .status(statusCode)
-    .json({
+    // Verificar contraseña actual
+    const esContrasenaCorrecta = usuario.verificarContrasena(contrasenaActual);
+    if (!esContrasenaCorrecta) {
+      return res.status(401).json({
+        success: false,
+        mensaje: 'La contraseña actual es incorrecta'
+      });
+    }
+
+    // Actualizar contraseña
+    usuario.contrasena = nuevaContrasena;
+    await usuario.save();
+
+    res.status(200).json({
       success: true,
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      }
+      mensaje: 'Contraseña actualizada correctamente'
     });
+  } catch (error) {
+    console.error('Error en cambiarContrasena:', error);
+    res.status(500).json({
+      success: false,
+      mensaje: 'Error al cambiar contraseña',
+      error: error.message
+    });
+  }
 };
+
+export default { login, getPerfil, cambiarContrasena };
