@@ -9,10 +9,12 @@ import { OverviewStats } from "@/src/components/overview-stats"
 import { RecentLoans } from "@/src/components/recent-loans"
 import { InventorySummary } from "@/src/components/inventory-summary"
 import { LabSelector } from "@/src/components/lab-selector"
+import { useRequireAuth } from "@/src/hooks/useRequireAuth"
 
 export default function DashboardPage() {
+  useRequireAuth()
   const [selectedLab, setSelectedLab] = useState("fisica")
-
+  
   return (
     <DashboardShell>
       <DashboardHeader heading="Panel de Control" text="Gestiona los préstamos de equipos e inventario en los laboratorios.">

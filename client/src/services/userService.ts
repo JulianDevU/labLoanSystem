@@ -1,4 +1,6 @@
 // src/services/userService.ts
+import Cookies from "js-cookie"
+
 export async function registerUser(data: {
   nombre: string
   correo: string
@@ -12,10 +14,17 @@ export async function registerUser(data: {
     body: JSON.stringify(data),
   })
 
+  const result = await response.json()
+
   if (!response.ok) {
-    const errorData = await response.json()
-    throw new Error(errorData.message || "Error al registrar usuario")
+    throw new Error(result.message || "Error al registrar usuario")
   }
 
-  return response.json()
+  Cookies.set("token", result.token, {
+    expires: 7, // Días
+    secure: false,
+    sameSite: "Lax",
+  })
+
+  return result
 }
