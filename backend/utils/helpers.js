@@ -3,9 +3,10 @@ import fs from 'fs';
 import path from 'path';
 
 // Función para generar token JWT
+// Usar la variable correcta del .env: JWT_EXPIRE
 export const generarToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN
+    expiresIn: process.env.JWT_EXPIRE // Debe ser JWT_EXPIRE, no JWT_EXPIRES_IN
   });
 };
 

@@ -29,8 +29,8 @@ export const login = async (req, res) => {
       });
     }
 
-    // Verificar contraseña
-    const esContrasenaCorrecta = usuario.verificarContrasena(contrasena);
+    // Verificar contraseña (asegurar comparación estricta y await)
+    const esContrasenaCorrecta = await usuario.verificarContrasena(contrasena);
     if (!esContrasenaCorrecta) {
       return res.status(401).json({
         success: false,

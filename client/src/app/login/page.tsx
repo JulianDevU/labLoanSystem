@@ -1,8 +1,8 @@
 "use client"
 
-import type React from "react"
 
-import { useState } from "react"
+import type React from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/src/components/ui/button"
@@ -12,25 +12,37 @@ import { Label } from "@/src/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs"
 import { BeakerIcon } from "@/src/components/icons"
 import { useToast } from "@/src/hooks/use-toast"
+import { login } from "@/src/services/loginService"
+
 
 export default function LoginPage() {
   const router = useRouter()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const emailRef = useRef<HTMLInputElement>(null)
+  const passwordRef = useRef<HTMLInputElement>(null)
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError(null)
 
-    // Simulate login process
-    setTimeout(() => {
-      setIsLoading(false)
+    const correo = emailRef.current?.value || ""
+    const contrasena = passwordRef.current?.value || ""
+
+    try {
+      await login({ correo, contrasena })
       toast({
         title: "Inicio de sesión exitoso",
         description: "Bienvenido al Sistema de Gestión de Préstamos de Laboratorio",
       })
       router.push("/dashboard")
-    }, 1500)
+    } catch (err: any) {
+      setError(err.message || "Error al iniciar sesión")
+      setIsLoading(false)
+    }
+    setIsLoading(false)
   }
 
   return (
@@ -54,7 +66,14 @@ export default function LoginPage() {
                 <div className="grid gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="email">Correo electrónico</Label>
-                    <Input id="email" type="email" placeholder="ejemplo@correo.com" required />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="ejemplo@correo.com"
+                      required
+                      ref={emailRef}
+                      autoComplete="username"
+                    />
                   </div>
                   <div className="grid gap-2">
                     <div className="flex items-center justify-between">
@@ -63,11 +82,20 @@ export default function LoginPage() {
                         ¿Olvidaste tu contraseña?
                       </Link>
                     </div>
-                    <Input id="password" type="password" required />
+                    <Input
+                      id="password"
+                      type="password"
+                      required
+                      ref={passwordRef}
+                      autoComplete="current-password"
+                    />
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
                   </Button>
+                  {error && (
+                    <p className="text-sm text-red-500 text-center mt-2">{error}</p>
+                  )}
                 </div>
               </form>
             </TabsContent>

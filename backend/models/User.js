@@ -45,9 +45,11 @@ usuarioSchema.pre('save', async function(next) {
   }
 });
 
-// Método para comparar contraseñas
-usuarioSchema.methods.compararContrasena = async function(contrasenaIngresada) {
-  return await bcrypt.compare(contrasenaIngresada, this.contrasena);
+
+// Método para comparar contraseñas (nombre compatible con el controlador)
+usuarioSchema.methods.verificarContrasena = function(contrasenaIngresada) {
+  // Permite usar tanto promesa como callback
+  return bcrypt.compare(contrasenaIngresada, this.contrasena);
 };
 
 const Usuario = mongoose.model('Usuario', usuarioSchema);
