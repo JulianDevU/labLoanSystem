@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import fs from 'fs';
-import path from 'path';
+import dotenv from 'dotenv';
+dotenv.config();
 
 // Función para generar token JWT
 // Usar la variable correcta del .env: JWT_EXPIRE

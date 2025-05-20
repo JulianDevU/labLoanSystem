@@ -2,6 +2,7 @@ import express from 'express';
 import {
   getUsuarios,
   getUsuario,
+  getUsuarioAutenticado,
   crearUsuario,
   actualizarUsuario,
   eliminarUsuario
@@ -20,6 +21,7 @@ router.post('/', crearUsuarioValidator, crearUsuario);
 router.use(protect);
 
 // Rutas para todos los usuarios
+router.get('/me', getUsuarioAutenticado);
 router.get('/:id', getUsuario);
 
 // Rutas solo para administradores

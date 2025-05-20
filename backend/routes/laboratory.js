@@ -14,6 +14,8 @@ import {
 
 const router = express.Router();
 
+router.post('/', crearLaboratorioValidator, crearLaboratorio);
+
 // Proteger todas las rutas
 router.use(protect);
 
@@ -22,7 +24,6 @@ router.get('/', getLaboratorios);
 router.get('/:id', getLaboratorio);
 
 // Rutas solo para administradores
-router.post('/', authorize('administrador'), crearLaboratorioValidator, crearLaboratorio);
 router.put('/:id', authorize('administrador'), actualizarLaboratorioValidator, actualizarLaboratorio);
 router.delete('/:id', authorize('administrador'), eliminarLaboratorio);
 

@@ -1,6 +1,7 @@
 import app from './app.js';
 import { conectarDB } from './config/db.js';
 import dotenv from 'dotenv';
+import { createInitialLaboratories } from './utils/generateLabs.js'
 
 // Cargar variables de entorno
 dotenv.config();
@@ -13,7 +14,11 @@ const iniciarServidor = async () => {
   try {
 
     await conectarDB();
+
+    console.log('JWT_SECRET:', process.env.JWT_SECRET);
     
+    await createInitialLaboratories();
+
     app.listen(PORT, () => {
       console.log(`Servidor ejecutándose en el puerto ${PORT} en modo ${process.env.NODE_ENV}`);
     });

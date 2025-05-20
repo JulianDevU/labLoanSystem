@@ -119,6 +119,25 @@ export const crearUsuario = async (req, res) => {
   }
 };
 
+// @desc    Obtener el usuario autenticado
+// @route   GET /api/usuarios/me
+// @access  Privado
+export const getUsuarioAutenticado = async (req, res) => {
+  try {
+    const usuario = await Usuario.findById(req.usuario._id).select("-contrasena")
+
+    if (!usuario) {
+      return res.status(404).json({ success: false, mensaje: "Usuario no encontrado" })
+    }
+
+    res.status(200).json({ success: true, data: usuario })
+  } catch (error) {
+    console.error("Error en getUsuarioAutenticado:", error)
+    res.status(500).json({ success: false, mensaje: "Error al obtener usuario" })
+  }
+}
+
+
 // @desc    Actualizar un usuario
 // @route   PUT /api/usuarios/:id
 // @access  Privado
@@ -230,6 +249,7 @@ export const eliminarUsuario = async (req, res) => {
 export default {
   getUsuarios,
   getUsuario,
+  getUsuarioAutenticado,
   crearUsuario,
   actualizarUsuario,
   eliminarUsuario

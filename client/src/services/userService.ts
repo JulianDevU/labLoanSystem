@@ -28,3 +28,24 @@ export async function registerUser(data: {
 
   return result
 }
+
+export async function getUser() {
+  const token = Cookies.get("token")
+
+  const response = await fetch("http://localhost:5000/api/usuarios/me", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  const result = await response.json()
+
+  if (!response.ok) {
+    const fallbackMessage = result?.mensaje || result?.error;
+    throw new Error(fallbackMessage);
+  }
+
+  return result.data
+}
