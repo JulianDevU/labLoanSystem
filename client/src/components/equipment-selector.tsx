@@ -36,7 +36,7 @@ export function EquipmentSelector({ lab, value, onChange }: EquipmentSelectorPro
       { id: "PH006", name: "Kit de Componentes de Circuito", available: 15 },
       { id: "PH007", name: "Sensor de Fuerza", available: 5 },
     ],
-    telecomunicaciones: [
+    telecomunicacion: [
       { id: "TC001", name: "Analizador de Espectro", available: 2 },
       { id: "TC002", name: "Analizador de Red", available: 2 },
       { id: "TC003", name: "Router", available: 5 },

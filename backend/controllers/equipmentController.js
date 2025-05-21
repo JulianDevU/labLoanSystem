@@ -7,27 +7,22 @@ import { validationResult } from 'express-validator';
 // @access  Privado
 export const getEquipos = async (req, res) => {
   try {
-    // Filtros
     const filtro = {};
     
-    // Filtrar por laboratorio si se proporciona
     if (req.query.laboratorio_id) {
       filtro.laboratorio_id = req.query.laboratorio_id;
     }
     
-    // Filtrar por categoría si se proporciona
     if (req.query.categoria) {
       filtro.categoria = req.query.categoria;
     }
     
-    // Filtrar por disponibilidad si se proporciona
     if (req.query.disponible === 'true') {
       filtro.cantidad_disponible = { $gt: 0 };
     } else if (req.query.disponible === 'false') {
       filtro.cantidad_disponible = 0;
     }
     
-    // Buscar equipos con filtros
     const equipos = await Equipo.find(filtro)
       .populate('laboratorio_id', 'nombre descripcion');
 
@@ -80,7 +75,6 @@ export const getEquipo = async (req, res) => {
 // @access  Privado/Admin
 export const crearEquipo = async (req, res) => {
   try {
-    // Verificar errores de validación
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -95,10 +89,12 @@ export const crearEquipo = async (req, res) => {
       categoria,
       cantidad_total,
       cantidad_disponible,
-      laboratorio_id
+      laboratorio_id,
+      numero_serie,
+      ubicacion,
+      nota_adicional
     } = req.body;
 
-    // Verificar si existe el laboratorio
     const laboratorio = await Laboratorio.findById(laboratorio_id);
     if (!laboratorio) {
       return res.status(404).json({
@@ -107,7 +103,6 @@ export const crearEquipo = async (req, res) => {
       });
     }
 
-    // Verificar si ya existe un equipo con el mismo nombre en el mismo laboratorio
     const equipoExistente = await Equipo.findOne({
       nombre,
       laboratorio_id
@@ -120,14 +115,16 @@ export const crearEquipo = async (req, res) => {
       });
     }
 
-    // Crear equipo
     const equipo = await Equipo.create({
       nombre,
       descripcion,
       categoria,
       cantidad_total,
       cantidad_disponible,
-      laboratorio_id
+      laboratorio_id,
+      numero_serie,
+      ubicacion,
+      nota_adicional
     });
 
     res.status(201).json({
@@ -149,7 +146,6 @@ export const crearEquipo = async (req, res) => {
 // @access  Privado/Admin
 export const actualizarEquipo = async (req, res) => {
   try {
-    // Verificar errores de validación
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -158,7 +154,6 @@ export const actualizarEquipo = async (req, res) => {
       });
     }
 
-    // Verificar si existe el equipo
     let equipo = await Equipo.findById(req.params.id);
     if (!equipo) {
       return res.status(404).json({
@@ -167,7 +162,6 @@ export const actualizarEquipo = async (req, res) => {
       });
     }
 
-    // Si se cambia el laboratorio, verificar que exista
     if (req.body.laboratorio_id && req.body.laboratorio_id !== equipo.laboratorio_id.toString()) {
       const laboratorio = await Laboratorio.findById(req.body.laboratorio_id);
       if (!laboratorio) {
@@ -178,7 +172,6 @@ export const actualizarEquipo = async (req, res) => {
       }
     }
 
-    // Si se cambia el nombre, verificar que no exista otro con el mismo nombre en el mismo laboratorio
     if (req.body.nombre && req.body.nombre !== equipo.nombre) {
       const laboratorioId = req.body.laboratorio_id || equipo.laboratorio_id;
       const equipoExistente = await Equipo.findOne({
@@ -194,7 +187,6 @@ export const actualizarEquipo = async (req, res) => {
       }
     }
 
-    // Actualizar equipo
     equipo = await Equipo.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -220,7 +212,6 @@ export const actualizarEquipo = async (req, res) => {
 // @access  Privado/Admin
 export const eliminarEquipo = async (req, res) => {
   try {
-    // Verificar si existe el equipo
     const equipo = await Equipo.findById(req.params.id);
     if (!equipo) {
       return res.status(404).json({
@@ -229,7 +220,6 @@ export const eliminarEquipo = async (req, res) => {
       });
     }
 
-    // Eliminar equipo
     await equipo.deleteOne();
 
     res.status(200).json({
@@ -251,7 +241,6 @@ export const eliminarEquipo = async (req, res) => {
 // @access  Privado
 export const getCategorias = async (req, res) => {
   try {
-    // Obtener categorías únicas
     const categorias = await Equipo.distinct('categoria');
 
     res.status(200).json({

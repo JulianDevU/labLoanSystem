@@ -18,7 +18,7 @@ export async function login({ correo, contrasena }: { correo: string; contrasena
   }
 
   Cookies.set("token", result.token, {
-    expires: 7, // Días
+    expires: 7,
     secure: false,
     sameSite: "Lax",
   })

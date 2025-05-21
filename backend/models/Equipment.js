@@ -21,6 +21,10 @@ const equipoSchema = new Schema({
     required: [true, 'La cantidad total es obligatoria'],
     min: [0, 'La cantidad total no puede ser negativa']
   },
+  numero_serie: {
+    type: String,
+    default: true
+  },
   cantidad_disponible: {
     type: Number,
     required: [true, 'La cantidad disponible es obligatoria'],
@@ -31,6 +35,14 @@ const equipoSchema = new Schema({
       },
       message: 'La cantidad disponible no puede ser mayor que la cantidad total'
     }
+  },
+  ubicacion: {
+    type: String,
+    trim: true
+  },
+  nota_adicional: {
+    type: String,
+    trim: true
   },
   laboratorio_id: {
     type: Schema.Types.ObjectId,

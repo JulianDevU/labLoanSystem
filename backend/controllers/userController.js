@@ -1,5 +1,6 @@
 import Usuario from '../models/User.js';
 import { validationResult } from 'express-validator';
+import { generarToken } from '../utils/helpers.js';
 
 // @desc    Obtener todos los usuarios
 // @route   GET /api/usuarios
@@ -70,7 +71,7 @@ export const getUsuario = async (req, res) => {
 
 // @desc    Crear un nuevo usuario
 // @route   POST /api/usuarios
-// @access  Privado/Admin
+// @access  Privado/Admin (o público si es auto-registro)
 export const crearUsuario = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -98,6 +99,8 @@ export const crearUsuario = async (req, res) => {
       tipo
     });
 
+    const token = generarToken(usuario._id);
+
     const usuarioResponse = {
       _id: usuario._id,
       nombre: usuario.nombre,
@@ -107,6 +110,7 @@ export const crearUsuario = async (req, res) => {
 
     res.status(201).json({
       success: true,
+      token,
       data: usuarioResponse
     });
   } catch (error) {
