@@ -103,7 +103,7 @@ export default function RegisterPage() {
             </TabsContent>
           </Tabs>
         </CardContent>
-        <CardFooter className="flex flex-col">
+        <CardFooter className="flex flex-col gap-2">
           <p className="mt-2 text-xs text-center text-muted-foreground">
             Al registrarte, aceptas nuestros{" "}
             <Link href="/terms" className="underline underline-offset-4 hover:text-primary">
@@ -114,6 +114,12 @@ export default function RegisterPage() {
               Política de privacidad
             </Link>.
           </p>
+          <div className="mt-2 flex flex-col items-center">
+            <span className="text-sm text-muted-foreground">¿Ya tienes una cuenta?</span>
+            <Button asChild className="w-full mt-1" disabled={isLoading}>
+              <Link href="/login">Iniciar sesión</Link>
+            </Button>
+          </div>
         </CardFooter>
       </Card>
     </div>
