@@ -100,6 +100,11 @@ export default function RegisterPage() {
                   {isLoading ? "Registrando usuario..." : "Registrar usuario"}
                 </Button>
               </form>
+              <div className="mt-2 flex flex-col items-center">
+                <Link href="/login" className="text-sm mt-3 text-muted-foreground hover:underline">
+                  ¿Ya tienes una cuenta?
+                </Link>
+              </div>
             </TabsContent>
           </Tabs>
         </CardContent>
@@ -112,14 +117,8 @@ export default function RegisterPage() {
             y{" "}
             <Link href="/privacy" className="underline underline-offset-4 hover:text-primary">
               Política de privacidad
-            </Link>.
+            </Link>
           </p>
-          <div className="mt-2 flex flex-col items-center">
-            <span className="text-sm text-muted-foreground">¿Ya tienes una cuenta?</span>
-            <Button asChild className="w-full mt-1" disabled={isLoading}>
-              <Link href="/login">Iniciar sesión</Link>
-            </Button>
-          </div>
         </CardFooter>
       </Card>
     </div>

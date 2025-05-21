@@ -21,7 +21,7 @@ export async function registerUser(data: {
   }
 
   Cookies.set("token", result.token, {
-    expires: 7, // Días
+    expires: 7,
     secure: false,
     sameSite: "Lax",
   })

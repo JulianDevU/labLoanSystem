@@ -98,6 +98,11 @@ export default function LoginPage() {
                   )}
                 </div>
               </form>
+              <div className="mt-2 flex flex-col items-center">
+                <Link href="/" className="text-sm mt-3 text-muted-foreground hover:underline">
+                  ¿No tienes cuenta? Regístrate aquí
+                </Link>
+              </div>
             </TabsContent>
           </Tabs>
         </CardContent>
@@ -111,7 +116,6 @@ export default function LoginPage() {
             <Link href="/privacy" className="underline underline-offset-4 hover:text-primary">
               Política de privacidad
             </Link>
-            .
           </p>
         </CardFooter>
       </Card>
