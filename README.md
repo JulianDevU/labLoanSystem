@@ -1,4 +1,4 @@
-# Sistema de Préstamo de Equipos
+# Sistema de Préstamo de Equipos (DESACTUALIZADO)
 
 Este proyecto es una API desarrollada con Node.js para la gestión de usuarios, préstamos de equipos y control de acceso mediante roles.
 
