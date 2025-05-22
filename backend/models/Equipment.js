@@ -29,12 +29,6 @@ const equipoSchema = new Schema({
     type: Number,
     required: [true, 'La cantidad disponible es obligatoria'],
     min: [0, 'La cantidad disponible no puede ser negativa'],
-    validate: {
-      validator: function(value) {
-        return value <= this.cantidad_total;
-      },
-      message: 'La cantidad disponible no puede ser mayor que la cantidad total'
-    }
   },
   ubicacion: {
     type: String,
@@ -52,6 +46,16 @@ const equipoSchema = new Schema({
 }, {
   timestamps: true,
   versionKey: false
+});
+
+equipoSchema.pre('validate', function (next) {
+  if (this.cantidad_disponible > this.cantidad_total) {
+    this.invalidate(
+      'cantidad_disponible',
+      'La cantidad disponible no puede ser mayor que la cantidad total'
+    );
+  }
+  next();
 });
 
 const Equipo = mongoose.model('Equipo', equipoSchema);

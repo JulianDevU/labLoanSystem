@@ -33,6 +33,11 @@ const prestamoSchema = new Schema({
   evidencia_foto: {
     type: String,
     trim: true
+  },
+  laboratorio_id: {
+    type: Schema.Types.ObjectId,
+    ref: 'Laboratorio',
+    required: [true, 'El laboratorio es obligatorio']
   }
 }, {
   timestamps: true,

@@ -1,7 +1,6 @@
 import Prestamo from '../models/Loan.js';
 import Equipo from '../models/Equipment.js';
 import Usuario from '../models/User.js';
-import Laboratorio from '../models/Laboratory.js';
 import Notificacion from '../models/Notification.js';
 import { validationResult } from 'express-validator';
 import { generarPDFPrestamo, generarReportePrestamos } from '../utils/generatePDF.js';
@@ -39,6 +38,13 @@ export const getPrestamos = async (req, res) => {
       if (req.query.hasta) {
         filtro.fecha_prestamo.$lte = new Date(req.query.hasta);
       }
+    }
+
+    if (req.query.laboratorio_id) {
+      // Obtener equipos del laboratorio
+      const equipos = await Equipo.find({ laboratorio_id: req.query.laboratorio_id });
+      const equiposIds = equipos.map(e => e._id);
+      filtro.equipo_id = { $in: equiposIds };
     }
     
     // Si el usuario no es administrador, solo mostrar sus préstamos o los de su laboratorio

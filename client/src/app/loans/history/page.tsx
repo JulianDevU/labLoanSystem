@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/src/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card"
 import { Input } from "@/src/components/ui/input"
@@ -8,202 +8,240 @@ import { Badge } from "@/src/components/ui/badge"
 import { DashboardHeader } from "@/src/components/dashboard-header"
 import { DashboardShell } from "@/src/components/dashboard-shell"
 import { LabSelector } from "@/src/components/lab-selector"
-import { Avatar, AvatarFallback, AvatarImage } from "@/src/components/ui/avatar"
-import { SearchIcon, Download } from "lucide-react"
+import { Avatar, AvatarFallback } from "@/src/components/ui/avatar"
+import { SearchIcon, Download, Loader2, AlertCircle } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/src/components/ui/select"
+import { useToast } from "@/src/hooks/use-toast"
+import {
+  getLoans,
+  generateLoansReport,
+  type LoanFromApi
+} from "@/src/services/loanService"
 
 export default function LoanHistoryPage() {
-  const [selectedLab, setSelectedLab] = useState("physics")
+  const { toast } = useToast()
+  const [selectedLab, setSelectedLab] = useState("fisica")
   const [searchQuery, setSearchQuery] = useState("")
   const [timeFilter, setTimeFilter] = useState("all")
+  const [loans, setLoans] = useState<LoanFromApi[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [generatingReport, setGeneratingReport] = useState(false)
 
-  // This would normally fetch data from an API
-  const loanHistory = {
-    physics: [
-      {
-        id: "PH-0987",
-        beneficiary: {
-          name: "Alex Johnson",
-          type: "student",
-          email: "a.johnson@example.com",
-          id: "S12340",
-        },
-        items: [
-          { name: "Digital Multimeter", id: "PH003", quantity: 1 },
-          { name: "Circuit Components Kit", id: "PH006", quantity: 1 },
-        ],
-        date: "2024-05-01T09:30:00",
-        returnDate: "2024-05-05T16:00:00",
-        actualReturnDate: "2024-05-05T15:45:00",
-        status: "completed",
-      },
-      {
-        id: "PH-0986",
-        beneficiary: {
-          name: "Emma Thompson",
-          type: "teacher",
-          email: "e.thompson@example.com",
-          id: "T54320",
-        },
-        items: [
-          { name: "Oscilloscope", id: "PH001", quantity: 1 },
-          { name: "Function Generator", id: "PH002", quantity: 1 },
-        ],
-        date: "2024-04-25T13:15:00",
-        returnDate: "2024-04-28T12:00:00",
-        actualReturnDate: "2024-04-28T11:30:00",
-        status: "completed",
-      },
-      {
-        id: "PH-0985",
-        beneficiary: {
-          name: "Carlos Rodriguez",
-          type: "student",
-          email: "c.rodriguez@example.com",
-          id: "S67891",
-        },
-        items: [{ name: "Force Sensor", id: "PH007", quantity: 2 }],
-        date: "2024-04-20T10:45:00",
-        returnDate: "2024-04-22T17:00:00",
-        actualReturnDate: "2024-04-23T09:15:00",
-        status: "completed-late",
-      },
-    ],
-    telecommunications: [
-      {
-        id: "TC-1987",
-        beneficiary: {
-          name: "Linda Kim",
-          type: "student",
-          email: "l.kim@example.com",
-          id: "S23457",
-        },
-        items: [
-          { name: "Router", id: "TC003", quantity: 1 },
-          { name: "Switch", id: "TC004", quantity: 1 },
-        ],
-        date: "2024-05-02T11:00:00",
-        returnDate: "2024-05-09T16:00:00",
-        actualReturnDate: "2024-05-09T15:30:00",
-        status: "completed",
-      },
-      {
-        id: "TC-1986",
-        beneficiary: {
-          name: "Thomas Wright",
-          type: "teacher",
-          email: "t.wright@example.com",
-          id: "T65433",
-        },
-        items: [{ name: "Fiber Optic Kit", id: "TC005", quantity: 1 }],
-        date: "2024-04-18T13:30:00",
-        returnDate: "2024-04-25T12:00:00",
-        actualReturnDate: "2024-04-25T11:45:00",
-        status: "completed",
-      },
-    ],
-    software: [
-      {
-        id: "SW-2987",
-        beneficiary: {
-          name: "Olivia Parker",
-          type: "student",
-          email: "o.parker@example.com",
-          id: "S34568",
-        },
-        items: [
-          { name: "Arduino Kit", id: "SW002", quantity: 1 },
-          { name: "Sensor Kit", id: "SW003", quantity: 1 },
-        ],
-        date: "2024-05-03T09:00:00",
-        returnDate: "2024-05-06T17:00:00",
-        actualReturnDate: "2024-05-06T16:45:00",
-        status: "completed",
-      },
-      {
-        id: "SW-2986",
-        beneficiary: {
-          name: "Daniel Lee",
-          type: "student",
-          email: "d.lee@example.com",
-          id: "S45679",
-        },
-        items: [{ name: "Raspberry Pi", id: "SW001", quantity: 1 }],
-        date: "2024-04-22T10:45:00",
-        returnDate: "2024-04-24T16:30:00",
-        actualReturnDate: "2024-04-26T10:15:00",
-        status: "completed-late",
-      },
-      {
-        id: "SW-2985",
-        beneficiary: {
-          name: "Jennifer Adams",
-          type: "teacher",
-          email: "j.adams@example.com",
-          id: "T76544",
-        },
-        items: [
-          { name: "VR Headset", id: "SW004", quantity: 1 },
-          { name: "Graphics Tablet", id: "SW005", quantity: 1 },
-        ],
-        date: "2024-04-15T14:00:00",
-        returnDate: "2024-04-22T12:00:00",
-        actualReturnDate: "2024-04-22T11:30:00",
-        status: "completed",
-      },
-    ],
+  // Cargar historial de préstamos
+  const fetchLoans = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      // Configurar filtros para obtener todos los préstamos
+      const filters: any = {
+        todos: true // Para obtener todos los préstamos del laboratorio
+      }
+
+      // Filtro por tiempo
+      if (timeFilter !== "all") {
+        const now = new Date()
+        if (timeFilter === "30days") {
+          const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+          filters.desde = thirtyDaysAgo.toISOString()
+        } else if (timeFilter === "90days") {
+          const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
+          filters.desde = ninetyDaysAgo.toISOString()
+        }
+      }
+
+      // Obtener todos los préstamos
+      const allLoans = await getLoans(filters)
+
+      // Filtrar por laboratorio si está seleccionado
+      const filteredLoans = selectedLab
+        ? allLoans.filter(loan =>
+          loan.equipo_id.laboratorio_id.nombre.toLowerCase() === selectedLab.toLowerCase() ||
+          loan.equipo_id.laboratorio_id._id === selectedLab
+        )
+        : allLoans
+
+      setLoans(filteredLoans)
+    } catch (err) {
+      console.error("Error al cargar historial:", err)
+      setError(err instanceof Error ? err.message : "Error al cargar historial")
+      toast({
+        title: "Error",
+        description: "No se pudo cargar el historial de préstamos",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const currentHistory = loanHistory[selectedLab as keyof typeof loanHistory] || []
+  // Cargar préstamos cuando cambien los filtros
+  useEffect(() => {
+    fetchLoans()
+  }, [selectedLab, timeFilter])
 
-  // Filter loans based on search query and time filter
-  const filteredLoans = currentHistory.filter((loan) => {
-    const matchesSearch =
-      loan.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      loan.beneficiary.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      loan.beneficiary.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      loan.items.some((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase()))
-
-    if (!matchesSearch) return false
-
-    if (timeFilter === "all") return true
-
-    const loanDate = new Date(loan.date)
-    const now = new Date()
-    const thirtyDaysAgo = new Date(now.setDate(now.getDate() - 30))
-    const ninetyDaysAgo = new Date(now.setDate(now.getDate() - 60)) // already subtracted 30, so 90 total
-
-    if (timeFilter === "30days") {
-      return loanDate >= thirtyDaysAgo
-    } else if (timeFilter === "90days") {
-      return loanDate >= ninetyDaysAgo
-    }
-
-    return true
+  // Filtrar préstamos basado en la búsqueda
+  const filteredLoans = loans.filter((loan) => {
+    const searchLower = searchQuery.toLowerCase()
+    return (
+      loan._id.toLowerCase().includes(searchLower) ||
+      loan.usuario_id.nombre.toLowerCase().includes(searchLower) ||
+      loan.usuario_id.correo.toLowerCase().includes(searchLower) ||
+      loan.equipo_id.nombre.toLowerCase().includes(searchLower) ||
+      loan.equipo_id.categoria.toLowerCase().includes(searchLower)
+    )
   })
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "completed":
-        return (
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-            Completed
-          </Badge>
-        )
-      case "completed-late":
+  // Generar reporte en Excel
+  const handleGenerateReport = async () => {
+    try {
+      setGeneratingReport(true)
+
+      const filters: any = {}
+
+      // Filtro por laboratorio
+      if (selectedLab) {
+        // Aquí necesitarías el ID del laboratorio, asumiendo que lo tienes
+        filters.laboratorio_id = selectedLab
+      }
+
+      // Filtro por tiempo
+      if (timeFilter !== "all") {
+        const now = new Date()
+        if (timeFilter === "30days") {
+          const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+          filters.desde = thirtyDaysAgo.toISOString()
+        } else if (timeFilter === "90days") {
+          const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
+          filters.desde = ninetyDaysAgo.toISOString()
+        }
+      }
+
+      const report = await generateLoansReport(filters)
+
+      // Crear enlace de descarga
+      const link = document.createElement('a')
+      link.href = `http://localhost:5000${report.url}`
+      link.download = report.fileName
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+
+      toast({
+        title: "Reporte generado",
+        description: `Se ha generado el reporte con ${report.count} préstamos`,
+      })
+    } catch (err) {
+      console.error("Error al generar reporte:", err)
+      toast({
+        title: "Error",
+        description: "No se pudo generar el reporte",
+        variant: "destructive",
+      })
+    } finally {
+      setGeneratingReport(false)
+    }
+  }
+
+  // Obtener badge de estado
+  const getStatusBadge = (loan: LoanFromApi) => {
+    const isLate = loan.fecha_devolucion_real &&
+      new Date(loan.fecha_devolucion_real) > new Date(loan.fecha_devolucion)
+    const isOverdue = loan.estado === 'vencido'
+
+    if (loan.estado === 'devuelto') {
+      if (isLate) {
         return (
           <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-            Completed Late
+            Completado Tarde
           </Badge>
         )
-      default:
-        return <Badge variant="outline">Unknown</Badge>
+      }
+      return (
+        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+          Completado
+        </Badge>
+      )
     }
+
+    if (isOverdue) {
+      return (
+        <Badge variant="destructive">
+          Vencido
+        </Badge>
+      )
+    }
+
+    return (
+      <Badge variant="default">
+        Activo
+      </Badge>
+    )
+  }
+
+  // Formatear fecha
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString("es-MX", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    })
+  }
+
+  // Obtener iniciales del nombre
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n.charAt(0))
+      .join('')
+      .toUpperCase()
+      .substring(0, 2)
+  }
+
+  if (loading) {
+    return (
+      <DashboardShell>
+        <DashboardHeader heading="Historial de Préstamos" text="Cargando historial...">
+          <LabSelector value={selectedLab} onValueChange={setSelectedLab} />
+        </DashboardHeader>
+
+        <Card>
+          <CardContent className="flex h-32 items-center justify-center">
+            <Loader2 className="h-6 w-6 animate-spin" />
+          </CardContent>
+        </Card>
+      </DashboardShell>
+    )
+  }
+
+  if (error) {
+    return (
+      <DashboardShell>
+        <DashboardHeader heading="Historial de Préstamos" text="Error al cargar historial">
+          <LabSelector value={selectedLab} onValueChange={setSelectedLab} />
+        </DashboardHeader>
+
+        <Card>
+          <CardContent className="flex h-32 items-center justify-center">
+            <div className="text-center">
+              <AlertCircle className="h-6 w-6 text-destructive mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">{error}</p>
+              <Button variant="outline" size="sm" className="mt-2" onClick={fetchLoans}>
+                Reintentar
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </DashboardShell>
+    )
   }
 
   return (
     <DashboardShell>
-      <DashboardHeader heading="Historial de Préstamos" text={`Consulta los préstamos anteriores para el laboratorio de ${selectedLab}.`}>
+      <DashboardHeader
+        heading="Historial de Préstamos"
+        text={`Consulta todos los préstamos del laboratorio seleccionado.`}
+      >
         <LabSelector value={selectedLab} onValueChange={setSelectedLab} />
       </DashboardHeader>
 
@@ -211,11 +249,20 @@ export default function LoanHistoryPage() {
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle>Historial de Préstamos</CardTitle>
-              <CardDescription>Visualiza todos los préstamos de equipos completados.</CardDescription>
+              <CardTitle>Historial de Préstamos ({filteredLoans.length})</CardTitle>
+              <CardDescription>Visualiza todos los préstamos de equipos completados y activos.</CardDescription>
             </div>
-            <Button variant="outline" className="gap-2">
-              <Download className="h-4 w-4" />
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={handleGenerateReport}
+              disabled={generatingReport}
+            >
+              {generatingReport ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
               Exportar a Excel
             </Button>
           </div>
@@ -245,76 +292,106 @@ export default function LoanHistoryPage() {
 
           <div className="space-y-4">
             {filteredLoans.map((loan) => (
-              <div key={loan.id} className="rounded-lg border p-4">
+              <div key={loan._id} className="rounded-lg border p-4">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-4">
                     <Avatar>
-                      <AvatarImage src="/placeholder-user.jpg" alt={loan.beneficiary.name} />
-                      <AvatarFallback>{loan.beneficiary.name.charAt(0)}</AvatarFallback>
+                      <AvatarFallback>
+                        {getInitials(loan.usuario_id.nombre)}
+                      </AvatarFallback>
                     </Avatar>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-medium">{loan.beneficiary.name}</h3>
-                        <Badge variant="outline">{loan.beneficiary.type === 'student' ? 'Estudiante' : 'Profesor'}</Badge>
+                        <h3 className="font-medium">{loan.usuario_id.nombre}</h3>
+                        <Badge variant="outline">
+                          {loan.usuario_id.tipo === 'estudiante' ? 'Estudiante' : 'Profesor'}
+                        </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">ID: {loan.beneficiary.id}</p>
-                      <p className="text-sm text-muted-foreground">{loan.beneficiary.email}</p>
+                      <p className="text-sm text-muted-foreground">ID: {loan.usuario_id._id}</p>
+                      <p className="text-sm text-muted-foreground">{loan.usuario_id.correo}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    {getStatusBadge(loan.status)}
+                    {getStatusBadge(loan)}
                     <div className="text-right text-sm">
                       <p>
-                        <span className="font-medium">ID Préstamo:</span> {loan.id}
+                        <span className="font-medium">ID Préstamo:</span> {loan._id}
                       </p>
-                      <p>
-                        <span className="font-medium">Devuelto:</span>{" "}
-                        {new Date(loan.actualReturnDate).toLocaleString("es-MX", {
-                          dateStyle: "medium",
-                          timeStyle: "short",
-                        })}
-                      </p>
+                      {loan.fecha_devolucion_real ? (
+                        <p>
+                          <span className="font-medium">Devuelto:</span>{" "}
+                          {formatDate(loan.fecha_devolucion_real)}
+                        </p>
+                      ) : (
+                        <p>
+                          <span className="font-medium">Fecha límite:</span>{" "}
+                          {formatDate(loan.fecha_devolucion)}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
 
                 <div className="mt-4 rounded-md bg-muted p-3">
-                  <h4 className="mb-2 font-medium">Equipos</h4>
-                  <ul className="space-y-1">
-                    {loan.items.map((item, index) => (
-                      <li key={index} className="text-sm">
-                        {item.quantity}x {item.name} (ID: {item.id})
-                      </li>
-                    ))}
-                  </ul>
+                  <h4 className="mb-2 font-medium">Equipo</h4>
+                  <div className="space-y-1">
+                    <p className="text-sm">
+                      <span className="font-medium">Nombre:</span> {loan.equipo_id.nombre}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-medium">ID Equipo:</span> {loan.equipo_id._id}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-medium">Categoría:</span> {loan.equipo_id.categoria}
+                    </p>
+                    <p className="text-sm">
+                      <span className="font-medium">Laboratorio:</span> {loan.equipo_id.laboratorio_id.nombre}
+                    </p>
+                    {loan.equipo_id.descripcion && (
+                      <p className="text-sm">
+                        <span className="font-medium">Descripción:</span> {loan.equipo_id.descripcion}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
-                <div className="mt-4 grid grid-cols-2 gap-4 text-sm text-muted-foreground">
+                <div className="mt-4 grid grid-cols-1 gap-4 text-sm text-muted-foreground sm:grid-cols-2">
                   <div>
                     <p>
                       <span className="font-medium">Fecha de Préstamo:</span>{" "}
-                      {new Date(loan.date).toLocaleString("es-MX", {
-                        dateStyle: "medium",
-                        timeStyle: "short",
-                      })}
+                      {formatDate(loan.fecha_prestamo)}
                     </p>
                   </div>
                   <div className="text-right">
                     <p>
                       <span className="font-medium">Devolución Esperada:</span>{" "}
-                      {new Date(loan.returnDate).toLocaleString("es-MX", {
-                        dateStyle: "medium",
-                        timeStyle: "short",
-                      })}
+                      {formatDate(loan.fecha_devolucion)}
                     </p>
                   </div>
                 </div>
               </div>
             ))}
 
-            {filteredLoans.length === 0 && (
+            {filteredLoans.length === 0 && !loading && (
               <div className="flex h-32 items-center justify-center rounded-lg border">
-                <p className="text-muted-foreground">No se encontraron préstamos en el historial.</p>
+                <div className="text-center">
+                  <p className="text-muted-foreground">
+                    {searchQuery
+                      ? "No se encontraron préstamos que coincidan con la búsqueda."
+                      : "No se encontraron préstamos en el historial."
+                    }
+                  </p>
+                  {searchQuery && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="mt-2"
+                      onClick={() => setSearchQuery("")}
+                    >
+                      Limpiar búsqueda
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>

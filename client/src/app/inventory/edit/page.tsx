@@ -120,12 +120,6 @@ export default function EditInventoryItemPage() {
         }
 
         try {
-            // Obtener equipo actual para verificar cantidad_disponible
-            const currentEquipment = await getEquipmentById(equipmentId);
-            const currentDisponible = currentEquipment.cantidad_disponible ?? currentEquipment.cantidad_total;
-
-            // Ajustar cantidad_disponible para que no sea mayor que la cantidad_total actualizada
-            const adjustedDisponible = Math.min(currentDisponible, data.quantity);
 
             const payload = {
                 nombre: data.name,
@@ -133,7 +127,7 @@ export default function EditInventoryItemPage() {
                 categoria: data.category,
                 cantidad_total: data.quantity,
                 numero_serie: data.serialNumber,
-                cantidad_disponible: adjustedDisponible,
+                cantidad_disponible: data.quantity,
                 ubicacion: data.location,
                 nota_adicional: data.notes,
                 laboratorio_id: selectedLab._id,
