@@ -14,19 +14,22 @@ import {
 import { Edit, MoreHorizontal, Trash } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/src/hooks/use-toast"
-import { getEquipment } from "../services/equipmentService"
+import { deleteEquipment, getEquipment } from "../services/equipmentService"
 
 interface InventoryItem {
   id: string
   nombre: string
   categoria: string
   cantidad_total: number
-  ubicacion: string
+  ubicacion?: string
   laboratorio_id: {
     _id: string
     nombre: string
+    slug: string
+    descripcion?: string
   }
 }
+
 
 interface InventoryTableProps {
   lab: string
@@ -48,7 +51,7 @@ export function InventoryTable({ lab, searchQuery }: InventoryTableProps) {
       .then((data) => {
         console.log("equipos recibidos:", data)
         console.log("lab actual:", lab)
-        
+
         const mappedItems: InventoryItem[] = data.map((item) => ({
           id: item._id,
           nombre: item.nombre,
@@ -68,13 +71,13 @@ export function InventoryTable({ lab, searchQuery }: InventoryTableProps) {
         const filteredByLab = mappedItems.filter((item) => {
           const matchById = item.laboratorio_id?._id === lab
           const matchByName = item.laboratorio_id?.nombre.toLowerCase().includes(lab.toLowerCase())
-          
+
           console.log(`Item: ${item.nombre}`)
           console.log(`  Lab ID: ${item.laboratorio_id?._id}`)
           console.log(`  Lab Name: ${item.laboratorio_id?.nombre}`)
           console.log(`  Match by ID: ${matchById}`)
           console.log(`  Match by Name: ${matchByName}`)
-          
+
           return matchById || matchByName
         })
 
@@ -111,13 +114,25 @@ export function InventoryTable({ lab, searchQuery }: InventoryTableProps) {
     }
   }
 
-  const handleDelete = (id: string) => {
-    toast({
-      title: "Item eliminado",
-      description: `El equipo con ID ${id} fue eliminado.`
-    })
-    setItems((prev) => prev.filter((item) => item.id !== id))
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteEquipment(id)
+
+      toast({
+        title: "Equipo eliminado",
+        description: `El equipo con ID ${id} fue eliminado correctamente.`,
+      })
+
+      setItems((prev) => prev.filter((item) => item.id !== id))
+    } catch (error: any) {
+      toast({
+        title: "Error al eliminar",
+        description: error.message || "No se pudo eliminar el equipo.",
+        variant: "destructive",
+      })
+    }
   }
+
 
   return (
     <div className="rounded-md border">

@@ -23,6 +23,8 @@ export async function login({ correo, contrasena }: { correo: string; contrasena
     sameSite: "Lax",
   })
 
+  console.log(result.token)
+
   return result
 }
 

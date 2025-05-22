@@ -1,6 +1,6 @@
 import * as XLSX from "xlsx"
-import { registerEquipment } from "@/src/services/equipmentService" // Asegúrate que esta ruta sea correcta
-import { getLaboratories } from "@/src/services/laboratoryService" // Importamos el servicio de laboratorios
+import { registerEquipment } from "@/src/services/equipmentService"
+import { getLaboratories } from "@/src/services/laboratoryService"
 
 interface EquipmentImportData {
   nombre: string

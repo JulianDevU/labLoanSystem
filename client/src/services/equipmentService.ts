@@ -3,14 +3,21 @@ import Cookies from "js-cookie"
 interface EquipmentFromApi {
   _id: string
   nombre: string
+  descripcion?: string
   categoria: string
   cantidad_total: number
-  ubicacion: string
+  cantidad_disponible?: number
+  numero_serie?: string
+  ubicacion?: string
+  nota_adicional?: string
   laboratorio_id: {
     _id: string
     nombre: string
+    slug: string
+    descripcion?: string
   }
 }
+
 
 export async function registerEquipment(data: {
   nombre: string
@@ -23,7 +30,7 @@ export async function registerEquipment(data: {
   nota_adicional?: string
   laboratorio_id: string
 }) {
-  console.log("🔴 FUNCIÓN registerEquipment LLAMADA CON DATOS:", data)
+  console.log("FUNCIÓN registerEquipment LLAMADA CON DATOS:", data)
 
   const token = Cookies.get("token")
 
@@ -89,3 +96,102 @@ export async function getEquipment(): Promise<EquipmentFromApi[]> {
 
   return result.data
 }
+
+export async function deleteEquipment(id: string): Promise<void> {
+  const token = Cookies.get("token")
+
+  if (!token) {
+    throw new Error("No hay token de autenticación")
+  }
+
+  const response = await fetch(`http://localhost:5000/api/equipos/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  const result = await response.json()
+
+  if (!response.ok) {
+    const fallbackMessage = result?.mensaje || result?.error
+    throw new Error(fallbackMessage || "Error al eliminar equipo")
+  }
+
+  return
+}
+
+export async function getEquipmentById(id: string): Promise<EquipmentFromApi> {
+  const token = Cookies.get("token");
+
+  if (!token) {
+    throw new Error("No hay token de autenticación");
+  }
+
+  const response = await fetch(`http://localhost:5000/api/equipos/${id}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    const fallbackMessage = result?.mensaje || result?.error;
+    throw new Error(fallbackMessage || "Error al obtener equipo");
+  }
+
+  return result.data;
+}
+
+export async function updateEquipment(id: string, data: Partial<Omit<EquipmentFromApi, '_id' | 'laboratorio_id'>> & { laboratorio_id?: string }) {
+  const token = Cookies.get("token");
+
+  if (!token) {
+    throw new Error("No hay token de autenticación");
+  }
+
+  const response = await fetch(`http://localhost:5000/api/equipos/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    const fallbackMessage = result?.mensaje || result?.error;
+    throw new Error(fallbackMessage || "Error al actualizar equipo");
+  }
+
+  return result.data;
+}
+
+export async function getEquipmentCategories(): Promise<string[]> {
+  const token = Cookies.get("token");
+
+  if (!token) {
+    throw new Error("No hay token de autenticación");
+  }
+
+  const response = await fetch("http://localhost:5000/api/equipos/categorias", {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    const fallbackMessage = result?.mensaje || result?.error;
+    throw new Error(fallbackMessage || "Error al obtener categorías");
+  }
+
+  return result.data;
+}
+
