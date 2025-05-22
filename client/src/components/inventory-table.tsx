@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/src/components/ui/button"
 import { Checkbox } from "@/src/components/ui/checkbox"
 import {
@@ -14,6 +14,19 @@ import {
 import { Edit, MoreHorizontal, Trash } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/src/hooks/use-toast"
+import { getEquipment } from "../services/equipmentService"
+
+interface InventoryItem {
+  id: string
+  nombre: string
+  categoria: string
+  cantidad_total: number
+  ubicacion: string
+  laboratorio_id: {
+    _id: string
+    nombre: string
+  }
+}
 
 interface InventoryTableProps {
   lab: string
@@ -24,49 +37,66 @@ export function InventoryTable({ lab, searchQuery }: InventoryTableProps) {
   const router = useRouter()
   const { toast } = useToast()
   const [selectedItems, setSelectedItems] = useState<string[]>([])
+  const [items, setItems] = useState<InventoryItem[]>([])
+  const [loading, setLoading] = useState(false)
 
-  // This would normally fetch data from an API
-  const inventoryItems = {
-    physics: [
-      { id: "PH001", name: "Digital Oscilloscope", category: "Measurement Tools", quantity: 5, location: "Cabinet A" },
-      { id: "PH002", name: "Function Generator", category: "Measurement Tools", quantity: 3, location: "Cabinet A" },
-      { id: "PH003", name: "Digital Multimeter", category: "Measurement Tools", quantity: 10, location: "Cabinet B" },
-      { id: "PH004", name: "Laser Kit", category: "Optical Equipment", quantity: 2, location: "Cabinet C" },
-      { id: "PH005", name: "Optical Bench", category: "Optical Equipment", quantity: 3, location: "Cabinet C" },
-      {
-        id: "PH006",
-        name: "Circuit Components Kit",
-        category: "Electrical Components",
-        quantity: 15,
-        location: "Drawer 1",
-      },
-      { id: "PH007", name: "Force Sensor", category: "Mechanics Equipment", quantity: 5, location: "Cabinet D" },
-    ],
-    telecommunications: [
-      { id: "TC001", name: "Spectrum Analyzer", category: "Signal Analyzers", quantity: 2, location: "Room 101" },
-      { id: "TC002", name: "Network Analyzer", category: "Signal Analyzers", quantity: 2, location: "Room 101" },
-      { id: "TC003", name: "Router", category: "Network Devices", quantity: 5, location: "Cabinet A" },
-      { id: "TC004", name: "Switch", category: "Network Devices", quantity: 8, location: "Cabinet A" },
-      { id: "TC005", name: "Fiber Optic Kit", category: "Communication Equipment", quantity: 3, location: "Cabinet B" },
-      { id: "TC006", name: "Antenna Kit", category: "Communication Equipment", quantity: 4, location: "Cabinet B" },
-    ],
-    software: [
-      { id: "SW001", name: "Raspberry Pi", category: "Development Boards", quantity: 8, location: "Cabinet A" },
-      { id: "SW002", name: "Arduino Kit", category: "Development Boards", quantity: 10, location: "Cabinet A" },
-      { id: "SW003", name: "Sensor Kit", category: "Sensor Kits", quantity: 5, location: "Cabinet B" },
-      { id: "SW004", name: "VR Headset", category: "VR/AR Equipment", quantity: 2, location: "Secure Cabinet" },
-      { id: "SW005", name: "Graphics Tablet", category: "Computing Devices", quantity: 4, location: "Cabinet C" },
-    ],
-  }
+  useEffect(() => {
+    if (!lab) return
+    setLoading(true)
 
-  const currentItems = inventoryItems[lab as keyof typeof inventoryItems] || []
+    getEquipment()
+      .then((data) => {
+        console.log("equipos recibidos:", data)
+        console.log("lab actual:", lab)
+        
+        const mappedItems: InventoryItem[] = data.map((item) => ({
+          id: item._id,
+          nombre: item.nombre,
+          categoria: item.categoria,
+          cantidad_total: item.cantidad_total,
+          ubicacion: item.ubicacion,
+          laboratorio_id: item.laboratorio_id
+        }))
 
-  // Filter items based on search query
-  const filteredItems = currentItems.filter(
+        // Debugging: mostrar todos los laboratorios disponibles
+        console.log("Laboratorios disponibles:", mappedItems.map(item => ({
+          id: item.laboratorio_id._id,
+          nombre: item.laboratorio_id.nombre
+        })))
+
+        // Filtrar por ID de laboratorio O por nombre de laboratorio
+        const filteredByLab = mappedItems.filter((item) => {
+          const matchById = item.laboratorio_id?._id === lab
+          const matchByName = item.laboratorio_id?.nombre.toLowerCase().includes(lab.toLowerCase())
+          
+          console.log(`Item: ${item.nombre}`)
+          console.log(`  Lab ID: ${item.laboratorio_id?._id}`)
+          console.log(`  Lab Name: ${item.laboratorio_id?.nombre}`)
+          console.log(`  Match by ID: ${matchById}`)
+          console.log(`  Match by Name: ${matchByName}`)
+          
+          return matchById || matchByName
+        })
+
+        console.log("Equipos filtrados:", filteredByLab)
+        setItems(filteredByLab)
+      })
+      .catch((error) => {
+        console.error("Error al obtener equipos:", error)
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los equipos",
+          variant: "destructive"
+        })
+      })
+      .finally(() => setLoading(false))
+  }, [lab, toast])
+
+  const filteredItems = items.filter(
     (item) =>
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.id.toLowerCase().includes(searchQuery.toLowerCase()),
+      item.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.categoria.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.id.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   const toggleSelectItem = (id: string) => {
@@ -82,11 +112,11 @@ export function InventoryTable({ lab, searchQuery }: InventoryTableProps) {
   }
 
   const handleDelete = (id: string) => {
-    // This would normally call an API to delete the item
     toast({
-      title: "Item deleted",
-      description: `Item ${id} has been deleted from inventory.`,
+      title: "Item eliminado",
+      description: `El equipo con ID ${id} fue eliminado.`
     })
+    setItems((prev) => prev.filter((item) => item.id !== id))
   }
 
   return (
@@ -99,65 +129,81 @@ export function InventoryTable({ lab, searchQuery }: InventoryTableProps) {
                 <Checkbox
                   checked={selectedItems.length === filteredItems.length && filteredItems.length > 0}
                   onCheckedChange={toggleSelectAll}
-                  aria-label="Select all"
+                  aria-label="Seleccionar todo"
                 />
               </th>
               <th className="h-12 px-4 text-left align-middle font-medium">ID</th>
-              <th className="h-12 px-4 text-left align-middle font-medium">Name</th>
-              <th className="h-12 px-4 text-left align-middle font-medium">Category</th>
-              <th className="h-12 px-4 text-left align-middle font-medium">Quantity</th>
-              <th className="h-12 px-4 text-left align-middle font-medium">Location</th>
-              <th className="h-12 px-4 text-left align-middle font-medium">Actions</th>
+              <th className="h-12 px-4 text-left align-middle font-medium">Nombre</th>
+              <th className="h-12 px-4 text-left align-middle font-medium">Categoría</th>
+              <th className="h-12 px-4 text-left align-middle font-medium">Cantidad</th>
+              <th className="h-12 px-4 text-left align-middle font-medium">Ubicación</th>
+              <th className="h-12 px-4 text-left align-middle font-medium">Laboratorio</th>
+              <th className="h-12 px-4 text-left align-middle font-medium">Acciones</th>
             </tr>
           </thead>
           <tbody className="[&_tr:last-child]:border-0">
-            {filteredItems.map((item) => (
-              <tr key={item.id} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
-                <td className="p-4 align-middle">
-                  <Checkbox
-                    checked={selectedItems.includes(item.id)}
-                    onCheckedChange={() => toggleSelectItem(item.id)}
-                    aria-label={`Select ${item.name}`}
-                  />
-                </td>
-                <td className="p-4 align-middle font-medium">{item.id}</td>
-                <td className="p-4 align-middle">{item.name}</td>
-                <td className="p-4 align-middle">{item.category}</td>
-                <td className="p-4 align-middle">{item.quantity}</td>
-                <td className="p-4 align-middle">{item.location}</td>
-                <td className="p-4 align-middle">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => router.push(`/inventory/edit/${item.id}`)}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        className="text-destructive focus:text-destructive"
-                        onClick={() => handleDelete(item.id)}
-                      >
-                        <Trash className="mr-2 h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </td>
-              </tr>
-            ))}
-            {filteredItems.length === 0 && (
+            {loading ? (
               <tr>
-                <td colSpan={7} className="h-24 text-center">
-                  No items found.
+                <td colSpan={8} className="text-center py-8">
+                  Cargando...
                 </td>
               </tr>
+            ) : filteredItems.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="h-24 text-center">
+                  No se encontraron equipos para este laboratorio.
+                  <br />
+                  <small className="text-muted-foreground">
+                    Laboratorio seleccionado: {lab}
+                  </small>
+                </td>
+              </tr>
+            ) : (
+              filteredItems.map((item) => (
+                <tr
+                  key={item.id}
+                  className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                >
+                  <td className="p-4 align-middle">
+                    <Checkbox
+                      checked={selectedItems.includes(item.id)}
+                      onCheckedChange={() => toggleSelectItem(item.id)}
+                      aria-label={`Seleccionar ${item.nombre}`}
+                    />
+                  </td>
+                  <td className="p-4 align-middle font-medium">{item.id}</td>
+                  <td className="p-4 align-middle">{item.nombre}</td>
+                  <td className="p-4 align-middle">{item.categoria}</td>
+                  <td className="p-4 align-middle">{item.cantidad_total}</td>
+                  <td className="p-4 align-middle">{item.ubicacion}</td>
+                  <td className="p-4 align-middle">{item.laboratorio_id.nombre}</td>
+                  <td className="p-4 align-middle">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Abrir menú</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => router.push(`/inventory/edit/${item.id}`)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-destructive focus:text-destructive"
+                          onClick={() => handleDelete(item.id)}
+                        >
+                          <Trash className="mr-2 h-4 w-4" />
+                          Eliminar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </td>
+                </tr>
+              ))
             )}
           </tbody>
         </table>

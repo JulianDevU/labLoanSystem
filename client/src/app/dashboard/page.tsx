@@ -3,17 +3,30 @@
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs"
+import { Input } from "@/src/components/ui/input"
 import { DashboardHeader } from "@/src/components/dashboard-header"
 import { DashboardShell } from "@/src/components/dashboard-shell"
 import { OverviewStats } from "@/src/components/overview-stats"
 import { RecentLoans } from "@/src/components/recent-loans"
 import { InventorySummary } from "@/src/components/inventory-summary"
 import { LabSelector } from "@/src/components/lab-selector"
+import { InventoryTable } from "@/src/components/inventory-table" // Asegúrate de que la ruta sea correcta
 import { useRequireAuth } from "@/src/hooks/useRequireAuth"
+import { Search } from "lucide-react"
 
 export default function DashboardPage() {
   useRequireAuth()
   const [selectedLab, setSelectedLab] = useState("fisica")
+  const [searchQuery, setSearchQuery] = useState("")
+  
+  const getLabName = (lab: string) => {
+    switch(lab) {
+      case "fisica": return "Física"
+      case "telecomunicaciones": return "Telecomunicaciones"
+      case "software": return "Software"
+      default: return lab
+    }
+  }
   
   return (
     <DashboardShell>
@@ -33,7 +46,9 @@ export default function DashboardPage() {
               <Card className="col-span-4">
                 <CardHeader>
                   <CardTitle>Préstamos recientes</CardTitle>
-                  <CardDescription>Últimos préstamos de equipos en el laboratorio de {selectedLab === "fisica" ? "Física" : selectedLab === "telecomunicaciones" ? "Telecomunicaciones" : "Software"}.</CardDescription>
+                  <CardDescription>
+                    Últimos préstamos de equipos en el laboratorio de {getLabName(selectedLab)}.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <RecentLoans lab={selectedLab} />
@@ -42,7 +57,9 @@ export default function DashboardPage() {
               <Card className="col-span-3">
                 <CardHeader>
                   <CardTitle>Resumen de inventario</CardTitle>
-                <CardDescription>Inventario actual del laboratorio de {selectedLab === "fisica" ? "Física" : selectedLab === "telecomunicaciones" ? "Telecomunicaciones" : "Software"}.</CardDescription>
+                  <CardDescription>
+                    Inventario actual del laboratorio de {getLabName(selectedLab)}.
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <InventorySummary lab={selectedLab} />
@@ -54,7 +71,9 @@ export default function DashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Préstamos activos</CardTitle>
-                <CardDescription>Listado de todos los préstamos de equipos vigentes para el laboratorio de {selectedLab === "fisica" ? "Física" : selectedLab === "telecomunicaciones" ? "Telecomunicaciones" : "Software"}.</CardDescription>
+                <CardDescription>
+                  Listado de todos los préstamos de equipos vigentes para el laboratorio de {getLabName(selectedLab)}.
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 {/* Aquí se implementará la tabla de préstamos activos */}
@@ -66,11 +85,24 @@ export default function DashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Inventario</CardTitle>
-                <CardDescription>Inventario completo del laboratorio de {selectedLab === "fisica" ? "Física" : selectedLab === "telecomunicaciones" ? "Telecomunicaciones" : "Software"}.</CardDescription>
+                <CardDescription>
+                  Inventario completo del laboratorio de {getLabName(selectedLab)}.
+                </CardDescription>
               </CardHeader>
-              <CardContent>
-                {/* Aquí se implementará la tabla de inventario */}
-                <p className="text-sm text-muted-foreground">Aquí se mostrará la tabla detallada de inventario.</p>
+              <CardContent className="space-y-4">
+                {/* Barra de búsqueda */}
+                <div className="relative">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar equipos por nombre, categoría o ID..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-8"
+                  />
+                </div>
+                
+                {/* Tabla de inventario */}
+                <InventoryTable lab={selectedLab} searchQuery={searchQuery} />
               </CardContent>
             </Card>
           </TabsContent>

@@ -23,7 +23,7 @@ const equipoSchema = new Schema({
   },
   numero_serie: {
     type: String,
-    default: true
+    trim: true
   },
   cantidad_disponible: {
     type: Number,

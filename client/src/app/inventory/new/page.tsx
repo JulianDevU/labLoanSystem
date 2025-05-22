@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -14,6 +14,8 @@ import { DashboardHeader } from "@/src/components/dashboard-header"
 import { DashboardShell } from "@/src/components/dashboard-shell"
 import { LabSelector } from "@/src/components/lab-selector"
 import { useToast } from "@/src/hooks/use-toast"
+import { registerEquipment } from "@/src/services/equipmentService"
+import { getLaboratories } from "@/src/services/laboratoryService"
 
 const formSchema = z.object({
   lab: z.string(),
@@ -27,6 +29,13 @@ const formSchema = z.object({
 })
 
 type FormValues = z.infer<typeof formSchema>
+
+interface Lab {
+  _id: string
+  nombre: string
+  descripcion: string
+  slug: string
+}
 
 export default function NewInventoryItemPage() {
   const router = useRouter()
@@ -48,19 +57,61 @@ export default function NewInventoryItemPage() {
     },
   })
 
+  const [labs, setLabs] = useState<Lab[]>([])
+
+  useEffect(() => {
+    const fetchLabs = async () => {
+      try {
+        const result = await getLaboratories()
+        setLabs(result.data)
+      } catch (error) {
+        console.error("Error cargando laboratorios", error)
+      }
+    }
+
+    fetchLabs()
+  }, [])
+
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true)
+    const selectedLab = labs.find((lab) => lab.slug === data.lab)
 
-    // Simular llamada a API
-    setTimeout(() => {
-      console.log("Datos del formulario:", data)
+    if (!selectedLab) {
+      toast({
+        title: "Error",
+        description: "Laboratorio seleccionado no válido",
+      })
       setIsSubmitting(false)
+      return
+    }
+
+    const payload = {
+      nombre: data.name,
+      descripcion: data.description,
+      categoria: data.category,
+      cantidad_total: data.quantity,
+      numero_serie: data.serialNumber,
+      cantidad_disponible: data.quantity,
+      ubicacion: data.location,
+      nota_adicional: data.notes,
+      laboratorio_id: selectedLab._id,
+    }
+
+    try {
+      await registerEquipment(payload)
       toast({
         title: "Equipo agregado exitosamente",
         description: "El nuevo equipo ha sido añadido al inventario.",
       })
       router.push("/inventory")
-    }, 1500)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: (error as Error).message,
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (

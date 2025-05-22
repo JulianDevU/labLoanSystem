@@ -9,11 +9,10 @@ import { DashboardHeader } from "@/src/components/dashboard-header"
 import { DashboardShell } from "@/src/components/dashboard-shell"
 import { LabSelector } from "@/src/components/lab-selector"
 import { InventoryTable } from "@/src/components/inventory-table"
-import { FileUpload } from "@/src/components/file-upload"
 import { PlusIcon, UploadIcon, SearchIcon } from "lucide-react"
 
 export default function InventoryPage() {
-  const [selectedLab, setSelectedLab] = useState("physics")
+  const [selectedLab, setSelectedLab] = useState("fisica")
   const [searchQuery, setSearchQuery] = useState("")
 
   return (
@@ -39,12 +38,6 @@ export default function InventoryPage() {
                   Agregar Artículo
                 </Link>
               </Button>
-              <FileUpload
-                accept=".xlsx,.xls"
-                onUpload={(file) => console.log("File uploaded:", file)}
-                buttonText="Importar Excel"
-                buttonIcon={<UploadIcon className="mr-2 h-4 w-4" />}
-              />
             </div>
           </div>
         </CardHeader>
