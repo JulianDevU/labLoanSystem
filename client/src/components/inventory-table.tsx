@@ -202,7 +202,7 @@ export function InventoryTable({ lab, searchQuery }: InventoryTableProps) {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                        <DropdownMenuItem onClick={() => router.push(`/inventory/edit/${item.id}`)}>
+                        <DropdownMenuItem onClick={() => router.push(`/inventory/edit?id=${item.id}`)}>
                           <Edit className="mr-2 h-4 w-4" />
                           Editar
                         </DropdownMenuItem>
