@@ -46,10 +46,8 @@ export default function ActiveLoansPage() {
       // Si hay un laboratorio seleccionado, filtrar por laboratorio
       const filteredLoans = selectedLab 
         ? allLoans.filter(loan => {
-            const matchById = loan.equipo_id.laboratorio_id._id === selectedLab
-            // El campo 'slug' puede no estar presente en la respuesta de la API, así que evitamos acceder a él directamente
-            // const matchBySlug = loan.equipo_id.laboratorio_id.slug === selectedLab
-            const matchByName = loan.equipo_id.laboratorio_id.nombre?.toLowerCase().includes(selectedLab.toLowerCase())
+            const matchById = loan.laboratorio_id._id === selectedLab
+            const matchByName = loan.laboratorio_id.nombre?.toLowerCase().includes(selectedLab.toLowerCase())
             return matchById || matchByName
           })
         : allLoans
@@ -81,8 +79,11 @@ export default function ActiveLoansPage() {
       loan.nombre_beneficiado.toLowerCase().includes(searchLower) ||
       loan.correo_beneficiado.toLowerCase().includes(searchLower) ||
       loan.numero_identificacion.toLowerCase().includes(searchLower) ||
-      loan.equipo_id.nombre.toLowerCase().includes(searchLower) ||
-      loan.equipo_id.categoria.toLowerCase().includes(searchLower)
+      // Buscar en todos los equipos del préstamo
+      loan.equipos.some(equipo => 
+        equipo.equipo_id.nombre.toLowerCase().includes(searchLower) ||
+        equipo.equipo_id.categoria.toLowerCase().includes(searchLower)
+      )
     )
   })
 
@@ -136,6 +137,11 @@ export default function ActiveLoansPage() {
       .join('')
       .toUpperCase()
       .substring(0, 2)
+  }
+
+  // Contar total de equipos en un préstamo
+  const getTotalEquipmentCount = (equipos: LoanFromApi['equipos']) => {
+    return equipos.reduce((total, equipo) => total + equipo.cantidad, 0)
   }
 
   if (loading) {
@@ -282,23 +288,47 @@ export default function ActiveLoansPage() {
                 </div>
 
                 <div className="mt-4 rounded-md bg-muted p-3">
-                  <h4 className="mb-2 font-medium">Equipo prestado</h4>
-                  <div className="space-y-1">
+                  <h4 className="mb-2 font-medium">
+                    Equipos prestados ({getTotalEquipmentCount(loan.equipos)} total)
+                  </h4>
+                  <div className="space-y-3">
+                    {loan.equipos.map((equipo, index) => (
+                      <div key={index} className="border-l-2 border-primary/20 pl-3">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-1">
+                            <p className="text-sm font-medium">
+                              {equipo.equipo_id.nombre}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              <span className="font-medium">ID:</span> {equipo.equipo_id._id}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              <span className="font-medium">Categoría:</span> {equipo.equipo_id.categoria}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              <span className="font-medium">Laboratorio:</span> {equipo.equipo_id.laboratorio_id.nombre}
+                            </p>
+                            {equipo.equipo_id.descripcion && (
+                              <p className="text-xs text-muted-foreground">
+                                <span className="font-medium">Descripción:</span> {equipo.equipo_id.descripcion}
+                              </p>
+                            )}
+                          </div>
+                          <Badge variant="secondary" className="ml-2">
+                            Cantidad: {equipo.cantidad}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="mt-3 pt-3 border-t border-muted-foreground/20">
                     <p className="text-sm">
-                      <span className="font-medium">Nombre:</span> {loan.equipo_id.nombre}
+                      <span className="font-medium">Laboratorio del préstamo:</span> {loan.laboratorio_id.nombre}
                     </p>
-                    <p className="text-sm">
-                      <span className="font-medium">ID Equipo:</span> {loan.equipo_id._id}
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-medium">Categoría:</span> {loan.equipo_id.categoria}
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-medium">Laboratorio:</span> {loan.equipo_id.laboratorio_id.nombre}
-                    </p>
-                    {loan.equipo_id.descripcion && (
-                      <p className="text-sm">
-                        <span className="font-medium">Descripción:</span> {loan.equipo_id.descripcion}
+                    {loan.descripcion && (
+                      <p className="text-sm mt-1">
+                        <span className="font-medium">Descripción:</span> {loan.descripcion}
                       </p>
                     )}
                   </div>

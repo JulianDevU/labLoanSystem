@@ -22,11 +22,19 @@ const prestamoSchema = new Schema({
     lowercase: true,
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Por favor ingrese un correo válido']
   },
-  equipo_id: {
-    type: Schema.Types.ObjectId,
-    ref: 'Equipo',
-    required: [true, 'El equipo es obligatorio']
-  },
+  // CAMBIO: Ahora es un array de equipos con cantidad
+  equipos: [{
+    equipo_id: {
+      type: Schema.Types.ObjectId,
+      ref: 'Equipo',
+      required: [true, 'El equipo es obligatorio']
+    },
+    cantidad: {
+      type: Number,
+      required: [true, 'La cantidad es obligatoria'],
+      min: [1, 'La cantidad debe ser mayor a 0']
+    }
+  }],
   fecha_prestamo: {
     type: Date,
     required: [true, 'La fecha de préstamo es obligatoria'],
@@ -53,16 +61,28 @@ const prestamoSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Laboratorio',
     required: [true, 'El laboratorio es obligatorio']
+  },
+  descripcion: {
+    type: String,
+    trim: true
   }
 }, {
   timestamps: true,
   versionKey: false
 });
 
-// Índices para mejorar el rendimiento de consultas comunes
-prestamoSchema.index({ usuario_id: 1, estado: 1 });
-prestamoSchema.index({ equipo_id: 1, estado: 1 });
+// Índices actualizados
+prestamoSchema.index({ numero_identificacion: 1, estado: 1 });
+prestamoSchema.index({ 'equipos.equipo_id': 1, estado: 1 });
 prestamoSchema.index({ fecha_devolucion: 1, estado: 1 });
+
+// Validación personalizada para asegurar que hay al menos un equipo
+prestamoSchema.pre('validate', function(next) {
+  if (!this.equipos || this.equipos.length === 0) {
+    this.invalidate('equipos', 'Debe seleccionar al menos un equipo');
+  }
+  next();
+});
 
 // Método para verificar si un préstamo está vencido
 prestamoSchema.methods.estaVencido = function() {

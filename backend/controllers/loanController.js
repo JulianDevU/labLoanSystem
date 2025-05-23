@@ -11,25 +11,20 @@ import { estaVencido, calcularDiasRestantes } from '../utils/helpers.js';
 // @access  Privado
 export const getPrestamos = async (req, res) => {
   try {
-    // Filtros
     const filtro = {};
-    
-    // Filtrar por estado si se proporciona
+
     if (req.query.estado && req.query.estado !== 'todos') {
       filtro.estado = req.query.estado;
     }
-    
-    // Filtrar por usuario si se proporciona
+
     if (req.query.usuario_id) {
       filtro.usuario_id = req.query.usuario_id;
     }
-    
-    // Filtrar por equipo si se proporciona
+
     if (req.query.equipo_id) {
-      filtro.equipo_id = req.query.equipo_id;
+      filtro['equipos.equipo_id'] = req.query.equipo_id;
     }
-    
-    // Filtrar por fechas si se proporcionan
+
     if (req.query.desde || req.query.hasta) {
       filtro.fecha_prestamo = {};
       if (req.query.desde) {
@@ -41,36 +36,29 @@ export const getPrestamos = async (req, res) => {
     }
 
     if (req.query.laboratorio_id) {
-      // Obtener equipos del laboratorio
-      const equipos = await Equipo.find({ laboratorio_id: req.query.laboratorio_id });
-      const equiposIds = equipos.map(e => e._id);
-      filtro.equipo_id = { $in: equiposIds };
+      filtro.laboratorio_id = req.query.laboratorio_id;
     }
-    
-    // Si el usuario no es administrador, solo mostrar sus préstamos o los de su laboratorio
+
+    // Si el usuario no es administrador, aplicar filtros de permisos
     if (req.usuario.tipo !== 'administrador') {
       if (req.query.todos === 'true' && req.usuario.laboratorio_id) {
-        // Obtener todos los usuarios del laboratorio
-        const usuarios = await Usuario.find({ laboratorio_id: req.usuario.laboratorio_id });
-        const usuariosIds = usuarios.map(u => u._id);
-        filtro.usuario_id = { $in: usuariosIds };
+        filtro.laboratorio_id = req.usuario.laboratorio_id;
       } else {
-        // Solo mostrar los préstamos del usuario
         filtro.usuario_id = req.usuario._id;
       }
     }
-    
-    // Buscar préstamos con filtros
+
     const prestamos = await Prestamo.find(filtro)
       .populate('usuario_id', 'nombre correo tipo')
       .populate({
-        path: 'equipo_id',
+        path: 'equipos.equipo_id',
         select: 'nombre descripcion categoria',
         populate: {
           path: 'laboratorio_id',
           select: 'nombre'
         }
       })
+      .populate('laboratorio_id', 'nombre')
       .sort({ fecha_prestamo: -1 });
 
     res.status(200).json({
@@ -96,13 +84,14 @@ export const getPrestamo = async (req, res) => {
     const prestamo = await Prestamo.findById(req.params.id)
       .populate('usuario_id', 'nombre correo tipo')
       .populate({
-        path: 'equipo_id',
+        path: 'equipos.equipo_id',
         select: 'nombre descripcion categoria',
         populate: {
           path: 'laboratorio_id',
           select: 'nombre descripcion'
         }
-      });
+      })
+      .populate('laboratorio_id', 'nombre descripcion');
 
     if (!prestamo) {
       return res.status(404).json({
@@ -111,10 +100,10 @@ export const getPrestamo = async (req, res) => {
       });
     }
 
-    // Verificar si el usuario tiene permiso para ver este préstamo
-    if (req.usuario.tipo !== 'administrador' && 
-        prestamo.usuario_id._id.toString() !== req.usuario._id.toString() &&
-        prestamo.equipo_id.laboratorio_id._id.toString() !== req.usuario.laboratorio_id.toString()) {
+    // Verificar permisos
+    if (req.usuario.tipo !== 'administrador' &&
+      prestamo.usuario_id._id.toString() !== req.usuario._id.toString() &&
+      prestamo.laboratorio_id._id.toString() !== req.usuario.laboratorio_id.toString()) {
       return res.status(403).json({
         success: false,
         mensaje: 'No tienes permiso para ver este préstamo'
@@ -140,7 +129,6 @@ export const getPrestamo = async (req, res) => {
 // @access  Privado
 export const crearPrestamo = async (req, res) => {
   try {
-    // Verificar errores de validación
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -149,79 +137,88 @@ export const crearPrestamo = async (req, res) => {
       });
     }
 
-    const { usuario_id, equipo_id, fecha_devolucion } = req.body;
+    const {
+      tipo_beneficiado,
+      numero_identificacion,
+      nombre_beneficiado,
+      correo_beneficiado,
+      equipos, // Ahora recibimos un array de equipos
+      fecha_devolucion,
+      evidencia_foto,
+      laboratorio_id,
+      descripcion
+    } = req.body;
 
-    // Verificar si existe el usuario
-    const usuario = await Usuario.findById(usuario_id);
-    if (!usuario) {
-      return res.status(404).json({
-        success: false,
-        mensaje: 'Usuario no encontrado'
-      });
-    }
-
-    // Verificar si existe el equipo
-    const equipo = await Equipo.findById(equipo_id);
-    if (!equipo) {
-      return res.status(404).json({
-        success: false,
-        mensaje: 'Equipo no encontrado'
-      });
-    }
-
-    // Verificar si hay disponibilidad
-    if (equipo.cantidad_disponible <= 0) {
+    // Validar que se hayan proporcionado equipos
+    if (!equipos || !Array.isArray(equipos) || equipos.length === 0) {
       return res.status(400).json({
         success: false,
-        mensaje: 'No hay unidades disponibles de este equipo'
+        mensaje: 'Debe seleccionar al menos un equipo'
       });
     }
 
-    // Verificar si el usuario ya tiene un préstamo activo de este equipo
-    const prestamoExistente = await Prestamo.findOne({
-      usuario_id,
-      equipo_id,
-      estado: 'activo'
-    });
+    // Verificar disponibilidad de todos los equipos
+    const equiposData = [];
+    for (const equipoItem of equipos) {
+      const equipo = await Equipo.findById(equipoItem.equipo_id || equipoItem.id);
+      
+      if (!equipo) {
+        return res.status(404).json({
+          success: false,
+          mensaje: `Equipo con ID ${equipoItem.equipo_id || equipoItem.id} no encontrado`
+        });
+      }
 
-    if (prestamoExistente) {
-      return res.status(400).json({
-        success: false,
-        mensaje: 'El usuario ya tiene un préstamo activo de este equipo'
+      const cantidadSolicitada = equipoItem.cantidad || equipoItem.quantity || 1;
+      
+      if (equipo.cantidad_disponible < cantidadSolicitada) {
+        return res.status(400).json({
+          success: false,
+          mensaje: `No hay suficientes unidades disponibles del equipo "${equipo.nombre}". Disponibles: ${equipo.cantidad_disponible}, Solicitadas: ${cantidadSolicitada}`
+        });
+      }
+
+      equiposData.push({
+        equipo: equipo,
+        cantidad: cantidadSolicitada
       });
     }
 
-    // Crear préstamo
+    // Crear el préstamo
     const prestamo = await Prestamo.create({
-      usuario_id,
-      equipo_id,
+      tipo_beneficiado,
+      numero_identificacion,
+      nombre_beneficiado,
+      correo_beneficiado,
+      equipos: equiposData.map(item => ({
+        equipo_id: item.equipo._id,
+        cantidad: item.cantidad
+      })),
       fecha_prestamo: new Date(),
       fecha_devolucion: new Date(fecha_devolucion),
-      estado: 'activo'
+      estado: 'activo',
+      evidencia_foto,
+      laboratorio_id,
+      descripcion
     });
 
-    // Actualizar disponibilidad del equipo
-    equipo.cantidad_disponible -= 1;
-    await equipo.save();
+    // Actualizar la disponibilidad de todos los equipos
+    for (const equipoData of equiposData) {
+      equipoData.equipo.cantidad_disponible -= equipoData.cantidad;
+      await equipoData.equipo.save();
+    }
 
-    // Crear notificación para el usuario
-    await Notificacion.crearNotificacionPrestamo(
-      usuario_id,
-      equipo.nombre,
-      new Date(fecha_devolucion)
-    );
-
-    // Obtener información completa del préstamo
+    // Obtener información completa del préstamo creado
     const prestamoCompleto = await Prestamo.findById(prestamo._id)
-      .populate('usuario_id', 'nombre correo tipo')
       .populate({
-        path: 'equipo_id',
+        path: 'equipos.equipo_id',
         select: 'nombre descripcion categoria',
         populate: {
           path: 'laboratorio_id',
           select: 'nombre descripcion'
         }
-      });
+      })
+      .populate('laboratorio_id', 'nombre descripcion');
 
     res.status(201).json({
       success: true,
@@ -242,7 +239,6 @@ export const crearPrestamo = async (req, res) => {
 // @access  Privado
 export const actualizarPrestamo = async (req, res) => {
   try {
-    // Verificar errores de validación
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -251,8 +247,7 @@ export const actualizarPrestamo = async (req, res) => {
       });
     }
 
-    // Verificar si existe el préstamo
-    let prestamo = await Prestamo.findById(req.params.id);
+    let prestamo = await Prestamo.findById(req.params.id).populate('equipos.equipo_id');
     if (!prestamo) {
       return res.status(404).json({
         success: false,
@@ -260,23 +255,24 @@ export const actualizarPrestamo = async (req, res) => {
       });
     }
 
-    // Verificar si el usuario tiene permiso para actualizar este préstamo
-    if (req.usuario.tipo !== 'administrador' && 
-        prestamo.usuario_id.toString() !== req.usuario._id.toString()) {
+    // Verificar permisos
+    if (req.usuario.tipo !== 'administrador' &&
+      prestamo.usuario_id.toString() !== req.usuario._id.toString()) {
       return res.status(403).json({
         success: false,
         mensaje: 'No tienes permiso para actualizar este préstamo'
       });
     }
 
-    // Si se está devolviendo el equipo
+    // Si se está devolviendo el equipo, restaurar inventario
     if (req.body.estado === 'devuelto' && prestamo.estado === 'activo') {
-      // Actualizar disponibilidad del equipo
-      const equipo = await Equipo.findById(prestamo.equipo_id);
-      equipo.cantidad_disponible += 1;
-      await equipo.save();
-
-      // Establecer fecha de devolución real
+      for (const equipoItem of prestamo.equipos) {
+        const equipo = await Equipo.findById(equipoItem.equipo_id._id);
+        if (equipo) {
+          equipo.cantidad_disponible += equipoItem.cantidad;
+          await equipo.save();
+        }
+      }
       req.body.fecha_devolucion_real = new Date();
     }
 
@@ -285,15 +281,14 @@ export const actualizarPrestamo = async (req, res) => {
       req.params.id,
       req.body,
       { new: true, runValidators: true }
-    ).populate('usuario_id', 'nombre correo tipo')
-     .populate({
-       path: 'equipo_id',
-       select: 'nombre descripcion categoria',
-       populate: {
-         path: 'laboratorio_id',
-         select: 'nombre descripcion'
-       }
-     });
+    ).populate({
+      path: 'equipos.equipo_id',
+      select: 'nombre descripcion categoria',
+      populate: {
+        path: 'laboratorio_id',
+        select: 'nombre descripcion'
+      }
+    }).populate('laboratorio_id', 'nombre descripcion');
 
     res.status(200).json({
       success: true,
@@ -314,8 +309,7 @@ export const actualizarPrestamo = async (req, res) => {
 // @access  Privado/Admin
 export const eliminarPrestamo = async (req, res) => {
   try {
-    // Verificar si existe el préstamo
-    const prestamo = await Prestamo.findById(req.params.id);
+    const prestamo = await Prestamo.findById(req.params.id).populate('equipos.equipo_id');
     if (!prestamo) {
       return res.status(404).json({
         success: false,
@@ -323,14 +317,17 @@ export const eliminarPrestamo = async (req, res) => {
       });
     }
 
-    // Si el préstamo está activo, devolver el equipo al inventario
+    // Si el préstamo está activo, devolver todos los equipos al inventario
     if (prestamo.estado === 'activo') {
-      const equipo = await Equipo.findById(prestamo.equipo_id);
-      equipo.cantidad_disponible += 1;
-      await equipo.save();
+      for (const equipoItem of prestamo.equipos) {
+        const equipo = await Equipo.findById(equipoItem.equipo_id._id);
+        if (equipo) {
+          equipo.cantidad_disponible += equipoItem.cantidad;
+          await equipo.save();
+        }
+      }
     }
 
-    // Eliminar préstamo
     await prestamo.deleteOne();
 
     res.status(200).json({
@@ -347,22 +344,20 @@ export const eliminarPrestamo = async (req, res) => {
   }
 };
 
-// @desc    Generar PDF de préstamo
-// @route   GET /api/prestamos/:id/pdf
-// @access  Privado
+// Resto de funciones sin cambios significativos...
 export const generarPDF = async (req, res) => {
   try {
-    // Verificar si existe el préstamo
     const prestamo = await Prestamo.findById(req.params.id)
       .populate('usuario_id', 'nombre correo tipo')
       .populate({
-        path: 'equipo_id',
+        path: 'equipos.equipo_id',
         select: 'nombre descripcion categoria',
         populate: {
           path: 'laboratorio_id',
           select: 'nombre descripcion'
         }
-      });
+      })
+      .populate('laboratorio_id', 'nombre descripcion');
 
     if (!prestamo) {
       return res.status(404).json({
@@ -371,22 +366,21 @@ export const generarPDF = async (req, res) => {
       });
     }
 
-    // Verificar si el usuario tiene permiso para ver este préstamo
-    if (req.usuario.tipo !== 'administrador' && 
-        prestamo.usuario_id._id.toString() !== req.usuario._id.toString() &&
-        prestamo.equipo_id.laboratorio_id._id.toString() !== req.usuario.laboratorio_id.toString()) {
+    // Verificar permisos
+    if (req.usuario.tipo !== 'administrador' &&
+      prestamo.usuario_id._id.toString() !== req.usuario._id.toString() &&
+      prestamo.laboratorio_id._id.toString() !== req.usuario.laboratorio_id.toString()) {
       return res.status(403).json({
         success: false,
         mensaje: 'No tienes permiso para ver este préstamo'
       });
     }
 
-    // Generar PDF
     const pdf = await generarPDFPrestamo(
       prestamo,
       prestamo.usuario_id,
-      prestamo.equipo_id,
-      prestamo.equipo_id.laboratorio_id
+      prestamo.equipos, // Ahora pasamos todos los equipos
+      prestamo.laboratorio_id
     );
 
     res.status(200).json({
@@ -406,20 +400,14 @@ export const generarPDF = async (req, res) => {
   }
 };
 
-// @desc    Generar reporte de préstamos
-// @route   GET /api/prestamos/reporte
-// @access  Privado/Admin
 export const generarReporte = async (req, res) => {
   try {
-    // Filtros
     const filtro = {};
-    
-    // Filtrar por estado si se proporciona
+
     if (req.query.estado && req.query.estado !== 'todos') {
       filtro.estado = req.query.estado;
     }
-    
-    // Filtrar por fechas si se proporcionan
+
     if (req.query.desde || req.query.hasta) {
       filtro.fecha_prestamo = {};
       if (req.query.desde) {
@@ -429,29 +417,24 @@ export const generarReporte = async (req, res) => {
         filtro.fecha_prestamo.$lte = new Date(req.query.hasta);
       }
     }
-    
-    // Filtrar por laboratorio si se proporciona
+
     if (req.query.laboratorio_id) {
-      // Obtener equipos del laboratorio
-      const equipos = await Equipo.find({ laboratorio_id: req.query.laboratorio_id });
-      const equiposIds = equipos.map(e => e._id);
-      filtro.equipo_id = { $in: equiposIds };
+      filtro.laboratorio_id = req.query.laboratorio_id;
     }
-    
-    // Buscar préstamos con filtros
+
     const prestamos = await Prestamo.find(filtro)
       .populate('usuario_id', 'nombre correo tipo')
       .populate({
-        path: 'equipo_id',
+        path: 'equipos.equipo_id',
         select: 'nombre descripcion categoria',
         populate: {
           path: 'laboratorio_id',
           select: 'nombre'
         }
       })
+      .populate('laboratorio_id', 'nombre')
       .sort({ fecha_prestamo: -1 });
 
-    // Generar PDF
     const pdf = await generarReportePrestamos(prestamos);
 
     res.status(200).json({
@@ -472,45 +455,41 @@ export const generarReporte = async (req, res) => {
   }
 };
 
-// @desc    Verificar préstamos vencidos
-// @route   GET /api/prestamos/verificar-vencidos
-// @access  Privado/Admin
 export const verificarVencidos = async (req, res) => {
   try {
-    // Buscar préstamos activos
     const prestamosActivos = await Prestamo.find({ estado: 'activo' })
       .populate('usuario_id', 'nombre')
-      .populate('equipo_id', 'nombre');
+      .populate('equipos.equipo_id', 'nombre');
 
     let vencidos = 0;
     let porVencer = 0;
 
-    // Verificar cada préstamo
     for (const prestamo of prestamosActivos) {
-      // Verificar si está vencido
       if (estaVencido(prestamo.fecha_devolucion)) {
-        // Marcar como vencido
         prestamo.estado = 'vencido';
         await prestamo.save();
         vencidos++;
 
-        // Crear notificación de vencimiento
-        await Notificacion.crearNotificacionVencimiento(
-          prestamo.usuario_id._id,
-          prestamo.equipo_id.nombre
-        );
+        // Crear notificación de vencimiento para cada equipo
+        for (const equipoItem of prestamo.equipos) {
+          await Notificacion.crearNotificacionVencimiento(
+            prestamo.usuario_id._id,
+            equipoItem.equipo_id.nombre
+          );
+        }
       } else {
-        // Verificar si está por vencer (menos de 2 días)
         const diasRestantes = calcularDiasRestantes(prestamo.fecha_devolucion);
         if (diasRestantes <= 2) {
           porVencer++;
 
-          // Crear notificación de recordatorio
-          await Notificacion.crearRecordatorio(
-            prestamo.usuario_id._id,
-            prestamo.equipo_id.nombre,
-            diasRestantes
-          );
+          // Crear recordatorio para cada equipo
+          for (const equipoItem of prestamo.equipos) {
+            await Notificacion.crearRecordatorio(
+              prestamo.usuario_id._id,
+              equipoItem.equipo_id.nombre,
+              diasRestantes
+            );
+          }
         }
       }
     }

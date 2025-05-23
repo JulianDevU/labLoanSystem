@@ -27,26 +27,30 @@ import { EquipmentSelector } from "@/src/components/equipment-selector"
 import { useToast } from "@/src/hooks/use-toast"
 import { registerLoan } from "@/src/services/loanService"
 
+// Updated schema for multiple equipment
 const formSchema = z.object({
   lab: z.string(),
   beneficiaryType: z.enum(["estudiante", "docente"]),
   beneficiaryId: z.string().min(1, "ID es requerido"),
   beneficiaryName: z.string().min(1, "Nombre es requerido"),
   beneficiaryEmail: z.string().email("Correo electrónico inválido"),
-  equipment: z.array(
-    z.object({
-      id: z.string(),
-      name: z.string(),
-      quantity: z.number().min(1),
-    })
-  )
-  .min(1, "Debes seleccionar al menos un equipo"),
+  equipment: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    quantity: z.number().min(1)
+  })).min(1, "Debes seleccionar al menos un equipo"),
   description: z.string().optional(),
   returnDate: z.string().min(1, "Fecha de devolución es requerida"),
   photo: z.string().min(1, "La imagen es requerida"),
 })
 
 type FormValues = z.infer<typeof formSchema>
+
+interface Equipment {
+  id: string
+  name: string
+  quantity: number
+}
 
 export default function NewLoanPage() {
   const router = useRouter()
@@ -62,7 +66,7 @@ export default function NewLoanPage() {
       beneficiaryId: "",
       beneficiaryName: "",
       beneficiaryEmail: "",
-      equipment: [],
+      equipment: [], // Changed to empty array for multiple equipment
       description: "",
       returnDate: "",
       photo: "",
@@ -73,29 +77,39 @@ export default function NewLoanPage() {
     setIsSubmitting(true)
 
     try {
-      // Map form data to the structure expected by the API
+      // Transform equipment data to match backend format
+      const equipos = data.equipment.map(item => ({
+        equipo_id: item.id,
+        cantidad: item.quantity
+      }))
+
       const loanData = {
         tipo_beneficiado: data.beneficiaryType,
         numero_identificacion: data.beneficiaryId,
         nombre_beneficiado: data.beneficiaryName,
         correo_beneficiado: data.beneficiaryEmail,
-        equipo_id: data.equipment,
+        equipos: equipos, // Send multiple equipment
         fecha_devolucion: data.returnDate,
         evidencia_foto: data.photo,
-        laboratorio_id: data.lab, // Assuming lab is the lab ID
+        laboratorio_id: data.lab,
+        descripcion: data.description,
       }
+
+      console.log("Enviando datos del préstamo:", loanData)
 
       await registerLoan(loanData)
 
       toast({
         title: "Préstamo creado exitosamente",
-        description: "El préstamo ha sido registrado y se han enviado los correos.",
+        description: `El préstamo con ${equipos.length} equipo(s) ha sido registrado correctamente.`,
       })
-      router.push("/dashboard")
+      router.push("/loans")
     } catch (error) {
+      console.error("Error al crear préstamo:", error)
       toast({
         title: "Error",
         description: (error as Error).message || "Hubo un error al crear el préstamo",
+        variant: "destructive",
       })
     } finally {
       setIsSubmitting(false)
@@ -106,13 +120,15 @@ export default function NewLoanPage() {
     <DashboardShell>
       <DashboardHeader
         heading="Nuevo Préstamo"
-        text="Registra un nuevo préstamo de equipo para un estudiante o profesor."
+        text="Registra un nuevo préstamo de equipos para un estudiante o profesor."
       >
         <LabSelector
           value={selectedLab}
           onValueChange={(value) => {
             setSelectedLab(value)
             form.setValue("lab", value)
+            // Reset equipment when lab changes
+            form.setValue("equipment", [])
           }}
         />
       </DashboardHeader>
@@ -122,7 +138,7 @@ export default function NewLoanPage() {
           <Card>
             <CardHeader>
               <CardTitle>Información del Beneficiario</CardTitle>
-              <CardDescription>Ingresa los datos del estudiante o profesor que recibirá el equipo.</CardDescription>
+              <CardDescription>Ingresa los datos del estudiante o profesor que recibirá los equipos.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -208,7 +224,7 @@ export default function NewLoanPage() {
           <Card>
             <CardHeader>
               <CardTitle>Detalles del Préstamo</CardTitle>
-              <CardDescription>Selecciona el equipo y especifica los detalles del préstamo.</CardDescription>
+              <CardDescription>Selecciona los equipos y especifica los detalles del préstamo.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -216,10 +232,18 @@ export default function NewLoanPage() {
                 name="equipment"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Equipo</FormLabel>
+                    <FormLabel>Equipos</FormLabel>
                     <FormControl>
-                      <EquipmentSelector lab={selectedLab} value={field.value} onChange={field.onChange} />
+                      <EquipmentSelector
+                        lab={selectedLab}
+                        value={field.value}
+                        onChange={field.onChange}
+                        single={false} // Enable multiple selection mode
+                      />
                     </FormControl>
+                    <FormDescription>
+                      Selecciona uno o más equipos para este préstamo. Puedes ajustar las cantidades según sea necesario.
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -233,7 +257,7 @@ export default function NewLoanPage() {
                     <FormLabel>Descripción</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Ingresa detalles adicionales sobre este préstamo"
+                        placeholder="Ingresa detalles adicionales sobre este préstamo (opcional)"
                         className="min-h-[100px]"
                         {...field}
                       />
@@ -252,6 +276,9 @@ export default function NewLoanPage() {
                     <FormControl>
                       <Input type="datetime-local" {...field} />
                     </FormControl>
+                    <FormDescription>
+                      Especifica cuándo se espera que se devuelvan todos los equipos.
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -266,7 +293,7 @@ export default function NewLoanPage() {
                     <FormControl>
                       <ImageUpload value={field.value} onChange={field.onChange} />
                     </FormControl>
-                    <FormDescription>Toma una foto del equipo entregado como evidencia.</FormDescription>
+                    <FormDescription>Toma una foto de los equipos entregados como evidencia.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

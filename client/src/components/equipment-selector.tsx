@@ -16,14 +16,15 @@ interface Equipment {
   quantity: number
 }
 
+// Support both single and multiple selection
 interface EquipmentSelectorProps {
   lab: string
-  value: Equipment[]
-  onChange: (value: Equipment[]) => void
+  value: Equipment[] | string
+  onChange: (value: Equipment[] | string) => void
+  single?: boolean // New prop to determine single vs multiple selection
 }
 
-
-export function EquipmentSelector({ lab, value, onChange }: EquipmentSelectorProps) {
+export function EquipmentSelector({ lab, value, onChange, single = false }: EquipmentSelectorProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [equipment, setEquipment] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
@@ -64,18 +65,127 @@ export function EquipmentSelector({ lab, value, onChange }: EquipmentSelectorPro
       item.id.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
+  // Handle single selection mode
+  if (single) {
+    const selectedEquipmentId = typeof value === 'string' ? value : ''
+    const selectedEquipment = selectedEquipmentId 
+      ? currentEquipment.find(item => item.id === selectedEquipmentId)
+      : null
+
+    const selectEquipment = (id: string) => {
+      onChange(id)
+    }
+
+    const clearSelection = () => {
+      onChange('')
+    }
+
+    if (loading) {
+      return <p className="text-center text-muted-foreground">Cargando equipos...</p>
+    }
+    if (error) {
+      return <p className="text-center text-red-500">{error}</p>
+    }
+
+    return (
+      <div className="space-y-4">
+        {selectedEquipment && (
+          <div className="space-y-2">
+            <Label>Equipo Seleccionado</Label>
+            <div className="rounded-md border p-2">
+              <div className="flex items-center justify-between gap-2 rounded-md border p-2">
+                <div className="flex-1">
+                  <p className="text-sm font-medium">{selectedEquipment.name}</p>
+                  <p className="text-xs text-muted-foreground">{selectedEquipment.id}</p>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-muted-foreground"
+                  onClick={clearSelection}
+                >
+                  <X className="h-3 w-3" />
+                  <span className="sr-only">Remove</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <Label>Equipos Disponibles</Label>
+          <Input 
+            placeholder="Buscar equipo..." 
+            value={searchQuery} 
+            onChange={(e) => setSearchQuery(e.target.value)} 
+          />
+          <Card>
+            <CardContent className="p-2">
+              <ScrollArea className="h-60 pr-4">
+                <div className="space-y-2">
+                  {filteredEquipment.map((item) => {
+                    const isSelected = selectedEquipmentId === item.id
+
+                    return (
+                      <div key={item.id}>
+                        <div className="flex items-center justify-between py-2">
+                          <div className="flex-1">
+                            <p className="text-sm font-medium">{item.name}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="text-xs text-muted-foreground">{item.id}</p>
+                              <Badge variant="outline" className="text-xs">
+                                {item.available} disponibles
+                              </Badge>
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant={isSelected ? "default" : "ghost"}
+                            size="sm"
+                            className="h-8 gap-1"
+                            disabled={item.available === 0}
+                            onClick={() => selectEquipment(item.id)}
+                          >
+                            {isSelected ? "Seleccionado" : (
+                              <>
+                                <Plus className="h-4 w-4" />
+                                Seleccionar
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                        <Separator />
+                      </div>
+                    )
+                  })}
+                  {filteredEquipment.length === 0 && (
+                    <p className="py-4 text-center text-sm text-muted-foreground">No equipment found.</p>
+                  )}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  // Original multiple selection logic
+  const equipmentArray = Array.isArray(value) ? value : []
+
   const addEquipment = (id: string, name: string) => {
-    const existingItem = value.find((item) => item.id === id)
+    const existingItem = equipmentArray.find((item) => item.id === id)
 
     if (existingItem) {
-      onChange(value.map((item) => (item.id === id ? { ...item, quantity: item.quantity + 1 } : item)))
+      onChange(equipmentArray.map((item) => (item.id === id ? { ...item, quantity: item.quantity + 1 } : item)))
     } else {
-      onChange([...value, { id, name, quantity: 1 }])
+      onChange([...equipmentArray, { id, name, quantity: 1 }])
     }
   }
 
   const removeEquipment = (id: string) => {
-    onChange(value.filter((item) => item.id !== id))
+    onChange(equipmentArray.filter((item) => item.id !== id))
   }
 
   const updateQuantity = (id: string, newQuantity: number) => {
@@ -84,7 +194,7 @@ export function EquipmentSelector({ lab, value, onChange }: EquipmentSelectorPro
       return
     }
 
-    onChange(value.map((item) => (item.id === id ? { ...item, quantity: newQuantity } : item)))
+    onChange(equipmentArray.map((item) => (item.id === id ? { ...item, quantity: newQuantity } : item)))
   }
 
   if (loading) {
@@ -96,12 +206,12 @@ export function EquipmentSelector({ lab, value, onChange }: EquipmentSelectorPro
 
   return (
     <div className="space-y-4">
-      {value.length > 0 && (
+      {equipmentArray.length > 0 && (
         <div className="space-y-2">
           <Label>Selected Equipment</Label>
           <div className="rounded-md border p-2">
             <div className="space-y-2">
-              {value.map((item) => (
+              {equipmentArray.map((item) => (
                 <div key={item.id} className="flex items-center justify-between gap-2 rounded-md border p-2">
                   <div className="flex-1">
                     <p className="text-sm font-medium">{item.name}</p>
@@ -161,9 +271,9 @@ export function EquipmentSelector({ lab, value, onChange }: EquipmentSelectorPro
             <ScrollArea className="h-60 pr-4">
               <div className="space-y-2">
                 {filteredEquipment.map((item) => {
-                  const isSelected = value.some((selected) => selected.id === item.id)
+                  const isSelected = equipmentArray.some((selected) => selected.id === item.id)
                   const selectedQuantity = isSelected
-                    ? value.find((selected) => selected.id === item.id)?.quantity || 0
+                    ? equipmentArray.find((selected) => selected.id === item.id)?.quantity || 0
                     : 0
                   const remainingQuantity = item.available - selectedQuantity
 

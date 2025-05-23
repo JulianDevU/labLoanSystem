@@ -1,58 +1,75 @@
 import Cookies from "js-cookie";
 
-// Interface that matches your Mongoose schema
+// Interface that matches your updated Mongoose schema
 export interface Loan {
   _id?: string;
   tipo_beneficiado: 'estudiante' | 'docente';
   numero_identificacion: string;
   nombre_beneficiado: string;
   correo_beneficiado: string;
-  equipo_id: string;
+  equipos: Array<{
+    equipo_id: string;
+    cantidad: number;
+  }>;
   fecha_prestamo?: Date;
   fecha_devolucion: Date;
   fecha_devolucion_real?: Date | null;
   estado?: 'activo' | 'devuelto' | 'vencido';
   evidencia_foto?: string;
   laboratorio_id: string;
+  descripcion?: string;
 }
 
-// Interface for API responses
+// Interface for API responses with populated data
 export interface LoanFromApi {
   _id: string;
   tipo_beneficiado: string;
   numero_identificacion: string;
   nombre_beneficiado: string;
   correo_beneficiado: string;
-  equipo_id: {
-    _id: string;
-    nombre: string;
-    descripcion?: string;
-    categoria: string;
-    laboratorio_id: {
+  equipos: Array<{
+    equipo_id: {
       _id: string;
       nombre: string;
       descripcion?: string;
+      categoria: string;
+      laboratorio_id: {
+        _id: string;
+        nombre: string;
+        descripcion?: string;
+      };
     };
-  };
+    cantidad: number;
+  }>;
   fecha_prestamo: string;
   fecha_devolucion: string;
   fecha_devolucion_real?: string;
   estado: "activo" | "devuelto" | "vencido";
   evidencia_foto?: string;
+  laboratorio_id: {
+    _id: string;
+    nombre: string;
+    descripcion?: string;
+  };
+  descripcion?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-// Interface for loan creation
+// Interface for loan creation - updated for multiple equipment
 export interface CreateLoanData {
   tipo_beneficiado: 'estudiante' | 'docente';
   numero_identificacion: string;
   nombre_beneficiado: string;
   correo_beneficiado: string;
-  equipo_id: string;
+  equipos: Array<{
+    equipo_id: string;
+    cantidad: number;
+  }>;
   fecha_devolucion: string;
   evidencia_foto?: string;
   laboratorio_id: string;
+  descripcion?: string;
 }
 
 // Interface for loan updates
@@ -60,6 +77,7 @@ export interface UpdateLoanData {
   fecha_devolucion?: string;
   estado?: "activo" | "devuelto" | "vencido";
   evidencia_foto?: string;
+  descripcion?: string;
 }
 
 // Interface for filtering loans
@@ -73,7 +91,7 @@ export interface LoansFilters {
   todos?: boolean;
 }
 
-// Create a new loan
+// Create a new loan with multiple equipment support
 export async function createLoan(data: CreateLoanData) {
   console.log("FUNCIÓN createLoan LLAMADA CON DATOS:", data);
 
@@ -126,7 +144,7 @@ export async function getLoans(filters?: LoansFilters): Promise<LoanFromApi[]> {
     throw new Error("No hay token de autenticación");
   }
 
-  // Construir query string con filtros
+  // Build query string with filters
   const queryParams = new URLSearchParams();
 
   if (filters) {
@@ -280,7 +298,7 @@ export async function generateLoansReport(
     throw new Error("No hay token de autenticación");
   }
 
-  // Construir query string con filtros
+  // Build query string with filters
   const queryParams = new URLSearchParams();
 
   if (filters) {
@@ -344,52 +362,51 @@ export async function checkOverdueLoans(): Promise<{
   return result.data;
 }
 
-// Get loans by laboratory
+// Helper functions for specific loan queries
 export async function getLoansByLaboratory(
   laboratoryId: string
 ): Promise<LoanFromApi[]> {
   return getLoans({ laboratorio_id: laboratoryId });
 }
 
-// Get loans by beneficiary type
 export async function getLoansByBeneficiaryType(
   type: 'estudiante' | 'docente'
 ): Promise<LoanFromApi[]> {
   return getLoans({ tipo_beneficiado: type });
 }
 
-// Get loans by equipment
 export async function getLoansByEquipment(
   equipmentId: string
 ): Promise<LoanFromApi[]> {
   return getLoans({ equipo_id: equipmentId });
 }
 
-// Get active loans
 export async function getActiveLoans(): Promise<LoanFromApi[]> {
   return getLoans({ estado: "activo" });
 }
 
-// Get overdue loans
 export async function getOverdueLoans(): Promise<LoanFromApi[]> {
   return getLoans({ estado: "vencido" });
 }
 
-// Get returned loans
 export async function getReturnedLoans(): Promise<LoanFromApi[]> {
   return getLoans({ estado: "devuelto" });
 }
 
-// Register a new loan (similar to registerEquipment in equipmentService)
+// Register a new loan - updated for multiple equipment
 export async function registerLoan(data: {
   tipo_beneficiado: 'estudiante' | 'docente';
   numero_identificacion: string;
   nombre_beneficiado: string;
   correo_beneficiado: string;
-  equipo_id: string;
+  equipos: Array<{
+    equipo_id: string;
+    cantidad: number;
+  }>;
   fecha_devolucion: string;
   evidencia_foto?: string;
   laboratorio_id: string;
+  descripcion?: string;
 }) {
   return createLoan(data);
 }
