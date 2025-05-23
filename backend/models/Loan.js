@@ -2,10 +2,25 @@ import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
 const prestamoSchema = new Schema({
-  usuario_id: {
-    type: Schema.Types.ObjectId,
-    ref: 'Usuario',
-    required: [true, 'El usuario es obligatorio']
+  tipo_beneficiado: {
+    type: String,
+    enum: ['estudiante', 'docente'],
+    required: [true, 'El tipo de beneficiado es obligatorio']
+  },
+  numero_identificacion: {
+    type: String,
+    required: [true, 'El número de identificación es obligatorio'],
+  },
+  nombre_beneficiado: {
+    type: String,
+    required: [true, 'El nombre del beneficiado es obligatorio'],
+  },
+  correo_beneficiado: {
+    type: String,
+    required: [true, 'El correo electrónico es obligatorio'],
+    trim: true,
+    lowercase: true,
+    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Por favor ingrese un correo válido']
   },
   equipo_id: {
     type: Schema.Types.ObjectId,

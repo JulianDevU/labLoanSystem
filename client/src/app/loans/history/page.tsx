@@ -56,10 +56,13 @@ export default function LoanHistoryPage() {
 
       // Filtrar por laboratorio si está seleccionado
       const filteredLoans = selectedLab
-        ? allLoans.filter(loan =>
-          loan.equipo_id.laboratorio_id.nombre.toLowerCase() === selectedLab.toLowerCase() ||
-          loan.equipo_id.laboratorio_id._id === selectedLab
-        )
+        ? allLoans.filter(loan => {
+            const matchById = loan.equipo_id.laboratorio_id._id === selectedLab
+            // El campo 'slug' puede no estar presente en la respuesta de la API, así que evitamos acceder a él directamente
+            // const matchBySlug = loan.equipo_id.laboratorio_id.slug === selectedLab
+            const matchByName = loan.equipo_id.laboratorio_id.nombre?.toLowerCase().includes(selectedLab.toLowerCase())
+            return matchById || matchByName
+          })
         : allLoans
 
       setLoans(filteredLoans)
@@ -86,8 +89,9 @@ export default function LoanHistoryPage() {
     const searchLower = searchQuery.toLowerCase()
     return (
       loan._id.toLowerCase().includes(searchLower) ||
-      loan.usuario_id.nombre.toLowerCase().includes(searchLower) ||
-      loan.usuario_id.correo.toLowerCase().includes(searchLower) ||
+      loan.nombre_beneficiado.toLowerCase().includes(searchLower) ||
+      loan.correo_beneficiado.toLowerCase().includes(searchLower) ||
+      loan.numero_identificacion.toLowerCase().includes(searchLower) ||
       loan.equipo_id.nombre.toLowerCase().includes(searchLower) ||
       loan.equipo_id.categoria.toLowerCase().includes(searchLower)
     )
@@ -297,18 +301,17 @@ export default function LoanHistoryPage() {
                   <div className="flex items-center gap-4">
                     <Avatar>
                       <AvatarFallback>
-                        {getInitials(loan.usuario_id.nombre)}
+                        {getInitials(loan.nombre_beneficiado)}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-medium">{loan.usuario_id.nombre}</h3>
+                        <h3 className="font-medium">{loan.nombre_beneficiado}</h3>
                         <Badge variant="outline">
-                          {loan.usuario_id.tipo === 'estudiante' ? 'Estudiante' : 'Profesor'}
+                          {loan.tipo_beneficiado === 'estudiante' ? 'Estudiante' : 'Profesor'}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">ID: {loan.usuario_id._id}</p>
-                      <p className="text-sm text-muted-foreground">{loan.usuario_id.correo}</p>
+                      <p className="text-sm text-muted-foreground">{loan.correo_beneficiado}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

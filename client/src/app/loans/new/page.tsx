@@ -7,7 +7,15 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { Button } from "@/src/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/src/components/ui/card"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/src/components/ui/form"
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/src/components/ui/form"
 import { Input } from "@/src/components/ui/input"
 import { Textarea } from "@/src/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from "@/src/components/ui/radio-group"
@@ -17,25 +25,25 @@ import { LabSelector } from "@/src/components/lab-selector"
 import { ImageUpload } from "@/src/components/image-upload"
 import { EquipmentSelector } from "@/src/components/equipment-selector"
 import { useToast } from "@/src/hooks/use-toast"
+import { registerLoan } from "@/src/services/loanService"
 
 const formSchema = z.object({
   lab: z.string(),
-  beneficiaryType: z.enum(["student", "teacher"]),
-  beneficiaryId: z.string().min(1, "ID is required"),
-  beneficiaryName: z.string().min(1, "Name is required"),
-  beneficiaryEmail: z.string().email("Invalid email address"),
-  equipment: z
-    .array(
-      z.object({
-        id: z.string(),
-        name: z.string(),
-        quantity: z.number().min(1),
-      }),
-    )
-    .min(1, "At least one equipment item is required"),
+  beneficiaryType: z.enum(["estudiante", "docente"]),
+  beneficiaryId: z.string().min(1, "ID es requerido"),
+  beneficiaryName: z.string().min(1, "Nombre es requerido"),
+  beneficiaryEmail: z.string().email("Correo electrónico inválido"),
+  equipment: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      quantity: z.number().min(1),
+    })
+  )
+  .min(1, "Debes seleccionar al menos un equipo"),
   description: z.string().optional(),
-  returnDate: z.string().min(1, "Return date is required"),
-  photo: z.string().optional(),
+  returnDate: z.string().min(1, "Fecha de devolución es requerida"),
+  photo: z.string().min(1, "La imagen es requerida"),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -50,7 +58,7 @@ export default function NewLoanPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       lab: selectedLab,
-      beneficiaryType: "student",
+      beneficiaryType: "estudiante",
       beneficiaryId: "",
       beneficiaryName: "",
       beneficiaryEmail: "",
@@ -64,21 +72,42 @@ export default function NewLoanPage() {
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true)
 
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Form data:", data)
-      setIsSubmitting(false)
+    try {
+      // Map form data to the structure expected by the API
+      const loanData = {
+        tipo_beneficiado: data.beneficiaryType,
+        numero_identificacion: data.beneficiaryId,
+        nombre_beneficiado: data.beneficiaryName,
+        correo_beneficiado: data.beneficiaryEmail,
+        equipo_id: data.equipment,
+        fecha_devolucion: data.returnDate,
+        evidencia_foto: data.photo,
+        laboratorio_id: data.lab, // Assuming lab is the lab ID
+      }
+
+      await registerLoan(loanData)
+
       toast({
-        title: "Loan created successfully",
-        description: "The loan has been registered and emails have been sent.",
+        title: "Préstamo creado exitosamente",
+        description: "El préstamo ha sido registrado y se han enviado los correos.",
       })
       router.push("/dashboard")
-    }, 2000)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: (error as Error).message || "Hubo un error al crear el préstamo",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
     <DashboardShell>
-      <DashboardHeader heading="Nuevo Préstamo" text="Registra un nuevo préstamo de equipo para un estudiante o profesor.">
+      <DashboardHeader
+        heading="Nuevo Préstamo"
+        text="Registra un nuevo préstamo de equipo para un estudiante o profesor."
+      >
         <LabSelector
           value={selectedLab}
           onValueChange={(value) => {
@@ -93,9 +122,7 @@ export default function NewLoanPage() {
           <Card>
             <CardHeader>
               <CardTitle>Información del Beneficiario</CardTitle>
-              <CardDescription>
-                Ingresa los datos del estudiante o profesor que recibirá el equipo.
-              </CardDescription>
+              <CardDescription>Ingresa los datos del estudiante o profesor que recibirá el equipo.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -112,13 +139,13 @@ export default function NewLoanPage() {
                       >
                         <FormItem className="flex items-center space-x-2 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="student" />
+                            <RadioGroupItem value="estudiante" />
                           </FormControl>
                           <FormLabel className="font-normal">Estudiante</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-2 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="teacher" />
+                            <RadioGroupItem value="docente" />
                           </FormControl>
                           <FormLabel className="font-normal">Profesor</FormLabel>
                         </FormItem>
@@ -181,7 +208,7 @@ export default function NewLoanPage() {
           <Card>
             <CardHeader>
               <CardTitle>Detalles del Préstamo</CardTitle>
-              <CardDescription>Selecciona los equipos y especifica los detalles del préstamo.</CardDescription>
+              <CardDescription>Selecciona el equipo y especifica los detalles del préstamo.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -189,7 +216,7 @@ export default function NewLoanPage() {
                 name="equipment"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Equipos</FormLabel>
+                    <FormLabel>Equipo</FormLabel>
                     <FormControl>
                       <EquipmentSelector lab={selectedLab} value={field.value} onChange={field.onChange} />
                     </FormControl>

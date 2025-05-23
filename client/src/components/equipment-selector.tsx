@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/src/components/ui/button"
 import { Card, CardContent } from "@/src/components/ui/card"
 import { Input } from "@/src/components/ui/input"
@@ -22,44 +22,46 @@ interface EquipmentSelectorProps {
   onChange: (value: Equipment[]) => void
 }
 
+
 export function EquipmentSelector({ lab, value, onChange }: EquipmentSelectorProps) {
   const [searchQuery, setSearchQuery] = useState("")
+  const [equipment, setEquipment] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  // This would normally fetch data from an API
-  const availableEquipment = {
-    fisica: [
-      { id: "PH001", name: "Osciloscopio Digital", available: 5 },
-      { id: "PH002", name: "Generador de Funciones", available: 3 },
-      { id: "PH003", name: "Multímetro Digital", available: 10 },
-      { id: "PH004", name: "Kit de Láser", available: 2 },
-      { id: "PH005", name: "Banco Óptico", available: 3 },
-      { id: "PH006", name: "Kit de Componentes de Circuito", available: 15 },
-      { id: "PH007", name: "Sensor de Fuerza", available: 5 },
-    ],
-    telecomunicacion: [
-      { id: "TC001", name: "Analizador de Espectro", available: 2 },
-      { id: "TC002", name: "Analizador de Red", available: 2 },
-      { id: "TC003", name: "Router", available: 5 },
-      { id: "TC004", name: "Switch", available: 8 },
-      { id: "TC005", name: "Kit de Fibra Óptica", available: 3 },
-      { id: "TC006", name: "Kit de Antenas", available: 4 },
-    ],
-    software: [
-      { id: "SW001", name: "Raspberry Pi", available: 8 },
-      { id: "SW002", name: "Kit de Arduino", available: 10 },
-      { id: "SW003", name: "Kit de Sensores", available: 5 },
-      { id: "SW004", name: "Visor de Realidad Virtual", available: 2 },
-      { id: "SW005", name: "Tableta Gráfica", available: 4 },
-    ],
-  }
+  useEffect(() => {
+    setLoading(true)
+    setError(null)
+    import("@/src/services/equipmentService").then(({ getEquipment }) => {
+      getEquipment()
+        .then((data) => {
+          // Filtrado robusto: por _id, slug o nombre (consistente con InventoryTable)
+          const filtered = data.filter((item: any) => {
+            const matchById = item.laboratorio_id?._id === lab
+            const matchBySlug = item.laboratorio_id?.slug === lab
+            const matchByName = item.laboratorio_id?.nombre?.toLowerCase().includes(lab.toLowerCase())
+            return (matchById || matchBySlug || matchByName) && item.cantidad_disponible > 0
+          })
+          setEquipment(filtered)
+        })
+        .catch(() => {
+          setError("Error al cargar equipos")
+        })
+        .finally(() => setLoading(false))
+    })
+  }, [lab])
 
-  const currentEquipment = availableEquipment[lab as keyof typeof availableEquipment] || []
+  const currentEquipment = equipment.map((item) => ({
+    id: item._id,
+    name: item.nombre,
+    available: item.cantidad_disponible ?? 0,
+  }))
 
-  // Filter equipment based on search query
+  // Filtrar por búsqueda
   const filteredEquipment = currentEquipment.filter(
     (item) =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.id.toLowerCase().includes(searchQuery.toLowerCase()),
+      item.id.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   const addEquipment = (id: string, name: string) => {
@@ -83,6 +85,13 @@ export function EquipmentSelector({ lab, value, onChange }: EquipmentSelectorPro
     }
 
     onChange(value.map((item) => (item.id === id ? { ...item, quantity: newQuantity } : item)))
+  }
+
+  if (loading) {
+    return <p className="text-center text-muted-foreground">Cargando equipos...</p>
+  }
+  if (error) {
+    return <p className="text-center text-red-500">{error}</p>
   }
 
   return (

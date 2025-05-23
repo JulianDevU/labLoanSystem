@@ -67,18 +67,12 @@ export function InventoryTable({ lab, searchQuery }: InventoryTableProps) {
           nombre: item.laboratorio_id.nombre
         })))
 
-        // Filtrar por ID de laboratorio O por nombre de laboratorio
+        // Filtrar por ID, slug o nombre de laboratorio
         const filteredByLab = mappedItems.filter((item) => {
           const matchById = item.laboratorio_id?._id === lab
-          const matchByName = item.laboratorio_id?.nombre.toLowerCase().includes(lab.toLowerCase())
-
-          console.log(`Item: ${item.nombre}`)
-          console.log(`  Lab ID: ${item.laboratorio_id?._id}`)
-          console.log(`  Lab Name: ${item.laboratorio_id?.nombre}`)
-          console.log(`  Match by ID: ${matchById}`)
-          console.log(`  Match by Name: ${matchByName}`)
-
-          return matchById || matchByName
+          const matchBySlug = item.laboratorio_id?.slug === lab
+          const matchByName = item.laboratorio_id?.nombre?.toLowerCase().includes(lab.toLowerCase())
+          return matchById || matchBySlug || matchByName
         })
 
         console.log("Equipos filtrados:", filteredByLab)
