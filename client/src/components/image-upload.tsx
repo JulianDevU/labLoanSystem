@@ -1,63 +1,35 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useRef, useState, useCallback } from "react"
+import Webcam from "react-webcam"
+import Image from "next/image"
 import { Button } from "@/src/components/ui/button"
 import { Card, CardContent } from "@/src/components/ui/card"
 import { Camera, Upload, X } from "lucide-react"
-import Image from "next/image"
 
 interface ImageUploadProps {
   value: string
   onChange: (value: string) => void
 }
 
+const videoConstraints = {
+  width: 1280,
+  height: 720,
+  facingMode: "user" as const, // puedes cambiar a "environment"
+}
+
 export function ImageUpload({ value, onChange }: ImageUploadProps) {
-  const [isCapturing, setIsCapturing] = useState(false)
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const webcamRef = useRef<Webcam>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isCapturing, setIsCapturing] = useState(false)
 
-  const startCamera = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true })
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-        setIsCapturing(true)
-
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current?.play()
-        }
-      }
-    } catch (err) {
-      console.error("Error accessing camera:", err)
+  const capturePhoto = useCallback(() => {
+    const imageSrc = webcamRef.current?.getScreenshot()
+    if (imageSrc) {
+      onChange(imageSrc)
+      setIsCapturing(false)
     }
-  }
-
-  const stopCamera = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const tracks = (videoRef.current.srcObject as MediaStream).getTracks()
-      tracks.forEach((track) => track.stop())
-      videoRef.current.srcObject = null
-    }
-    setIsCapturing(false)
-  }
-
-  const capturePhoto = () => {
-    if (videoRef.current && canvasRef.current) {
-      const video = videoRef.current
-      const canvas = canvasRef.current
-      const context = canvas.getContext("2d")
-
-      if (context) {
-        canvas.width = video.videoWidth
-        canvas.height = video.videoHeight
-        context.drawImage(video, 0, 0, canvas.width, canvas.height)
-        const dataUrl = canvas.toDataURL("image/jpeg")
-        onChange(dataUrl)
-        stopCamera()
-      }
-    }
-  }
+  }, [webcamRef, onChange])
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -82,7 +54,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
         <div className="relative">
           <Image
             src={value}
-            alt="Uploaded image"
+            alt="Uploaded"
             width={300}
             height={200}
             className="rounded-md object-cover h-[200px] w-full"
@@ -99,21 +71,18 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
         </div>
       ) : isCapturing ? (
         <div className="space-y-2">
-          <div className="relative">
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="rounded-md w-full h-[200px] object-cover bg-black"
-            />
-            <canvas ref={canvasRef} className="hidden" />
-          </div>
+          <Webcam
+            audio={false}
+            ref={webcamRef}
+            screenshotFormat="image/jpeg"
+            videoConstraints={videoConstraints}
+            className="rounded-md w-full h-[200px] object-cover bg-black"
+          />
           <div className="flex gap-2">
-            <Button type="button" onClick={capturePhoto} className="flex-1">
+            <Button onClick={capturePhoto} className="flex-1">
               Capturar Foto
             </Button>
-            <Button type="button" variant="outline" onClick={stopCamera}>
+            <Button variant="outline" onClick={() => setIsCapturing(false)}>
               Cancelar
             </Button>
           </div>
@@ -122,12 +91,11 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
         <Card>
           <CardContent className="p-4 flex flex-col items-center justify-center gap-4 h-[200px]">
             <div className="flex gap-4">
-              <Button type="button" variant="outline" onClick={startCamera} className="flex gap-2">
+              <Button variant="outline" onClick={() => setIsCapturing(true)} className="flex gap-2">
                 <Camera className="h-4 w-4" />
                 Tomar Foto
               </Button>
               <Button
-                type="button"
                 variant="outline"
                 onClick={() => fileInputRef.current?.click()}
                 className="flex gap-2"
@@ -135,7 +103,13 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
                 <Upload className="h-4 w-4" />
                 Subir Imagen
               </Button>
-              <input type="file" ref={fileInputRef} accept="image/*" className="hidden" onChange={handleFileUpload} />
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                className="hidden"
+              />
             </div>
             <p className="text-sm text-muted-foreground text-center">
               Toma una foto o sube una imagen como evidencia para este préstamo
