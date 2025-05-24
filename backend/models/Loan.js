@@ -55,7 +55,8 @@ const prestamoSchema = new Schema({
   },
   evidencia_foto: {
     type: String,
-    trim: true
+    trim: true,
+    required: [true, 'La evidencia fotografica es obligatoria']
   },
   laboratorio_id: {
     type: Schema.Types.ObjectId,

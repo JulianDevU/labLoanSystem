@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -26,6 +26,7 @@ import { ImageUpload } from "@/src/components/image-upload"
 import { EquipmentSelector } from "@/src/components/equipment-selector"
 import { useToast } from "@/src/hooks/use-toast"
 import { registerLoan } from "@/src/services/loanService"
+import { getLaboratories } from "@/src/services/laboratoryService"
 
 // Updated schema for multiple equipment
 const formSchema = z.object({
@@ -45,17 +46,17 @@ const formSchema = z.object({
 })
 
 type FormValues = z.infer<typeof formSchema>
-
-interface Equipment {
-  id: string
-  name: string
-  quantity: number
+interface Lab {
+  _id: string
+  nombre: string
+  descripcion: string
+  slug: string
 }
 
 export default function NewLoanPage() {
   const router = useRouter()
   const { toast } = useToast()
-  const [selectedLab, setSelectedLab] = useState("physics")
+  const [selectedLab, setSelectedLab] = useState("fisica")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<FormValues>({
@@ -66,15 +67,40 @@ export default function NewLoanPage() {
       beneficiaryId: "",
       beneficiaryName: "",
       beneficiaryEmail: "",
-      equipment: [], // Changed to empty array for multiple equipment
+      equipment: [],
       description: "",
       returnDate: "",
       photo: "",
     },
   })
 
+  const [labs, setLabs] = useState<Lab[]>([])
+
+  useEffect(() => {
+    const fetchLabs = async () => {
+      try {
+        const result = await getLaboratories()
+        setLabs(result.data)
+      } catch (error) {
+        console.error("Error cargando laboratorios", error)
+      }
+    }
+
+    fetchLabs()
+  }, [])
+
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true)
+    const selectedLab = labs.find((lab) => lab.slug === data.lab)
+
+    if (!selectedLab) {
+      toast({
+        title: "Error",
+        description: "Laboratorio seleccionado no válido",
+      })
+      setIsSubmitting(false)
+      return
+    }
 
     try {
       // Transform equipment data to match backend format
@@ -91,7 +117,7 @@ export default function NewLoanPage() {
         equipos: equipos, // Send multiple equipment
         fecha_devolucion: data.returnDate,
         evidencia_foto: data.photo,
-        laboratorio_id: data.lab,
+        laboratorio_id: selectedLab._id,
         descripcion: data.description,
       }
 

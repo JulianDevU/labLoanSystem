@@ -40,7 +40,7 @@ interface Lab {
 export default function NewInventoryItemPage() {
   const router = useRouter()
   const { toast } = useToast()
-  const [selectedLab, setSelectedLab] = useState("physics")
+  const [selectedLab, setSelectedLab] = useState("fisica")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<FormValues>({

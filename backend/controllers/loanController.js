@@ -17,10 +17,6 @@ export const getPrestamos = async (req, res) => {
       filtro.estado = req.query.estado;
     }
 
-    if (req.query.usuario_id) {
-      filtro.usuario_id = req.query.usuario_id;
-    }
-
     if (req.query.equipo_id) {
       filtro['equipos.equipo_id'] = req.query.equipo_id;
     }
@@ -49,7 +45,6 @@ export const getPrestamos = async (req, res) => {
     }
 
     const prestamos = await Prestamo.find(filtro)
-      .populate('usuario_id', 'nombre correo tipo')
       .populate({
         path: 'equipos.equipo_id',
         select: 'nombre descripcion categoria',
@@ -82,7 +77,6 @@ export const getPrestamos = async (req, res) => {
 export const getPrestamo = async (req, res) => {
   try {
     const prestamo = await Prestamo.findById(req.params.id)
-      .populate('usuario_id', 'nombre correo tipo')
       .populate({
         path: 'equipos.equipo_id',
         select: 'nombre descripcion categoria',
@@ -97,16 +91,6 @@ export const getPrestamo = async (req, res) => {
       return res.status(404).json({
         success: false,
         mensaje: 'Préstamo no encontrado'
-      });
-    }
-
-    // Verificar permisos
-    if (req.usuario.tipo !== 'administrador' &&
-      prestamo.usuario_id._id.toString() !== req.usuario._id.toString() &&
-      prestamo.laboratorio_id._id.toString() !== req.usuario.laboratorio_id.toString()) {
-      return res.status(403).json({
-        success: false,
-        mensaje: 'No tienes permiso para ver este préstamo'
       });
     }
 

@@ -122,14 +122,30 @@ export const actualizarEquipoValidator = [
     .withMessage('La cantidad disponible debe ser un número entero no negativo')
 ];
 
-// Validadores para préstamos
+// VALIDADOR CORREGIDO para préstamos con múltiples equipos
 export const crearPrestamoValidator = [
-  body('usuario_id')
-    .isMongoId()
-    .withMessage('ID de usuario inválido'),
-  body('equipo_id')
+  body('tipo_beneficiado')
+    .isIn(['estudiante', 'docente'])
+    .withMessage('El tipo de beneficiado debe ser estudiante o docente'),
+  body('numero_identificacion')
+    .notEmpty()
+    .withMessage('El número de identificación es obligatorio'),
+  body('nombre_beneficiado')
+    .notEmpty()
+    .withMessage('El nombre del beneficiado es obligatorio'),
+  body('correo_beneficiado')
+    .isEmail()
+    .withMessage('Ingrese un correo electrónico válido'),
+  // CAMBIO PRINCIPAL: Validar array de equipos con estructura correcta
+  body('equipos')
+    .isArray({ min: 1 })
+    .withMessage('Debe seleccionar al menos un equipo'),
+  body('equipos.*.equipo_id')
     .isMongoId()
     .withMessage('ID de equipo inválido'),
+  body('equipos.*.cantidad')
+    .isInt({ min: 1 })
+    .withMessage('La cantidad debe ser un número entero mayor a 0'),
   body('fecha_devolucion')
     .isISO8601()
     .withMessage('Fecha de devolución inválida')
@@ -140,7 +156,14 @@ export const crearPrestamoValidator = [
         throw new Error('La fecha de devolución debe ser posterior a la fecha actual');
       }
       return true;
-    })
+    }),
+  body('laboratorio_id')
+    .isMongoId()
+    .withMessage('ID de laboratorio inválido'),
+  body('evidencia_foto')
+    .optional()
+    .notEmpty()
+    .withMessage('La evidencia fotográfica no puede estar vacía'),
 ];
 
 export const actualizarPrestamoValidator = [

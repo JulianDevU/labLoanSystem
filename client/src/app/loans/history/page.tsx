@@ -57,12 +57,12 @@ export default function LoanHistoryPage() {
       // Filtrar por laboratorio si está seleccionado
       const filteredLoans = selectedLab
         ? allLoans.filter(loan => {
-            const matchById = loan.equipo_id.laboratorio_id._id === selectedLab
-            // El campo 'slug' puede no estar presente en la respuesta de la API, así que evitamos acceder a él directamente
-            // const matchBySlug = loan.equipo_id.laboratorio_id.slug === selectedLab
-            const matchByName = loan.equipo_id.laboratorio_id.nombre?.toLowerCase().includes(selectedLab.toLowerCase())
-            return matchById || matchByName
-          })
+          const matchById = loan.laboratorio_id._id === selectedLab
+          // El campo 'slug' puede no estar presente en la respuesta de la API, así que evitamos acceder a él directamente
+          // const matchBySlug = loan.equipo_id.laboratorio_id.slug === selectedLab
+          const matchByName = loan.laboratorio_id.nombre?.toLowerCase().includes(selectedLab.toLowerCase())
+          return matchById || matchByName
+        })
         : allLoans
 
       setLoans(filteredLoans)
@@ -92,8 +92,10 @@ export default function LoanHistoryPage() {
       loan.nombre_beneficiado.toLowerCase().includes(searchLower) ||
       loan.correo_beneficiado.toLowerCase().includes(searchLower) ||
       loan.numero_identificacion.toLowerCase().includes(searchLower) ||
-      loan.equipo_id.nombre.toLowerCase().includes(searchLower) ||
-      loan.equipo_id.categoria.toLowerCase().includes(searchLower)
+      loan.equipos.some(equipo =>
+        equipo.equipo_id.nombre.toLowerCase().includes(searchLower) ||
+        equipo.equipo_id.categoria.toLowerCase().includes(searchLower)
+      )
     )
   })
 
@@ -337,66 +339,79 @@ export default function LoanHistoryPage() {
 
                 <div className="mt-4 rounded-md bg-muted p-3">
                   <h4 className="mb-2 font-medium">Equipo</h4>
-                  <div className="space-y-1">
-                    <p className="text-sm">
-                      <span className="font-medium">Nombre:</span> {loan.equipo_id.nombre}
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-medium">ID Equipo:</span> {loan.equipo_id._id}
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-medium">Categoría:</span> {loan.equipo_id.categoria}
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-medium">Laboratorio:</span> {loan.equipo_id.laboratorio_id.nombre}
-                    </p>
-                    {loan.equipo_id.descripcion && (
-                      <p className="text-sm">
-                        <span className="font-medium">Descripción:</span> {loan.equipo_id.descripcion}
+                  <div className="space-y-3">
+                    {loan.equipos.map((equipo, index) => (
+                      <div key={index} className="border-l-2 border-primary/20 pl-3" >
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-1">
+                            <p className="text-sm">
+                              <span className="font-medium">Nombre:</span> {equipo.equipo_id.nombre}
+                            </p>
+                            <p className="text-sm">
+                              <span className="font-medium">ID Equipo:</span> {equipo.equipo_id._id}
+                            </p>
+                            <p className="text-sm">
+                              <span className="font-medium">Categoría:</span> {equipo.equipo_id.categoria}
+                            </p>
+                            <p className="text-sm">
+                              <span className="font-medium">Laboratorio:</span> {equipo.equipo_id.laboratorio_id.nombre}
+                            </p>
+                            {
+                              equipo.equipo_id.descripcion && (
+                                <p className="text-sm">
+                                  <span className="font-medium">Descripción:</span> {equipo.equipo_id.descripcion}
+                                </p>
+                              )
+                            }
+                          </div>
+                          <Badge variant="secondary" className="ml-2">
+                            Cantidad: {equipo.cantidad}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-1 gap-4 text-sm text-muted-foreground sm:grid-cols-2">
+                    <div>
+                      <p>
+                        <span className="font-medium">Fecha de Préstamo:</span>{" "}
+                        {formatDate(loan.fecha_prestamo)}
                       </p>
-                    )}
+                    </div>
+                    <div className="text-right">
+                      <p>
+                        <span className="font-medium">Devolución Esperada:</span>{" "}
+                        {formatDate(loan.fecha_devolucion)}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="mt-4 grid grid-cols-1 gap-4 text-sm text-muted-foreground sm:grid-cols-2">
-                  <div>
-                    <p>
-                      <span className="font-medium">Fecha de Préstamo:</span>{" "}
-                      {formatDate(loan.fecha_prestamo)}
-                    </p>
+                {filteredLoans.length === 0 && !loading && (
+                  <div className="flex h-32 items-center justify-center rounded-lg border">
+                    <div className="text-center">
+                      <p className="text-muted-foreground">
+                        {searchQuery
+                          ? "No se encontraron préstamos que coincidan con la búsqueda."
+                          : "No se encontraron préstamos en el historial."
+                        }
+                      </p>
+                      {searchQuery && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="mt-2"
+                          onClick={() => setSearchQuery("")}
+                        >
+                          Limpiar búsqueda
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p>
-                      <span className="font-medium">Devolución Esperada:</span>{" "}
-                      {formatDate(loan.fecha_devolucion)}
-                    </p>
-                  </div>
-                </div>
+                )}
               </div>
             ))}
-
-            {filteredLoans.length === 0 && !loading && (
-              <div className="flex h-32 items-center justify-center rounded-lg border">
-                <div className="text-center">
-                  <p className="text-muted-foreground">
-                    {searchQuery
-                      ? "No se encontraron préstamos que coincidan con la búsqueda."
-                      : "No se encontraron préstamos en el historial."
-                    }
-                  </p>
-                  {searchQuery && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="mt-2"
-                      onClick={() => setSearchQuery("")}
-                    >
-                      Limpiar búsqueda
-                    </Button>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
