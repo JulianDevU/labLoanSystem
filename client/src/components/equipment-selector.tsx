@@ -160,7 +160,7 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
                     )
                   })}
                   {filteredEquipment.length === 0 && (
-                    <p className="py-4 text-center text-sm text-muted-foreground">No equipment found.</p>
+                    <p className="py-4 text-center text-sm text-muted-foreground">No se encontraron elementos.</p>
                   )}
                 </div>
               </ScrollArea>
@@ -320,7 +320,7 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
                   )
                 })}
                 {filteredEquipment.length === 0 && (
-                  <p className="py-4 text-center text-sm text-muted-foreground">No equipment found.</p>
+                  <p className="py-4 text-center text-sm text-muted-foreground">No se encontraron elementos.</p>
                 )}
               </div>
             </ScrollArea>
