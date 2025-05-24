@@ -4,6 +4,74 @@ import { useState, useEffect } from "react"
 import { Button } from "@/src/components/ui/button"
 import { Badge } from "@/src/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/src/components/ui/avatar"
+import Image from "next/image"
+// Componente para mostrar la imagen de evidencia con fallback
+function EvidenciaFoto({ evidencia_foto }: { evidencia_foto?: string }) {
+  const [imgSrc, setImgSrc] = useState<string | undefined>(evidencia_foto);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  // Detectar si es base64
+  let isBase64 = false;
+  if (imgSrc && imgSrc.startsWith("data:image")) isBase64 = true;
+
+  // Construir la URL si es relativa
+  let displayUrl = imgSrc;
+  if (imgSrc && !isBase64 && !imgSrc.startsWith("http")) {
+    displayUrl = `http://localhost:5000/${imgSrc.replace(/^\/+/,'')}`;
+  }
+
+  if (!imgSrc) {
+    return (
+      <div className="h-16 w-24 flex items-center justify-center bg-muted rounded border">
+        <span className="text-xs text-muted-foreground">Sin foto</span>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div
+        className="relative h-16 w-24 rounded overflow-hidden border bg-white cursor-pointer"
+        onClick={() => setModalOpen(true)}
+        title="Ver imagen en grande"
+      >
+        <Image
+          src={displayUrl || "/placeholder.jpg"}
+          alt="Evidencia fotográfica"
+          fill
+          style={{ objectFit: "cover" }}
+          sizes="96px"
+          className="rounded"
+          onError={() => setImgSrc("/placeholder.jpg")}
+        />
+      </div>
+      {modalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+          onClick={() => setModalOpen(false)}
+        >
+          <div className="relative bg-white rounded shadow-lg p-4" onClick={e => e.stopPropagation()}>
+            <Image
+              src={displayUrl || "/placeholder.jpg"}
+              alt="Evidencia fotográfica grande"
+              width={600}
+              height={400}
+              style={{ objectFit: "contain", maxHeight: "80vh", maxWidth: "90vw" }}
+              className="rounded"
+              onError={() => setImgSrc("/placeholder.jpg")}
+            />
+            <button
+              className="absolute top-2 right-2 text-black bg-white rounded-full px-2 py-1 shadow"
+              onClick={() => setModalOpen(false)}
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
 import { Loader2, AlertCircle } from "lucide-react"
 import { useToast } from "@/src/hooks/use-toast"
 import {
@@ -203,11 +271,14 @@ export function LoansHistoryTable({ lab, searchQuery, timeFilter }: LoansTablePr
         <div key={loan._id} className="rounded-lg border p-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <Avatar>
-                <AvatarFallback>
-                  {getInitials(loan.nombre_beneficiado)}
-                </AvatarFallback>
-              </Avatar>
+              <div className="flex flex-col items-center gap-2">
+                <Avatar>
+                  <AvatarFallback>
+                    {getInitials(loan.nombre_beneficiado)}
+                  </AvatarFallback>
+                </Avatar>
+                <EvidenciaFoto evidencia_foto={loan.evidencia_foto} />
+              </div>
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="font-medium">{loan.nombre_beneficiado}</h3>
@@ -292,5 +363,5 @@ export function LoansHistoryTable({ lab, searchQuery, timeFilter }: LoansTablePr
         </div>
       ))}
     </div>
-  )
+  );
 }
