@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useRef } from "react"
 import { Button } from "@/src/components/ui/button"
 import { Card, CardContent } from "@/src/components/ui/card"
@@ -24,7 +23,10 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true })
       if (videoRef.current) {
         videoRef.current.srcObject = stream
-        setIsCapturing(true)
+        videoRef.current.onloadedmetadata = () => {
+          videoRef.current?.play()
+          setIsCapturing(true)
+        }
       }
     } catch (err) {
       console.error("Error accessing camera:", err)
@@ -98,16 +100,21 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
         </div>
       ) : isCapturing ? (
         <div className="space-y-2">
-          <div className="relative">
-            <video ref={videoRef} autoPlay playsInline className="rounded-md w-full h-[200px] object-cover bg-muted" />
+          <div className="relative w-full">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              className="rounded-md w-full aspect-video bg-muted"
+            />
             <canvas ref={canvasRef} className="hidden" />
           </div>
           <div className="flex gap-2">
             <Button type="button" onClick={capturePhoto} className="flex-1">
-              Capture Photo
+              Capturar Foto
             </Button>
             <Button type="button" variant="outline" onClick={stopCamera}>
-              Cancel
+              Cancelar
             </Button>
           </div>
         </div>
@@ -115,20 +122,26 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
         <Card>
           <CardContent className="p-4 flex flex-col items-center justify-center gap-4 h-[200px]">
             <div className="flex gap-4">
-            <Button type="button" variant="outline" onClick={startCamera} className="flex gap-2">
-              <Camera className="h-4 w-4" />
-              Tomar Foto
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => fileInputRef.current?.click()}
-              className="flex gap-2"
-            >
-              <Upload className="h-4 w-4" />
-              Subir Imagen
-            </Button>
-              <input type="file" ref={fileInputRef} accept="image/*" className="hidden" onChange={handleFileUpload} />
+              <Button type="button" variant="outline" onClick={startCamera} className="flex gap-2">
+                <Camera className="h-4 w-4" />
+                Tomar Foto
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex gap-2"
+              >
+                <Upload className="h-4 w-4" />
+                Subir Imagen
+              </Button>
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
             </div>
             <p className="text-sm text-muted-foreground text-center">
               Toma una foto o sube una imagen como evidencia para este préstamo
