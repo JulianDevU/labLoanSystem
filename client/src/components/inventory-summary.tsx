@@ -1,45 +1,108 @@
 import { Progress } from "@/src/components/ui/progress"
+import { useEffect, useState } from "react"
+import { getEquipment } from "@/src/services/equipmentService"
+import { useToast } from "@/src/hooks/use-toast"
 
 interface InventorySummaryProps {
   lab: string
 }
 
+interface EquipmentItem {
+  _id: string
+  nombre: string
+  cantidad_total: number
+  cantidad_disponible: number
+  categoria: string
+}
+
 export function InventorySummary({ lab }: InventorySummaryProps) {
-  // This would normally fetch data from an API
-  const inventoryData = {
-    fisica: [
-      { category: "Herramientas de Medición", total: 30, available: 24 },
-      { category: "Equipos Ópticos", total: 15, available: 12 },
-      { category: "Componentes Eléctricos", total: 25, available: 22 },
-      { category: "Equipos de Mecánica", total: 17, available: 15 },
-    ],
-    telecomunicaciones: [
-      { category: "Dispositivos de Red", total: 20, available: 16 },
-      { category: "Analizadores de Señal", total: 12, available: 10 },
-      { category: "Equipos de Comunicación", total: 18, available: 14 },
-      { category: "Herramientas de Prueba", total: 14, available: 12 },
-    ],
-    software: [
-      { category: "Placas de Desarrollo", total: 15, available: 10 },
-      { category: "Kits de Sensores", total: 10, available: 8 },
-      { category: "Equipos VR/AR", total: 5, available: 3 },
-      { category: "Dispositivos de Cómputo", total: 12, available: 9 },
-    ],
+  const { toast } = useToast()
+  const [equipment, setEquipment] = useState<EquipmentItem[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchEquipment = async () => {
+      try {
+        setLoading(true)
+        const data = await getEquipment()
+        
+        // Filtrar equipos por laboratorio seleccionado
+        const filteredEquipment = data.filter((item: any) => {
+          const matchById = item.laboratorio_id?._id === lab
+          const matchBySlug = item.laboratorio_id?.slug === lab
+          const matchByName = item.laboratorio_id?.nombre?.toLowerCase().includes(lab.toLowerCase())
+          return matchById || matchBySlug || matchByName
+        })
+
+        // Ordenar por nombre y limitar a 5 equipos para el resumen
+        const sortedEquipment = filteredEquipment
+          .sort((a: any, b: any) => a.nombre.localeCompare(b.nombre))
+          .slice(0, 5)
+          .map((item: any) => ({
+            _id: item._id,
+            nombre: item.nombre,
+            cantidad_total: item.cantidad_total,
+            cantidad_disponible: item.cantidad_disponible,
+            categoria: item.categoria
+          }))
+
+        setEquipment(sortedEquipment)
+      } catch (error) {
+        console.error("Error al cargar equipos:", error)
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los equipos del laboratorio",
+          variant: "destructive"
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchEquipment()
+  }, [lab, toast])
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        {[...Array(3)].map((_, index) => (
+          <div key={index} className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">Cargando...</span>
+              <span className="text-sm text-muted-foreground">0/0 disponibles</span>
+            </div>
+            <Progress value={0} className="h-2" />
+          </div>
+        ))}
+      </div>
+    )
   }
 
-  const currentInventory = inventoryData[lab as keyof typeof inventoryData]
+  if (equipment.length === 0) {
+    return (
+      <div className="text-center text-sm text-muted-foreground py-4">
+        No se encontraron equipos en este laboratorio
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-4">
-      {currentInventory.map((item, index) => (
-        <div key={index} className="space-y-1">
+      {equipment.map((item) => (
+        <div key={item._id} className="space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">{item.category}</span>
+            <span className="text-sm font-medium">{item.nombre}</span>
             <span className="text-sm text-muted-foreground">
-              {item.available}/{item.total} disponibles
+              {item.cantidad_disponible}/{item.cantidad_total} disponibles
             </span>
           </div>
-          <Progress value={(item.available / item.total) * 100} className="h-2" />
+          <Progress 
+            value={(item.cantidad_disponible / item.cantidad_total) * 100} 
+            className="h-2" 
+          />
+          <div className="text-xs text-muted-foreground">
+            Categoría: {item.categoria}
+          </div>
         </div>
       ))}
     </div>
