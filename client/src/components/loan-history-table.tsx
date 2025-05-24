@@ -92,11 +92,14 @@ export function LoansHistoryTable({ lab, searchQuery, timeFilter }: LoansTablePr
     )
   })
 
-  // Obtener badge de estado
+  // Obtener badge de estado - FUNCIÓN MODIFICADA
   const getStatusBadge = (loan: LoanFromApi) => {
+    const now = new Date();
+    const returnDate = new Date(loan.fecha_devolucion);
     const isLate = loan.fecha_devolucion_real &&
-      new Date(loan.fecha_devolucion_real) > new Date(loan.fecha_devolucion)
-    const isOverdue = loan.estado === 'vencido'
+      new Date(loan.fecha_devolucion_real) > returnDate;
+    const isOverdue = loan.estado === 'vencido' || 
+                     (loan.estado === 'activo' && returnDate < now);
 
     if (loan.estado === 'devuelto') {
       if (isLate) {
@@ -128,6 +131,7 @@ export function LoansHistoryTable({ lab, searchQuery, timeFilter }: LoansTablePr
     )
   }
 
+  // Resto del código permanece igual...
   // Formatear fecha
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString("es-MX", {
