@@ -1,8 +1,9 @@
-"use client"
 
-import { useState, useEffect } from "react"
-import { Button } from "@/src/components/ui/button"
-import { Checkbox } from "@/src/components/ui/checkbox"
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { Button } from "@/src/components/ui/button";
+import { Checkbox } from "@/src/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,17 +11,79 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/src/components/ui/dropdown-menu"
-import { Edit, MoreHorizontal, Trash } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { useToast } from "@/src/hooks/use-toast"
-import { deleteEquipment, getEquipment } from "../services/equipmentService"
+} from "@/src/components/ui/dropdown-menu";
+import { Edit, MoreHorizontal, Trash } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/src/hooks/use-toast";
+import { deleteEquipment, getEquipment, updateEquipment } from "../services/equipmentService";
+function RestarStockButton({ item, onRestar }: { item: InventoryItem, onRestar: (restado: number) => void }) {
+  const { toast } = useToast();
+  const [showInput, setShowInput] = useState(false);
+  const [cantidad, setCantidad] = useState(1);
+  const [loading, setLoading] = useState(false);
+
+  const handleRestar = async () => {
+    if (!item.cantidad_disponible || cantidad < 1 || cantidad > item.cantidad_disponible) {
+      toast({
+        title: "Cantidad inválida",
+        description: `Debes ingresar un valor entre 1 y ${item.cantidad_disponible}`,
+        variant: "destructive"
+      });
+      return;
+    }
+    setLoading(true);
+    try {
+      await updateEquipment(item.id, { cantidad_disponible: (item.cantidad_disponible ?? 0) - cantidad });
+      toast({
+        title: "Stock actualizado",
+        description: `Se restaron ${cantidad} unidades del inventario.`
+      });
+      onRestar(cantidad);
+      setShowInput(false);
+      setCantidad(1);
+    } catch (error: any) {
+      toast({
+        title: "Error al restar stock",
+        description: error.message || "No se pudo restar el stock.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <span style={{ marginLeft: 8 }}>
+      {showInput ? (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          <input
+            type="number"
+            min={1}
+            max={item.cantidad_disponible}
+            value={cantidad}
+            onChange={e => setCantidad(Number(e.target.value))}
+            style={{ width: 50, fontSize: 12, padding: 2, border: '1px solid #ccc', borderRadius: 4 }}
+            disabled={loading}
+          />
+          <Button size="sm" variant="outline" onClick={handleRestar} disabled={loading} style={{ fontSize: 12, padding: '0 8px' }}>OK</Button>
+          <Button size="sm" variant="ghost" onClick={() => setShowInput(false)} disabled={loading} style={{ fontSize: 12, padding: '0 8px' }}>Cancelar</Button>
+        </span>
+      ) : (
+        <Button size="sm" variant="outline" onClick={() => setShowInput(true)} style={{ fontSize: 12, padding: '0 8px', marginLeft: 4 }}>
+          Restar
+        </Button>
+      )}
+    </span>
+  );
+}
+
 
 interface InventoryItem {
   id: string
   nombre: string
   categoria: string
   cantidad_total: number
+  cantidad_disponible?: number
   ubicacion?: string
   laboratorio_id: {
     _id: string
@@ -57,6 +120,7 @@ export function InventoryTable({ lab, searchQuery }: InventoryTableProps) {
           nombre: item.nombre,
           categoria: item.categoria,
           cantidad_total: item.cantidad_total,
+          cantidad_disponible: item.cantidad_disponible,
           ubicacion: item.ubicacion,
           laboratorio_id: item.laboratorio_id
         }))
@@ -144,7 +208,8 @@ export function InventoryTable({ lab, searchQuery }: InventoryTableProps) {
               <th className="h-12 px-4 text-left align-middle font-medium">ID</th>
               <th className="h-12 px-4 text-left align-middle font-medium">Nombre</th>
               <th className="h-12 px-4 text-left align-middle font-medium">Categoría</th>
-              <th className="h-12 px-4 text-left align-middle font-medium">Cantidad</th>
+              <th className="h-12 px-4 text-left align-middle font-medium">Total</th>
+              <th className="h-12 px-4 text-left align-middle font-medium">Disponible</th>
               <th className="h-12 px-4 text-left align-middle font-medium">Ubicación</th>
               <th className="h-12 px-4 text-left align-middle font-medium">Laboratorio</th>
               <th className="h-12 px-4 text-left align-middle font-medium">Acciones</th>
@@ -184,6 +249,9 @@ export function InventoryTable({ lab, searchQuery }: InventoryTableProps) {
                   <td className="p-4 align-middle">{item.nombre}</td>
                   <td className="p-4 align-middle">{item.categoria}</td>
                   <td className="p-4 align-middle">{item.cantidad_total}</td>
+                  <td className="p-4 align-middle">
+                    {item.cantidad_disponible}
+                  </td>
                   <td className="p-4 align-middle">{item.ubicacion}</td>
                   <td className="p-4 align-middle">{item.laboratorio_id.nombre}</td>
                   <td className="p-4 align-middle">

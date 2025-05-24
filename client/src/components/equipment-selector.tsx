@@ -174,11 +174,16 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
   // Original multiple selection logic
   const equipmentArray = Array.isArray(value) ? value : []
 
+  // Solo permite añadir si no se excede el stock disponible
   const addEquipment = (id: string, name: string) => {
-    const existingItem = equipmentArray.find((item) => item.id === id)
-
+    const item = currentEquipment.find(eq => eq.id === id)
+    if (!item) return;
+    const existingItem = equipmentArray.find((e) => e.id === id)
+    const available = item.available;
+    const selectedQuantity = existingItem ? existingItem.quantity : 0;
+    if (selectedQuantity >= available) return; // No permitir más de lo disponible
     if (existingItem) {
-      onChange(equipmentArray.map((item) => (item.id === id ? { ...item, quantity: item.quantity + 1 } : item)))
+      onChange(equipmentArray.map((e) => (e.id === id ? { ...e, quantity: e.quantity + 1 } : e)))
     } else {
       onChange([...equipmentArray, { id, name, quantity: 1 }])
     }
@@ -189,12 +194,17 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
   }
 
   const updateQuantity = (id: string, newQuantity: number) => {
+    const item = currentEquipment.find(eq => eq.id === id)
+    if (!item) return;
+    const available = item.available;
     if (newQuantity < 1) {
       removeEquipment(id)
       return
     }
-
-    onChange(equipmentArray.map((item) => (item.id === id ? { ...item, quantity: newQuantity } : item)))
+    if (newQuantity > available) {
+      newQuantity = available;
+    }
+    onChange(equipmentArray.map((e) => (e.id === id ? { ...e, quantity: newQuantity } : e)))
   }
 
   if (loading) {
@@ -241,6 +251,10 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
                       size="icon"
                       className="h-7 w-7"
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      disabled={(() => {
+                        const eq = currentEquipment.find(eq => eq.id === item.id);
+                        return eq ? item.quantity >= eq.available : false;
+                      })()}
                     >
                       <Plus className="h-3 w-3" />
                       <span className="sr-only">Increase</span>
