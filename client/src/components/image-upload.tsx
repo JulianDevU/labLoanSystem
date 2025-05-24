@@ -51,11 +51,13 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
   return (
     <div className="space-y-4">
       {value ? (
-        <div className="relative">
+        <div className="relative h-[600px] w-full">
           <Image
             src={value}
             alt="Uploaded"
-            className="rounded-md object-cover h-[600px] w-full"
+            className="rounded-md object-cover"
+            fill
+            sizes="(max-width: 768px) 100vw, 800px"
           />
           <Button
             type="button"
