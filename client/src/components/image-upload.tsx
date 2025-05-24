@@ -55,9 +55,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
           <Image
             src={value}
             alt="Uploaded"
-            width={300}
-            height={200}
-            className="rounded-md object-cover h-[200px] w-full"
+            className="rounded-md object-cover h-[600px] w-full"
           />
           <Button
             type="button"
@@ -76,7 +74,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
             ref={webcamRef}
             screenshotFormat="image/jpeg"
             videoConstraints={videoConstraints}
-            className="rounded-md w-full h-[200px] object-cover bg-black"
+            className="rounded-md w-full h-[600px] object-cover bg-black"
           />
           <div className="flex gap-2">
             <Button onClick={capturePhoto} className="flex-1">
@@ -89,7 +87,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
         </div>
       ) : (
         <Card>
-          <CardContent className="p-4 flex flex-col items-center justify-center gap-4 h-[200px]">
+          <CardContent className="p-4 flex flex-col items-center justify-center gap-4 h-[600px]">
             <div className="flex gap-4">
               <Button variant="outline" onClick={() => setIsCapturing(true)} className="flex gap-2">
                 <Camera className="h-4 w-4" />
