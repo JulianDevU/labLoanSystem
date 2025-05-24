@@ -7,28 +7,28 @@ import { Input } from "@/src/components/ui/input"
 import { DashboardHeader } from "@/src/components/dashboard-header"
 import { DashboardShell } from "@/src/components/dashboard-shell"
 import { OverviewStats } from "@/src/components/overview-stats"
-import { RecentLoans } from "@/src/components/recent-loans"
 import { InventorySummary } from "@/src/components/inventory-summary"
 import { LabSelector } from "@/src/components/lab-selector"
 import { InventoryTable } from "@/src/components/inventory-table" // Asegúrate de que la ruta sea correcta
 import { useRequireAuth } from "@/src/hooks/useRequireAuth"
 import { Search } from "lucide-react"
 import { LoansTable } from "@/src/components/loan-table"
+import { LoansHistoryTable } from "@/src/components/loan-history-table"
 
 export default function DashboardPage() {
   useRequireAuth()
   const [selectedLab, setSelectedLab] = useState("fisica")
   const [searchQuery, setSearchQuery] = useState("")
-  
+
   const getLabName = (lab: string) => {
-    switch(lab) {
+    switch (lab) {
       case "fisica": return "Física"
       case "telecomunicaciones": return "Telecomunicaciones"
       case "software": return "Software"
       default: return lab
     }
   }
-  
+
   return (
     <DashboardShell>
       <DashboardHeader heading="Panel de Control" text="Gestiona los préstamos de equipos e inventario en los laboratorios.">
@@ -52,7 +52,7 @@ export default function DashboardPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <RecentLoans lab={selectedLab} />
+                  <LoansHistoryTable lab={selectedLab} searchQuery={searchQuery} timeFilter="30days"/>
                 </CardContent>
               </Card>
               <Card className="col-span-3">
@@ -77,7 +77,7 @@ export default function DashboardPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <LoansTable lab={selectedLab} searchQuery={searchQuery}/>
+                <LoansTable lab={selectedLab} searchQuery={searchQuery} />
               </CardContent>
             </Card>
           </TabsContent>
