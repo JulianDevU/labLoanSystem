@@ -23,15 +23,18 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true })
       if (videoRef.current) {
         videoRef.current.srcObject = stream
+        setIsCapturing(true)
+  
+        // Espera a que se cargue el metadata y empieza el stream
         videoRef.current.onloadedmetadata = () => {
           videoRef.current?.play()
-          setIsCapturing(true)
         }
       }
     } catch (err) {
       console.error("Error accessing camera:", err)
     }
   }
+  
 
   const stopCamera = () => {
     if (videoRef.current && videoRef.current.srcObject) {
