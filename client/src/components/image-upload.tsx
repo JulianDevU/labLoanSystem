@@ -1,6 +1,5 @@
 "use client"
 
-import type React from "react"
 import { useState, useRef } from "react"
 import { Button } from "@/src/components/ui/button"
 import { Card, CardContent } from "@/src/components/ui/card"
@@ -24,8 +23,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
       if (videoRef.current) {
         videoRef.current.srcObject = stream
         setIsCapturing(true)
-  
-        // Espera a que se cargue el metadata y empieza el stream
+
         videoRef.current.onloadedmetadata = () => {
           videoRef.current?.play()
         }
@@ -34,15 +32,14 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
       console.error("Error accessing camera:", err)
     }
   }
-  
 
   const stopCamera = () => {
     if (videoRef.current && videoRef.current.srcObject) {
       const tracks = (videoRef.current.srcObject as MediaStream).getTracks()
       tracks.forEach((track) => track.stop())
       videoRef.current.srcObject = null
-      setIsCapturing(false)
     }
+    setIsCapturing(false)
   }
 
   const capturePhoto = () => {
@@ -55,7 +52,6 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
         canvas.width = video.videoWidth
         canvas.height = video.videoHeight
         context.drawImage(video, 0, 0, canvas.width, canvas.height)
-
         const dataUrl = canvas.toDataURL("image/jpeg")
         onChange(dataUrl)
         stopCamera()
@@ -85,7 +81,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
       {value ? (
         <div className="relative">
           <Image
-            src={value || "/placeholder.svg"}
+            src={value}
             alt="Uploaded image"
             width={300}
             height={200}
@@ -103,12 +99,13 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
         </div>
       ) : isCapturing ? (
         <div className="space-y-2">
-          <div className="relative w-full">
+          <div className="relative">
             <video
               ref={videoRef}
               autoPlay
               playsInline
-              className="rounded-md w-full aspect-video bg-muted"
+              muted
+              className="rounded-md w-full h-[200px] object-cover bg-black"
             />
             <canvas ref={canvasRef} className="hidden" />
           </div>
@@ -138,13 +135,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
                 <Upload className="h-4 w-4" />
                 Subir Imagen
               </Button>
-              <input
-                type="file"
-                ref={fileInputRef}
-                accept="image/*"
-                className="hidden"
-                onChange={handleFileUpload}
-              />
+              <input type="file" ref={fileInputRef} accept="image/*" className="hidden" onChange={handleFileUpload} />
             </div>
             <p className="text-sm text-muted-foreground text-center">
               Toma una foto o sube una imagen como evidencia para este préstamo
