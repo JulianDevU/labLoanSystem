@@ -22,7 +22,6 @@ export default function SettingsPage() {
         <Tabs defaultValue={tab} onValueChange={setTab} className="space-y-4">
           <TabsList>
             <TabsTrigger value="account">Cuenta</TabsTrigger>
-            <TabsTrigger value="notifications">Notificaciones</TabsTrigger>
             <TabsTrigger value="preferences">Preferencias</TabsTrigger>
           </TabsList>
 
@@ -67,35 +66,6 @@ export default function SettingsPage() {
                   </div>
                   <button type="submit" className="mt-2 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
                     Guardar cambios
-                  </button>
-                </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="notifications" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Notificaciones</CardTitle>
-                <CardDescription>Configura cómo y cuándo recibir notificaciones.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {/* Ejemplo simple con checkboxes */}
-                <form className="space-y-4">
-                  <div className="flex items-center space-x-2">
-                    <input type="checkbox" id="email-notifications" name="email-notifications" />
-                    <label htmlFor="email-notifications" className="text-sm">Notificaciones por correo electrónico</label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input type="checkbox" id="sms-notifications" name="sms-notifications" />
-                    <label htmlFor="sms-notifications" className="text-sm">Notificaciones por SMS</label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input type="checkbox" id="push-notifications" name="push-notifications" />
-                    <label htmlFor="push-notifications" className="text-sm">Notificaciones push</label>
-                  </div>
-                  <button type="submit" className="mt-2 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
-                    Guardar preferencias
                   </button>
                 </form>
               </CardContent>
