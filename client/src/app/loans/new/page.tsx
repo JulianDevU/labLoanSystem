@@ -89,6 +89,47 @@ export default function NewLoanPage() {
     fetchLabs()
   }, [])
 
+  // Función para enviar email de notificación
+  const sendLoanNotification = async (loanData: any, selectedLab: Lab) => {
+    try {
+      const emailData = {
+        beneficiaryName: loanData.nombre_beneficiado,
+        beneficiaryEmail: loanData.correo_beneficiado,
+        laboratoryName: selectedLab.nombre,
+        equipmentList: loanData.equipos.map((eq: any) => ({
+          name: form.getValues('equipment').find(item => item.id === eq.equipo_id)?.name || 'Equipo no encontrado',
+          quantity: eq.cantidad
+        })),
+        loanDate: new Date().toISOString(),
+        returnDate: loanData.fecha_devolucion,
+      }
+
+      const response = await fetch('/api/mail', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(emailData),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Error enviando notificación')
+      }
+
+      return true
+    } catch (error) {
+      console.error('Error enviando notificación por email:', error)
+      // No lanzamos el error para que no interrumpa el flujo principal
+      toast({
+        title: "Advertencia",
+        description: "El préstamo se creó correctamente, pero no se pudo enviar la notificación por email.",
+        variant: "default",
+      })
+      return false
+    }
+  }
+
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true)
     const selectedLab = labs.find((lab) => lab.slug === data.lab)
@@ -123,12 +164,17 @@ export default function NewLoanPage() {
 
       console.log("Enviando datos del préstamo:", loanData)
 
+      // Registrar el préstamo
       await registerLoan(loanData)
+
+      // Enviar notificación por email
+      await sendLoanNotification(loanData, selectedLab)
 
       toast({
         title: "Préstamo creado exitosamente",
-        description: `El préstamo con ${equipos.length} equipo(s) ha sido registrado correctamente.`,
+        description: `El préstamo con ${equipos.length} equipo(s) ha sido registrado correctamente y se ha enviado una notificación por email.`,
       })
+      
       router.push("/loans")
     } catch (error) {
       console.error("Error al crear préstamo:", error)
