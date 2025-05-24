@@ -13,6 +13,7 @@ import { LabSelector } from "@/src/components/lab-selector"
 import { InventoryTable } from "@/src/components/inventory-table" // Asegúrate de que la ruta sea correcta
 import { useRequireAuth } from "@/src/hooks/useRequireAuth"
 import { Search } from "lucide-react"
+import { LoansTable } from "@/src/components/loan-table"
 
 export default function DashboardPage() {
   useRequireAuth()
@@ -76,8 +77,7 @@ export default function DashboardPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {/* Aquí se implementará la tabla de préstamos activos */}
-                <p className="text-sm text-muted-foreground">Aquí se mostrará la tabla detallada de préstamos activos.</p>
+                <LoansTable lab={selectedLab} searchQuery={searchQuery}/>
               </CardContent>
             </Card>
           </TabsContent>
@@ -100,8 +100,6 @@ export default function DashboardPage() {
                     className="pl-8"
                   />
                 </div>
-                
-                {/* Tabla de inventario */}
                 <InventoryTable lab={selectedLab} searchQuery={searchQuery} />
               </CardContent>
             </Card>
