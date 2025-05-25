@@ -22,7 +22,6 @@ const prestamoSchema = new Schema({
     lowercase: true,
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Por favor ingrese un correo válido']
   },
-  // CAMBIO: Ahora es un array de equipos con cantidad
   equipos: [{
     equipo_id: {
       type: Schema.Types.ObjectId,
@@ -35,7 +34,6 @@ const prestamoSchema = new Schema({
       min: [1, 'La cantidad debe ser mayor a 0']
     }
   }],
-  // Cantidad devuelta por cada equipo (puede ser menor o igual a la prestada)
   equipos_devueltos: [{
     equipo_id: {
       type: Schema.Types.ObjectId,
@@ -48,7 +46,6 @@ const prestamoSchema = new Schema({
       min: 0
     }
   }],
-  // Nota general de devolución
   nota_devolucion: {
     type: String,
     trim: true,
@@ -91,30 +88,49 @@ const prestamoSchema = new Schema({
   versionKey: false
 });
 
-// Índices actualizados
+// Índices
 prestamoSchema.index({ numero_identificacion: 1, estado: 1 });
 prestamoSchema.index({ 'equipos.equipo_id': 1, estado: 1 });
 prestamoSchema.index({ fecha_devolucion: 1, estado: 1 });
 
-// Validación personalizada para asegurar que hay al menos un equipo
+// CAMBIO 1: Validación personalizada con margen de tiempo
 prestamoSchema.pre('validate', function(next) {
   if (!this.equipos || this.equipos.length === 0) {
     this.invalidate('equipos', 'Debe seleccionar al menos un equipo');
   }
+  
+  // NUEVA VALIDACIÓN: Verificar que la fecha de devolución sea futura
+  if (this.fecha_devolucion) {
+    const ahora = new Date();
+    const fechaDevolucion = new Date(this.fecha_devolucion);
+    
+    // Agregar margen de 10 minutos para evitar problemas de sincronización
+    const margenMinutos = 10 * 60 * 1000; // 10 minutos en milisegundos
+    const fechaLimite = new Date(ahora.getTime() - margenMinutos);
+    
+    if (fechaDevolucion < fechaLimite) {
+      this.invalidate('fecha_devolucion', 'La fecha de devolución debe ser posterior a la fecha actual');
+    }
+  }
+  
   next();
 });
 
-// Método para verificar si un préstamo está vencido
+// CAMBIO 2: Método mejorado para verificar vencimiento
 prestamoSchema.methods.estaVencido = function() {
   if (this.estado === 'devuelto') return false;
-  return this.fecha_devolucion < new Date();
+  
+  const ahora = new Date();
+  const fechaDevolucion = new Date(this.fecha_devolucion);
+  
+  return fechaDevolucion < ahora;
 };
 
-// Middleware para actualizar el estado antes de guardar
+// CAMBIO 3: Middleware mejorado para actualizar estado
 prestamoSchema.pre('save', function(next) {
   if (this.fecha_devolucion_real) {
     this.estado = 'devuelto';
-  } else if (this.fecha_devolucion < new Date() && this.estado === 'activo') {
+  } else if (this.estaVencido() && this.estado === 'activo') {
     this.estado = 'vencido';
   }
   next();

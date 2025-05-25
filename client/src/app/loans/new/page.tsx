@@ -29,7 +29,23 @@ import { registerLoan } from "@/src/services/loanService"
 import { getLaboratories } from "@/src/services/laboratoryService"
 import { ModalBase } from "@/src/components/modal"
 
-// Updated schema for multiple equipment
+// CAMBIO 1: Función utilitaria para obtener fecha mínima
+const getMinDateTime = () => {
+  const ahora = new Date();
+  // Agregar 30 minutos de margen
+  const fechaMinima = new Date(ahora.getTime() + (30 * 60 * 1000));
+  
+  // Formatear para input datetime-local (YYYY-MM-DDTHH:mm)
+  const year = fechaMinima.getFullYear();
+  const month = String(fechaMinima.getMonth() + 1).padStart(2, '0');
+  const day = String(fechaMinima.getDate()).padStart(2, '0');
+  const hours = String(fechaMinima.getHours()).padStart(2, '0');
+  const minutes = String(fechaMinima.getMinutes()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
+// CAMBIO 2: Schema actualizado con validación de fecha mejorada
 const formSchema = z.object({
   lab: z.string(),
   beneficiaryType: z.enum(["estudiante", "docente"]),
@@ -42,7 +58,16 @@ const formSchema = z.object({
     quantity: z.number().min(1)
   })).min(1, "Debes seleccionar al menos un equipo"),
   description: z.string().optional(),
-  returnDate: z.string().min(1, "Fecha de devolución es requerida"),
+  returnDate: z.string()
+    .min(1, "Fecha de devolución es requerida")
+    .refine((date) => {
+      const selectedDate = new Date(date);
+      const now = new Date();
+      const minDate = new Date(now.getTime() + (30 * 60 * 1000)); // 30 minutos de margen
+      return selectedDate >= minDate;
+    }, {
+      message: "La fecha de devolución debe ser al menos 30 minutos posterior a la hora actual"
+    }),
   photo: z.string().min(1, "La imagen es requerida"),
 })
 
@@ -59,6 +84,8 @@ export default function NewLoanPage() {
   const { toast } = useToast()
   const [selectedLab, setSelectedLab] = useState("fisica")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  // CAMBIO 3: Estado para fecha mínima
+  const [minDateTime, setMinDateTime] = useState("")
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -88,6 +115,16 @@ export default function NewLoanPage() {
     }
 
     fetchLabs()
+    
+    // CAMBIO 4: Establecer fecha mínima al cargar
+    setMinDateTime(getMinDateTime())
+    
+    // CAMBIO 5: Actualizar fecha mínima cada minuto
+    const interval = setInterval(() => {
+      setMinDateTime(getMinDateTime())
+    }, 60000) // 1 minuto
+    
+    return () => clearInterval(interval)
   }, [])
 
   // Función para enviar email de notificación
@@ -121,7 +158,6 @@ export default function NewLoanPage() {
       return true
     } catch (error) {
       console.error('Error enviando notificación por email:', error)
-      // No lanzamos el error para que no interrumpa el flujo principal
       toast({
         title: "Advertencia",
         description: "El préstamo se creó correctamente, pero no se pudo enviar la notificación por email.",
@@ -151,7 +187,6 @@ export default function NewLoanPage() {
     }
 
     try {
-      // Transform equipment data to match backend format
       const equipos = data.equipment.map(item => ({
         equipo_id: item.id,
         cantidad: item.quantity
@@ -162,14 +197,19 @@ export default function NewLoanPage() {
         numero_identificacion: data.beneficiaryId,
         nombre_beneficiado: data.beneficiaryName,
         correo_beneficiado: data.beneficiaryEmail,
-        equipos: equipos, // Send multiple equipment
-        fecha_devolucion: data.returnDate,
+        equipos: equipos,
+        // CAMBIO 6: Convertir fecha a ISO string para envío al backend
+        fecha_devolucion: new Date(data.returnDate).toISOString(),
         evidencia_foto: data.photo,
         laboratorio_id: selectedLab._id,
         descripcion: data.description,
       }
 
-      console.log("Enviando datos del préstamo:", loanData)
+      console.log("Enviando datos del préstamo:", {
+        ...loanData,
+        fecha_original: data.returnDate,
+        fecha_iso: loanData.fecha_devolucion
+      })
 
       // Registrar el préstamo
       await registerLoan(loanData)
@@ -212,7 +252,6 @@ export default function NewLoanPage() {
           onValueChange={(value) => {
             setSelectedLab(value)
             form.setValue("lab", value)
-            // Reset equipment when lab changes
             form.setValue("equipment", [])
           }}
         />
@@ -323,7 +362,7 @@ export default function NewLoanPage() {
                         lab={selectedLab}
                         value={field.value}
                         onChange={field.onChange}
-                        single={false} // Enable multiple selection mode
+                        single={false}
                       />
                     </FormControl>
                     <FormDescription>
@@ -352,6 +391,7 @@ export default function NewLoanPage() {
                 )}
               />
 
+              {/* CAMBIO 7: Campo de fecha con fecha mínima y descripción actualizada */}
               <FormField
                 control={form.control}
                 name="returnDate"
@@ -359,10 +399,18 @@ export default function NewLoanPage() {
                   <FormItem>
                     <FormLabel>Fecha de Devolución Esperada</FormLabel>
                     <FormControl>
-                      <Input type="datetime-local" {...field} />
+                      <Input 
+                        type="datetime-local" 
+                        min={minDateTime}
+                        {...field} 
+                      />
                     </FormControl>
                     <FormDescription>
                       Especifica cuándo se espera que se devuelvan todos los equipos.
+                      <br />
+                      <small className="text-yellow-600">
+                        ⚠️ La fecha debe ser al menos 30 minutos posterior a la hora actual.
+                      </small>
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
