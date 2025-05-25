@@ -68,7 +68,7 @@ export default function ProfilePage() {
                                         <CardDescription>Aqui tienes un manual de usuario para manejar la pagina.</CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <a href="../../../public/MANUAL_USUARIO.pdf" download>
+                                        <a href="/MANUAL_USUARIO.pdf" download>
                                             <Button variant="outline">
                                                 Descargar manual
                                             </Button>
@@ -82,7 +82,7 @@ export default function ProfilePage() {
                                         <CardDescription>Aqui tienes un manual tecnico para saber lo que contiene la pagina.</CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <a href="../../../public/MANUAL_TECNICO.pdf" download>
+                                        <a href="/MANUAL_USUARIO.pdf" download>
                                             <Button variant="outline">
                                                 Descargar manual
                                             </Button>
