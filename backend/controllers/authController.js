@@ -117,7 +117,7 @@ export const cambiarContrasena = async (req, res) => {
     const usuario = await Usuario.findById(req.usuario._id);
 
     // Verificar contraseña actual
-    const esContrasenaCorrecta = usuario.verificarContrasena(contrasenaActual);
+    const esContrasenaCorrecta = await usuario.verificarContrasena(contrasenaActual);
     if (!esContrasenaCorrecta) {
       return res.status(401).json({
         success: false,

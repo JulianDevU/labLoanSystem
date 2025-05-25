@@ -14,6 +14,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { changePassword } from "@/src/services/authService"
+import { ModalBase } from "@/src/components/modal"
 
 // Schema de validación para cambio de contraseña
 const changePasswordSchema = z.object({
@@ -52,45 +53,44 @@ export default function SettingsPage() {
 
   const onPasswordSubmit = async (data: ChangePasswordSchema) => {
     setIsChangingPassword(true)
-  
+
     try {
       await changePassword({
         contrasenaActual: data.contrasenaActual,
         nuevaContrasena: data.nuevaContrasena,
         confirmarContrasena: data.confirmarContrasena
       })
-  
+
       toast({
         title: "Contraseña actualizada",
         description: "Tu contraseña ha sido cambiada exitosamente.",
       })
-  
+
       setModalInfo({
         title: "Éxito",
         description: "Tu contraseña ha sido cambiada exitosamente."
       })
       setModalOpen(true)
-  
+
       resetPasswordForm()
-  
+
     } catch (error: any) {
       toast({
         title: "Error al cambiar contraseña",
         description: error.message || "Hubo un problema al cambiar tu contraseña",
         variant: "destructive",
       })
-  
+
       setModalInfo({
         title: "Error",
         description: error.message || "Hubo un problema al cambiar tu contraseña."
       })
       setModalOpen(true)
-  
+
     } finally {
       setIsChangingPassword(false)
     }
   }
-  
 
   return (
     <DashboardShell>
@@ -191,6 +191,12 @@ export default function SettingsPage() {
             </Card>
           </TabsContent>
         </Tabs>
+        <ModalBase
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+          title={modalInfo.title}
+          description={modalInfo.description}
+        />
       </div>
     </DashboardShell>
   )

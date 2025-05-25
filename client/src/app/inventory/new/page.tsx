@@ -16,6 +16,7 @@ import { LabSelector } from "@/src/components/lab-selector"
 import { useToast } from "@/src/hooks/use-toast"
 import { registerEquipment } from "@/src/services/equipmentService"
 import { getLaboratories } from "@/src/services/laboratoryService"
+import { ModalBase } from "@/src/components/modal"
 
 const formSchema = z.object({
   lab: z.string(),
@@ -72,6 +73,12 @@ export default function NewInventoryItemPage() {
     fetchLabs()
   }, [])
 
+  const [modalOpen, setModalOpen] = useState(false)
+  const [modalInfo, setModalInfo] = useState({
+    title: "",
+    description: ""
+  })
+
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true)
     const selectedLab = labs.find((lab) => lab.slug === data.lab)
@@ -99,16 +106,24 @@ export default function NewInventoryItemPage() {
 
     try {
       await registerEquipment(payload)
-      toast({
+
+      setModalInfo({
         title: "Equipo agregado exitosamente",
         description: "El nuevo equipo ha sido añadido al inventario.",
       })
-      router.push("/inventory")
-    } catch (error) {
-      toast({
+      setModalOpen(true)
+
+      setTimeout(() => {
+        router.push("/inventory")
+      }, 2500)
+
+    } catch (error: any) {
+      setModalInfo({
         title: "Error",
-        description: (error as Error).message,
+        description: error.message || "Hubo un error al crear el préstamo",
       })
+      setModalOpen(true)
+
     } finally {
       setIsSubmitting(false)
     }
@@ -247,6 +262,12 @@ export default function NewInventoryItemPage() {
           </Card>
         </form>
       </Form>
+      <ModalBase
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        title={modalInfo.title}
+        description={modalInfo.description}
+      />
     </DashboardShell>
   )
 }

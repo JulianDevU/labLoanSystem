@@ -27,6 +27,7 @@ import { EquipmentSelector } from "@/src/components/equipment-selector"
 import { useToast } from "@/src/hooks/use-toast"
 import { registerLoan } from "@/src/services/loanService"
 import { getLaboratories } from "@/src/services/laboratoryService"
+import { ModalBase } from "@/src/components/modal"
 
 // Updated schema for multiple equipment
 const formSchema = z.object({
@@ -130,6 +131,12 @@ export default function NewLoanPage() {
     }
   }
 
+  const [modalOpen, setModalOpen] = useState(false)
+  const [modalInfo, setModalInfo] = useState({
+    title: "",
+    description: ""
+  })
+
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true)
     const selectedLab = labs.find((lab) => lab.slug === data.lab)
@@ -170,19 +177,25 @@ export default function NewLoanPage() {
       // Enviar notificación por email
       await sendLoanNotification(loanData, selectedLab)
 
-      toast({
+      setModalInfo({
         title: "Préstamo creado exitosamente",
         description: `El préstamo con ${equipos.length} equipo(s) ha sido registrado correctamente y se ha enviado una notificación por email.`,
       })
+      setModalOpen(true)
+
+      setTimeout(() => {
+        router.push("/loans")
+      }, 2500)
       
-      router.push("/loans")
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al crear préstamo:", error)
-      toast({
+
+      setModalInfo({
         title: "Error",
-        description: (error as Error).message || "Hubo un error al crear el préstamo",
-        variant: "destructive",
+        description: error.message || "Hubo un error al crear el préstamo",
       })
+      setModalOpen(true)
+
     } finally {
       setIsSubmitting(false)
     }
@@ -382,6 +395,12 @@ export default function NewLoanPage() {
           </Card>
         </form>
       </Form>
+      <ModalBase
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        title={modalInfo.title}
+        description={modalInfo.description}
+      />
     </DashboardShell>
   )
 }

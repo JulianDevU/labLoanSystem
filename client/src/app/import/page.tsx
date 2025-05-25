@@ -12,7 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/src/components/ui/alert"
 import { Progress } from "@/src/components/ui/progress"
 import { AlertCircle, CheckCircle2, Download, FileSpreadsheet, Info } from "lucide-react"
 import { useToast } from "@/src/hooks/use-toast"
-import { importEquipmentFromExcel, generateExcelTemplate } from "@/src/services/excelService"
+import { importEquipmentFromExcel, generateExcelTemplate } from "@/src/services/importExcelService"
 
 interface ImportResult {
   success: boolean
