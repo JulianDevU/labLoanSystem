@@ -1,6 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { ModalBase } from "@/src/components/modal"
+import { Input } from "@/src/components/ui/input"
+import { Textarea } from "@/src/components/ui/textarea"
 import { Button } from "@/src/components/ui/button"
 import { Badge } from "@/src/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/src/components/ui/avatar"
@@ -92,6 +95,10 @@ export function LoansTable({ lab, searchQuery }: LoansTableProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [updatingLoan, setUpdatingLoan] = useState<string | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [selectedLoan, setSelectedLoan] = useState<LoanFromApi | null>(null)
+  const [equiposDevueltos, setEquiposDevueltos] = useState<{ equipo_id: string, cantidad: number }[]>([])
+  const [notaDevolucion, setNotaDevolucion] = useState("")
 
   // Cargar préstamos activos
   const fetchLoans = async () => {
@@ -152,22 +159,35 @@ export function LoansTable({ lab, searchQuery }: LoansTableProps) {
     )
   })
 
-  // Marcar préstamo como devuelto
-  const handleCompleteLoan = async (loanId: string) => {
+  // Abrir modal para devolución
+  const openReturnModal = (loan: LoanFromApi) => {
+    setSelectedLoan(loan)
+    setEquiposDevueltos(loan.equipos.map(eq => ({ equipo_id: eq.equipo_id._id, cantidad: eq.cantidad })))
+    setNotaDevolucion("")
+    setModalOpen(true)
+  }
+
+  // Manejar cambio de cantidad devuelta
+  const handleCantidadDevuelta = (equipo_id: string, value: number) => {
+    setEquiposDevueltos(prev => prev.map(eq => eq.equipo_id === equipo_id ? { ...eq, cantidad: value } : eq))
+  }
+
+  // Confirmar devolución
+  const handleConfirmReturn = async () => {
+    if (!selectedLoan) return
+    setUpdatingLoan(selectedLoan._id)
     try {
-      setUpdatingLoan(loanId)
-      
-      await updateLoan(loanId, {
+      await updateLoan(selectedLoan._id, {
         estado: 'devuelto',
-        // Agregar fecha de devolución real
+        equipos_devueltos: equiposDevueltos,
+        nota_devolucion: notaDevolucion
       })
-      
       toast({
         title: "Préstamo completado",
         description: `El préstamo ha sido marcado como devuelto exitosamente.`,
       })
-      
-      // Recargar préstamos
+      setModalOpen(false)
+      setSelectedLoan(null)
       await fetchLoans()
     } catch (err) {
       console.error("Error al completar préstamo:", err)
@@ -332,22 +352,59 @@ export function LoansTable({ lab, searchQuery }: LoansTableProps) {
 
           {loan.estado !== 'devuelto' && (
             <div className="mt-4 flex justify-end">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="gap-1" 
-                onClick={() => handleCompleteLoan(loan._id)}
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1"
+                onClick={() => openReturnModal(loan)}
                 disabled={updatingLoan === loan._id}
               >
-                {updatingLoan === loan._id ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <CheckCircle2 className="h-4 w-4" />
-                )}
+                <CheckCircle2 className="h-4 w-4" />
                 Marcar como devuelto
               </Button>
             </div>
           )}
+
+      {/* Modal para devolución parcial y nota */}
+      <ModalBase open={modalOpen} onOpenChange={setModalOpen} title="Registrar devolución de equipos">
+        {selectedLoan && (
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-medium mb-2">Cantidad devuelta por equipo</h4>
+              {selectedLoan.equipos.map((eq, idx) => (
+                <div key={eq.equipo_id._id} className="flex items-center gap-2 mb-2">
+                  <span className="w-40 truncate">{eq.equipo_id.nombre}</span>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={eq.cantidad}
+                    value={equiposDevueltos.find(e => e.equipo_id === eq.equipo_id._id)?.cantidad ?? eq.cantidad}
+                    onChange={e => handleCantidadDevuelta(eq.equipo_id._id, Math.max(0, Math.min(Number(e.target.value), eq.cantidad)))}
+                    className="w-24"
+                  />
+                  <span className="text-xs text-muted-foreground">de {eq.cantidad}</span>
+                </div>
+              ))}
+            </div>
+            <div>
+              <label className="block font-medium mb-1">Nota de devolución (opcional)</label>
+              <Textarea
+                value={notaDevolucion}
+                onChange={e => setNotaDevolucion(e.target.value)}
+                placeholder="Agrega una nota sobre la devolución..."
+                className="w-full"
+                rows={3}
+              />
+            </div>
+            <div className="flex justify-end gap-2 mt-4">
+              <Button variant="ghost" onClick={() => setModalOpen(false)} disabled={updatingLoan !== null}>Cancelar</Button>
+              <Button onClick={handleConfirmReturn} disabled={updatingLoan !== null}>
+                {updatingLoan ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} Confirmar devolución
+              </Button>
+            </div>
+          </div>
+        )}
+      </ModalBase>
         </div>
       ))}
 

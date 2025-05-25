@@ -248,16 +248,37 @@ export const actualizarPrestamo = async (req, res) => {
       });
     }
 
-    // Si se está devolviendo el equipo, restaurar inventario
+    // Si se está devolviendo el equipo, restaurar inventario (ahora soporta devoluciones parciales)
     if (req.body.estado === 'devuelto' && prestamo.estado === 'activo') {
+      const equiposDevueltos = req.body.equipos_devueltos || [];
+      // Mapear cantidades devueltas por equipo
+      const devueltosMap = new Map();
+      for (const devuelto of equiposDevueltos) {
+        devueltosMap.set(String(devuelto.equipo_id), devuelto.cantidad);
+      }
       for (const equipoItem of prestamo.equipos) {
-        const equipo = await Equipo.findById(equipoItem.equipo_id._id);
+        const equipoId = String(equipoItem.equipo_id._id || equipoItem.equipo_id);
+        const cantidadDevuelta = devueltosMap.has(equipoId) ? devueltosMap.get(equipoId) : equipoItem.cantidad;
+        const cantidadPrestada = equipoItem.cantidad;
+        const equipo = await Equipo.findById(equipoId);
         if (equipo) {
-          equipo.cantidad_disponible += equipoItem.cantidad;
+          // Sumar solo la cantidad devuelta al disponible
+          equipo.cantidad_disponible += cantidadDevuelta;
+          // Si no se devolvió todo, restar la diferencia del total
+          if (cantidadDevuelta < cantidadPrestada) {
+            equipo.cantidad_total -= (cantidadPrestada - cantidadDevuelta);
+            if (equipo.cantidad_total < 0) equipo.cantidad_total = 0;
+            if (equipo.cantidad_disponible > equipo.cantidad_total) equipo.cantidad_disponible = equipo.cantidad_total;
+          }
           await equipo.save();
         }
       }
       req.body.fecha_devolucion_real = new Date();
+      // Guardar cantidades devueltas y nota en el préstamo
+      req.body.equipos_devueltos = equiposDevueltos;
+      if (req.body.nota_devolucion) {
+        prestamo.nota_devolucion = req.body.nota_devolucion;
+      }
     }
 
     // Actualizar préstamo

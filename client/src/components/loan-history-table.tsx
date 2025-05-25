@@ -313,37 +313,62 @@ export function LoansHistoryTable({ lab, searchQuery, timeFilter }: LoansTablePr
           <div className="mt-4 rounded-md bg-muted p-3">
             <h4 className="mb-2 font-medium">Equipo</h4>
             <div className="space-y-3">
-              {loan.equipos.map((equipo, index) => (
-                <div key={index} className="border-l-2 border-primary/20 pl-3" >
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <p className="text-sm">
-                        <span className="font-medium">Nombre:</span> {equipo.equipo_id.nombre}
-                      </p>
-                      <p className="text-sm">
-                        <span className="font-medium">ID Equipo:</span> {equipo.equipo_id._id}
-                      </p>
-                      <p className="text-sm">
-                        <span className="font-medium">Categoría:</span> {equipo.equipo_id.categoria}
-                      </p>
-                      <p className="text-sm">
-                        <span className="font-medium">Laboratorio:</span> {equipo.equipo_id.laboratorio_id.nombre}
-                      </p>
-                      {
-                        equipo.equipo_id.descripcion && (
+              {loan.equipos.map((equipo, index) => {
+                // Buscar si hay devolución parcial para este equipo
+                const devuelto = loan.equipos_devueltos?.find(e => {
+                  if (typeof e.equipo_id === 'string') {
+                    return e.equipo_id === equipo.equipo_id._id;
+                  } else if (typeof e.equipo_id === 'object' && e.equipo_id !== null) {
+                    return e.equipo_id._id === equipo.equipo_id._id;
+                  }
+                  return false;
+                });
+                return (
+                  <div key={index} className="border-l-2 border-primary/20 pl-3" >
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <p className="text-sm">
+                          <span className="font-medium">Nombre:</span> {equipo.equipo_id.nombre}
+                        </p>
+                        <p className="text-sm">
+                          <span className="font-medium">ID Equipo:</span> {equipo.equipo_id._id}
+                        </p>
+                        <p className="text-sm">
+                          <span className="font-medium">Categoría:</span> {equipo.equipo_id.categoria}
+                        </p>
+                        <p className="text-sm">
+                          <span className="font-medium">Laboratorio:</span> {equipo.equipo_id.laboratorio_id.nombre}
+                        </p>
+                        {equipo.equipo_id.descripcion && (
                           <p className="text-sm">
                             <span className="font-medium">Descripción:</span> {equipo.equipo_id.descripcion}
                           </p>
-                        )
-                      }
+                        )}
+                        {loan.estado === 'devuelto' && devuelto && devuelto.cantidad !== equipo.cantidad && (
+                          <p className="text-sm text-amber-700">
+                            <span className="font-medium">Devueltos:</span> {devuelto.cantidad} de {equipo.cantidad}
+                          </p>
+                        )}
+                        {loan.estado === 'devuelto' && devuelto && devuelto.cantidad === equipo.cantidad && (
+                          <p className="text-sm text-green-700">
+                            <span className="font-medium">Devueltos:</span> {devuelto.cantidad} de {equipo.cantidad}
+                          </p>
+                        )}
+                      </div>
+                      <Badge variant="secondary" className="ml-2">
+                        Cantidad: {equipo.cantidad}
+                      </Badge>
                     </div>
-                    <Badge variant="secondary" className="ml-2">
-                      Cantidad: {equipo.cantidad}
-                    </Badge>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
+
+            {loan.estado === 'devuelto' && loan.nota_devolucion && (
+              <div className="mt-4 p-2 rounded bg-green-50 border border-green-200 text-green-800">
+                <span className="font-medium">Nota de devolución:</span> {loan.nota_devolucion}
+              </div>
+            )}
 
             <div className="mt-4 grid grid-cols-1 gap-4 text-sm text-muted-foreground sm:grid-cols-2">
               <div>

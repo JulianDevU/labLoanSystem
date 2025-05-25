@@ -35,6 +35,25 @@ const prestamoSchema = new Schema({
       min: [1, 'La cantidad debe ser mayor a 0']
     }
   }],
+  // Cantidad devuelta por cada equipo (puede ser menor o igual a la prestada)
+  equipos_devueltos: [{
+    equipo_id: {
+      type: Schema.Types.ObjectId,
+      ref: 'Equipo',
+      required: true
+    },
+    cantidad: {
+      type: Number,
+      required: true,
+      min: 0
+    }
+  }],
+  // Nota general de devolución
+  nota_devolucion: {
+    type: String,
+    trim: true,
+    default: ''
+  },
   fecha_prestamo: {
     type: Date,
     required: [true, 'La fecha de préstamo es obligatoria'],

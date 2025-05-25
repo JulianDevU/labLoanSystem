@@ -41,6 +41,13 @@ export interface LoanFromApi {
     };
     cantidad: number;
   }>;
+  // NUEVO: cantidades devueltas por equipo
+  equipos_devueltos?: Array<{
+    equipo_id: string | { _id: string };
+    cantidad: number;
+  }>;
+  // NUEVO: nota de devolución
+  nota_devolucion?: string;
   fecha_prestamo: string;
   fecha_devolucion: string;
   fecha_devolucion_real?: string;
@@ -78,6 +85,11 @@ export interface UpdateLoanData {
   estado?: "activo" | "devuelto" | "vencido";
   evidencia_foto?: string;
   descripcion?: string;
+  equipos_devueltos?: Array<{
+    equipo_id: string;
+    cantidad: number;
+  }>;
+  nota_devolucion?: string;
 }
 
 // Interface for filtering loans
