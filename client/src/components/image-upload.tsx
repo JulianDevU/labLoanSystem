@@ -51,7 +51,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
   return (
     <div className="space-y-4">
       {value ? (
-        <div className="relative h-[600px] w-full">
+        <div className="relative aspect-video w-full">
           <Image
             src={value}
             alt="Uploaded"
