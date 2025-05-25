@@ -3,6 +3,7 @@ import { DashboardNav } from "@/src/components/dashboard-nav"
 import { UserNav } from "@/src/components/user-nav"
 import { ThemeToggle } from "@/src/components/theme-toggle"
 import { BeakerIcon } from "@/src/components/icons"
+import { MobileSidebar } from "./mobile-sidebar"
 
 interface DashboardShellProps {
   children: ReactNode
@@ -14,6 +15,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="w-full px-6 flex h-16 items-center justify-between">
           <div className="flex items-center gap-2 font-bold">
+            <MobileSidebar />
             <BeakerIcon className="h-6 w-6" />
             <span>LabLoanSystem</span>
           </div>
