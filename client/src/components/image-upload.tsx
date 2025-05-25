@@ -6,7 +6,6 @@ import Image from "next/image"
 import { Button } from "@/src/components/ui/button"
 import { Card, CardContent } from "@/src/components/ui/card"
 import { Camera, Upload, X } from "lucide-react"
-import axios from "axios"
 
 interface ImageUploadProps {
   value: string
@@ -24,57 +23,29 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isCapturing, setIsCapturing] = useState(false)
 
-  // Sube un archivo al backend y retorna la URL
-  const uploadFile = async (file: File | Blob) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    try {
-      const res = await axios.post("/api/upload", formData, {
-        baseURL: process.env.NEXT_PUBLIC_BACK_ENV || "http://localhost:4000",
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      return res.data.url;
-    } catch (err) {
-      alert("Error subiendo la imagen. Intenta de nuevo.");
-      return null;
-    }
-  };
-
-  // Captura foto, la convierte a blob y la sube
-  const capturePhoto = useCallback(async () => {
-    const imageSrc = webcamRef.current?.getScreenshot();
+  const capturePhoto = useCallback(() => {
+    const imageSrc = webcamRef.current?.getScreenshot()
     if (imageSrc) {
-      // Convertir base64 a blob
-      const res = await fetch(imageSrc);
-      const blob = await res.blob();
-      const url = await uploadFile(blob);
-      if (url) {
-        onChange(url);
-        setIsCapturing(false);
-      }
+      onChange(imageSrc)
+      setIsCapturing(false)
     }
-  }, [webcamRef, onChange]);
+  }, [webcamRef, onChange])
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
     if (file) {
-      const url = await uploadFile(file);
-      if (url) {
-        onChange(url);
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          onChange(event.target.result as string)
+        }
       }
+      reader.readAsDataURL(file)
     }
-  };
+  }
 
   const clearImage = () => {
     onChange("")
-  }
-
-  // Detectar si es base64 o URL
-  let displaySrc = value;
-  if (value && !value.startsWith('data:image') && !value.startsWith('http')) {
-    // Es una ruta relativa, agregar el backend
-    const base = process.env.NEXT_PUBLIC_BACK_ENV || 'http://localhost:4000';
-    displaySrc = base + value;
   }
 
   return (
@@ -82,7 +53,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
       {value ? (
         <div className="relative h-[600px] w-full">
           <Image
-            src={displaySrc}
+            src={value}
             alt="Uploaded"
             className="rounded-md object-cover"
             fill

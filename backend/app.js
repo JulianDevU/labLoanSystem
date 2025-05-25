@@ -13,7 +13,6 @@ import equipoRoutes from './routes/equipment.js';
 import prestamoRoutes from './routes/loan.js';
 import usuarioRoutes from './routes/user.js';
 import notificacionRoutes from './routes/notification.js';
-import uploadRoutes from './routes/upload.js';
 
 // Importar middleware de errores
 import { errorHandler, notFound } from './middleware/error.js';
@@ -34,11 +33,6 @@ app.use(morgan('dev'));
 // Configuración para archivos estáticos
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-// Permitir CORS para imágenes
-app.use('/uploads', (req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  next();
-});
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Rutas
@@ -48,7 +42,6 @@ app.use('/api/equipos', equipoRoutes);
 app.use('/api/prestamos', prestamoRoutes);
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/notificaciones', notificacionRoutes);
-app.use('/api/upload', uploadRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
