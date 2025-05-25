@@ -7,6 +7,7 @@ import { DashboardHeader } from "@/src/components/dashboard-header"
 import { DashboardShell } from "@/src/components/dashboard-shell"
 import { useRequireAuth } from "@/src/hooks/useRequireAuth"
 import { getUser } from "@/src/services/userService"
+import { Button } from "@/src/components/ui/button"
 
 interface User {
     nombre: string
@@ -51,11 +52,9 @@ export default function ProfilePage() {
                                 <CardDescription>Detalles sobre tu cuenta y datos personales.</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                {/* Aquí puedes poner campos o componentes con la info personal */}
                                 <p className="text-sm">Nombre: {user?.nombre}</p>
                                 <p className="text-sm">Correo: {user?.correo}</p>
                                 <p className="text-sm">Rol: {user?.tipo}</p>
-                                {/* Más campos o formulario editable si quieres */}
                             </CardContent>
                         </Card>
                     </TabsContent>
@@ -69,7 +68,11 @@ export default function ProfilePage() {
                                         <CardDescription>Aqui tienes un manual de usuario para manejar la pagina.</CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <p className="text-sm">Este es otro contenido que puedes personalizar.</p>
+                                        <a href="../../../public/MANUAL_USUARIO.pdf" download>
+                                            <Button variant="outline">
+                                                Descargar manual
+                                            </Button>
+                                        </a>
                                     </CardContent>
                                 </Card>
 
@@ -79,7 +82,11 @@ export default function ProfilePage() {
                                         <CardDescription>Aqui tienes un manual tecnico para saber lo que contiene la pagina.</CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        <p className="text-sm">Este es otro contenido que puedes personalizar.</p>
+                                        <a href="../../../public/MANUAL_TECNICO.pdf" download>
+                                            <Button variant="outline">
+                                                Descargar manual
+                                            </Button>
+                                        </a>
                                     </CardContent>
                                 </Card>
                             </div>
