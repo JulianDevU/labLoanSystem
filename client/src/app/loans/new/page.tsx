@@ -29,11 +29,9 @@ import { registerLoan } from "@/src/services/loanService"
 import { getLaboratories } from "@/src/services/laboratoryService"
 import { ModalBase } from "@/src/components/modal"
 
-// CAMBIO 1: Función utilitaria para obtener fecha mínima
 const getMinDateTime = () => {
   const ahora = new Date();
-  // Agregar 30 minutos de margen
-  const fechaMinima = new Date(ahora.getTime() + (30 * 60 * 1000));
+  const fechaMinima = new Date(ahora.getTime() + (5 * 60 * 1000));
   
   // Formatear para input datetime-local (YYYY-MM-DDTHH:mm)
   const year = fechaMinima.getFullYear();
@@ -45,7 +43,6 @@ const getMinDateTime = () => {
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
-// CAMBIO 2: Schema actualizado con validación de fecha mejorada
 const formSchema = z.object({
   lab: z.string(),
   beneficiaryType: z.enum(["estudiante", "docente"]),
@@ -63,10 +60,10 @@ const formSchema = z.object({
     .refine((date) => {
       const selectedDate = new Date(date);
       const now = new Date();
-      const minDate = new Date(now.getTime() + (30 * 60 * 1000)); // 30 minutos de margen
+      const minDate = new Date(now.getTime() + (5 * 60 * 1000));
       return selectedDate >= minDate;
     }, {
-      message: "La fecha de devolución debe ser al menos 30 minutos posterior a la hora actual"
+      message: "La fecha de devolución debe ser al menos 5 minutos posterior a la hora actual"
     }),
   photo: z.string().min(1, "La imagen es requerida"),
 })
@@ -409,7 +406,7 @@ export default function NewLoanPage() {
                       Especifica cuándo se espera que se devuelvan todos los equipos.
                       <br />
                       <small className="text-yellow-600">
-                        ⚠️ La fecha debe ser al menos 30 minutos posterior a la hora actual.
+                        ⚠️ La fecha debe ser al menos 5 minutos posterior a la hora actual.
                       </small>
                     </FormDescription>
                     <FormMessage />
