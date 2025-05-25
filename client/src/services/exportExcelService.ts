@@ -9,12 +9,15 @@ interface LoanExportData {
   correo_beneficiado: string
   equipos: string
   cantidades: string
+  equipos_devueltos: string
+  cantidades_devueltas: string
   fecha_prestamo: string
   fecha_devolucion: string
   fecha_devolucion_real: string
   estado: string
   laboratorio: string
   descripcion: string
+  nota_devolucion: string
   dias_vencido: string
 }
 
@@ -67,6 +70,23 @@ export async function exportLoansToExcel(filters: ExportFilters = {}): Promise<v
         ?.map((eq: any) => eq.cantidad || 1)
         .join(', ') || '1'
 
+      // NUEVO: Procesar equipos devueltos
+      const equiposDevueltosNombres = loan.equipos_devueltos
+        ?.map((eq: any) => {
+          // Manejar tanto string como objeto para equipo_id
+          const equipoId = typeof eq.equipo_id === 'string' ? eq.equipo_id : eq.equipo_id?._id
+          // Buscar el nombre del equipo en los equipos originales
+          const equipoOriginal = loan.equipos?.find((orig: any) => 
+            orig.equipo_id._id === equipoId
+          )
+          return equipoOriginal?.equipo_id?.nombre || 'N/A'
+        })
+        .join(', ') || ''
+
+      const equiposDevueltosCantidades = loan.equipos_devueltos
+        ?.map((eq: any) => eq.cantidad || 0)
+        .join(', ') || ''
+
       // Calcular días vencido si aplica
       let diasVencido = ''
       if (loan.estado === 'vencido' && loan.fecha_devolucion) {
@@ -84,6 +104,8 @@ export async function exportLoansToExcel(filters: ExportFilters = {}): Promise<v
         correo_beneficiado: loan.correo_beneficiado || 'N/A',
         equipos: equiposNombres,
         cantidades: equiposCantidades,
+        equipos_devueltos: equiposDevueltosNombres,
+        cantidades_devueltas: equiposDevueltosCantidades,
         fecha_prestamo: loan.fecha_prestamo 
           ? new Date(loan.fecha_prestamo).toLocaleDateString('es-CO')
           : 'N/A',
@@ -96,6 +118,7 @@ export async function exportLoansToExcel(filters: ExportFilters = {}): Promise<v
         estado: getEstadoDisplay(loan.estado),
         laboratorio: loan.laboratorio_id?.nombre || 'N/A',
         descripcion: loan.descripcion || '',
+        nota_devolucion: loan.nota_devolucion || '',
         dias_vencido: diasVencido
       }
     })
@@ -110,12 +133,15 @@ export async function exportLoansToExcel(filters: ExportFilters = {}): Promise<v
         'correo_beneficiado',
         'equipos',
         'cantidades',
+        'equipos_devueltos',
+        'cantidades_devueltas',
         'fecha_prestamo',
         'fecha_devolucion',
         'fecha_devolucion_real',
         'estado',
         'laboratorio',
         'descripcion',
+        'nota_devolucion',
         'dias_vencido'
       ]
     })
@@ -128,14 +154,17 @@ export async function exportLoansToExcel(filters: ExportFilters = {}): Promise<v
       D1: { v: 'Nombre Beneficiado' },
       E1: { v: 'Correo Electrónico' },
       F1: { v: 'Equipos Prestados' },
-      G1: { v: 'Cantidades' },
-      H1: { v: 'Fecha Préstamo' },
-      I1: { v: 'Fecha Devolución Programada' },
-      J1: { v: 'Fecha Devolución Real' },
-      K1: { v: 'Estado' },
-      L1: { v: 'Laboratorio' },
-      M1: { v: 'Descripción' },
-      N1: { v: 'Días Vencido' }
+      G1: { v: 'Cantidades Prestadas' },
+      H1: { v: 'Equipos Devueltos' },
+      I1: { v: 'Cantidades Devueltas' },
+      J1: { v: 'Fecha Préstamo' },
+      K1: { v: 'Fecha Devolución Programada' },
+      L1: { v: 'Fecha Devolución Real' },
+      M1: { v: 'Estado' },
+      N1: { v: 'Laboratorio' },
+      O1: { v: 'Descripción' },
+      P1: { v: 'Nota de Devolución' },
+      Q1: { v: 'Días Vencido' }
     }
 
     Object.keys(headers).forEach(cell => {
@@ -152,13 +181,16 @@ export async function exportLoansToExcel(filters: ExportFilters = {}): Promise<v
       { wch: 25 }, // Nombre Beneficiado
       { wch: 30 }, // Correo Electrónico
       { wch: 40 }, // Equipos Prestados
-      { wch: 12 }, // Cantidades
+      { wch: 15 }, // Cantidades Prestadas
+      { wch: 40 }, // Equipos Devueltos
+      { wch: 15 }, // Cantidades Devueltas
       { wch: 15 }, // Fecha Préstamo
       { wch: 20 }, // Fecha Devolución Programada
       { wch: 20 }, // Fecha Devolución Real
       { wch: 12 }, // Estado
       { wch: 20 }, // Laboratorio
       { wch: 30 }, // Descripción
+      { wch: 30 }, // Nota de Devolución
       { wch: 12 }  // Días Vencido
     ]
     worksheet["!cols"] = columnWidths
@@ -210,17 +242,36 @@ export async function exportLoansSummaryToExcel(filters: ExportFilters = {}): Pr
       total: loans.length,
       activos: loans.filter((l: any) => l.estado === 'activo').length,
       devueltos: loans.filter((l: any) => l.estado === 'devuelto').length,
-      vencidos: loans.filter((l: any) => l.estado === 'vencido').length
+      vencidos: loans.filter((l: any) => l.estado === 'vencido').length,
+      // NUEVO: Estadísticas de devoluciones parciales
+      con_devolucion_parcial: loans.filter((l: any) => 
+        l.equipos_devueltos && l.equipos_devueltos.length > 0 && l.estado === 'activo'
+      ).length,
+      con_notas_devolucion: loans.filter((l: any) => 
+        l.nota_devolucion && l.nota_devolucion.trim() !== ''
+      ).length
     }
 
     // Agrupar por laboratorio
     const porLaboratorio = loans.reduce((acc: any, loan: any) => {
       const labNombre = loan.laboratorio_id?.nombre || 'Sin laboratorio'
       if (!acc[labNombre]) {
-        acc[labNombre] = { total: 0, activos: 0, devueltos: 0, vencidos: 0 }
+        acc[labNombre] = { 
+          total: 0, 
+          activos: 0, 
+          devueltos: 0, 
+          vencidos: 0,
+          con_devolucion_parcial: 0
+        }
       }
       acc[labNombre].total++
       acc[labNombre][loan.estado]++
+      
+      // Contar devoluciones parciales
+      if (loan.equipos_devueltos && loan.equipos_devueltos.length > 0 && loan.estado === 'activo') {
+        acc[labNombre].con_devolucion_parcial++
+      }
+      
       return acc
     }, {})
 
@@ -237,13 +288,15 @@ export async function exportLoansSummaryToExcel(filters: ExportFilters = {}): Pr
     // Crear hojas del workbook
     const workbook = XLSX.utils.book_new()
 
-    // Hoja 1: Resumen General
+    // Hoja 1: Resumen General (actualizada)
     const resumenData = [
       ['Métrica', 'Cantidad'],
       ['Total de Préstamos', summary.total],
       ['Préstamos Activos', summary.activos],
       ['Préstamos Devueltos', summary.devueltos],
       ['Préstamos Vencidos', summary.vencidos],
+      ['Con Devolución Parcial', summary.con_devolucion_parcial],
+      ['Con Notas de Devolución', summary.con_notas_devolucion],
       [''],
       ['Resumen por Tipo de Beneficiado', ''],
       ...Object.entries(porTipo).map(([tipo, cantidad]) => [tipo, cantidad])
@@ -253,17 +306,54 @@ export async function exportLoansSummaryToExcel(filters: ExportFilters = {}): Pr
     resumenSheet["!cols"] = [{ wch: 25 }, { wch: 15 }]
     XLSX.utils.book_append_sheet(workbook, resumenSheet, "Resumen General")
 
-    // Hoja 2: Por Laboratorio
+    // Hoja 2: Por Laboratorio (actualizada)
     const labData = [
-      ['Laboratorio', 'Total', 'Activos', 'Devueltos', 'Vencidos'],
+      ['Laboratorio', 'Total', 'Activos', 'Devueltos', 'Vencidos', 'Dev. Parcial'],
       ...Object.entries(porLaboratorio).map(([lab, stats]: [string, any]) => [
-        lab, stats.total, stats.activos, stats.devueltos, stats.vencidos
+        lab, 
+        stats.total, 
+        stats.activos, 
+        stats.devueltos, 
+        stats.vencidos,
+        stats.con_devolucion_parcial
       ])
     ]
 
     const labSheet = XLSX.utils.aoa_to_sheet(labData)
-    labSheet["!cols"] = [{ wch: 20 }, { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 10 }]
+    labSheet["!cols"] = [{ wch: 20 }, { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 10 }, { wch: 12 }]
     XLSX.utils.book_append_sheet(workbook, labSheet, "Por Laboratorio")
+
+    // NUEVA Hoja 3: Análisis de Devoluciones
+    const devolucionesData = [
+      ['Análisis de Devoluciones', ''],
+      [''],
+      ['Préstamos con Devoluciones Parciales:', ''],
+      ['Nº Préstamo', 'Beneficiado', 'Equipos Devueltos', 'Estado'],
+      ...loans
+        .filter((loan: any) => loan.equipos_devueltos && loan.equipos_devueltos.length > 0)
+        .map((loan: any, index: number) => {
+          const equiposDevueltos = loan.equipos_devueltos
+            ?.map((eq: any) => {
+              const equipoId = typeof eq.equipo_id === 'string' ? eq.equipo_id : eq.equipo_id?._id
+              const equipoOriginal = loan.equipos?.find((orig: any) => 
+                orig.equipo_id._id === equipoId
+              )
+              return `${equipoOriginal?.equipo_id?.nombre || 'N/A'} (${eq.cantidad})`
+            })
+            .join(', ') || ''
+          
+          return [
+            `PREST-${String(index + 1).padStart(4, '0')}`,
+            loan.nombre_beneficiado,
+            equiposDevueltos,
+            getEstadoDisplay(loan.estado)
+          ]
+        })
+    ]
+
+    const devolucionesSheet = XLSX.utils.aoa_to_sheet(devolucionesData)
+    devolucionesSheet["!cols"] = [{ wch: 15 }, { wch: 25 }, { wch: 40 }, { wch: 12 }]
+    XLSX.utils.book_append_sheet(workbook, devolucionesSheet, "Análisis Devoluciones")
 
     // Descargar
     const fechaActual = new Date().toISOString().split('T')[0]
