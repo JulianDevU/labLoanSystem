@@ -22,16 +22,16 @@ export default function ProfilePage() {
 
     useEffect(() => {
         const fetchUser = async () => {
-          try {
-            const result = await getUser()
-            setUser(result)
-          } catch (error) {
-            console.error("Error al obtener usuario", error)
-          }
+            try {
+                const result = await getUser()
+                setUser(result)
+            } catch (error) {
+                console.error("Error al obtener usuario", error)
+            }
         }
-    
+
         fetchUser()
-      }, [])
+    }, [])
 
     return (
         <DashboardShell>
