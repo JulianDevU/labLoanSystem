@@ -25,8 +25,9 @@ export async function POST(req: Request) {
       .map((item: any) => `• ${item.name} (Cantidad: ${item.quantity})`)
       .join('\n')
 
-    // Formatear las fechas
-    const loanDateFormatted = new Date(loanDate).toLocaleString('es-ES', {
+    // Formatear las fechas con zona horaria de Colombia
+    const loanDateFormatted = new Date(loanDate).toLocaleString('es-CO', {
+      timeZone: 'America/Bogota',
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -34,7 +35,8 @@ export async function POST(req: Request) {
       minute: '2-digit'
     })
 
-    const returnDateFormatted = new Date(returnDate).toLocaleString('es-ES', {
+    const returnDateFormatted = new Date(returnDate).toLocaleString('es-CO', {
+      timeZone: 'America/Bogota',
       year: 'numeric',
       month: 'long',
       day: 'numeric',

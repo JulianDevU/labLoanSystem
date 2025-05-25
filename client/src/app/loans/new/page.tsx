@@ -127,6 +127,10 @@ export default function NewLoanPage() {
   // Función para enviar email de notificación
   const sendLoanNotification = async (loanData: any, selectedLab: Lab) => {
     try {
+      // Enviar la fecha de préstamo y devolución en formato ISO, pero explícitamente en la zona horaria de Colombia
+      // Esto ayuda a que el backend siempre reciba la hora local correcta
+      const nowColombia = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Bogota' }))
+      const returnColombia = new Date(new Date(loanData.fecha_devolucion).toLocaleString('en-US', { timeZone: 'America/Bogota' }))
       const emailData = {
         beneficiaryName: loanData.nombre_beneficiado,
         beneficiaryEmail: loanData.correo_beneficiado,
@@ -135,8 +139,8 @@ export default function NewLoanPage() {
           name: form.getValues('equipment').find(item => item.id === eq.equipo_id)?.name || 'Equipo no encontrado',
           quantity: eq.cantidad
         })),
-        loanDate: new Date().toISOString(),
-        returnDate: loanData.fecha_devolucion,
+        loanDate: nowColombia.toISOString(),
+        returnDate: returnColombia.toISOString(),
       }
 
       const response = await fetch('/api/mail', {
