@@ -1,5 +1,7 @@
 import Cookies from "js-cookie"
 
+const BASE_URL = process.env.NEXT_PUBLIC_BACK_ENV
+
 export function logout() {
   Cookies.remove("token")
 }
@@ -16,7 +18,7 @@ export async function changePassword(data: {
     throw new Error("No hay token de autenticación")
   }
 
-  const response = await fetch("http://localhost:5000/api/auth/cambiar-contrasena", {
+  const response = await fetch(`${BASE_URL}/api/auth/cambiar-contrasena`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",

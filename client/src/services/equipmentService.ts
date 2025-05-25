@@ -1,5 +1,7 @@
 import Cookies from "js-cookie"
 
+const BASE_URL = process.env.NEXT_PUBLIC_BACK_ENV
+
 interface EquipmentFromApi {
   _id: string
   nombre: string
@@ -39,11 +41,8 @@ export async function registerEquipment(data: {
     throw new Error("No hay token de autenticación")
   }
 
-  console.log("Token encontrado:", token.substring(0, 10) + "...")
-  console.log("Preparando petición POST a http://localhost:5000/api/equipos")
-
   try {
-    const response = await fetch("http://localhost:5000/api/equipos", {
+    const response = await fetch(`${BASE_URL}/api/equipos`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -80,7 +79,7 @@ export async function getEquipment(): Promise<EquipmentFromApi[]> {
     throw new Error("No hay token de autenticación")
   }
 
-  const response = await fetch("http://localhost:5000/api/equipos", {
+  const response = await fetch(`${BASE_URL}/api/equipos`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -104,7 +103,7 @@ export async function deleteEquipment(id: string): Promise<void> {
     throw new Error("No hay token de autenticación")
   }
 
-  const response = await fetch(`http://localhost:5000/api/equipos/${id}`, {
+  const response = await fetch(`${BASE_URL}/api/equipos/${id}`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -128,7 +127,7 @@ export async function getEquipmentById(id: string): Promise<EquipmentFromApi> {
     throw new Error("No hay token de autenticación");
   }
 
-  const response = await fetch(`http://localhost:5000/api/equipos/${id}`, {
+  const response = await fetch(`${BASE_URL}/api/equipos/${id}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -152,7 +151,7 @@ export async function updateEquipment(id: string, data: Partial<Omit<EquipmentFr
     throw new Error("No hay token de autenticación");
   }
 
-  const response = await fetch(`http://localhost:5000/api/equipos/${id}`, {
+  const response = await fetch(`${BASE_URL}/api/equipos/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -178,7 +177,7 @@ export async function getEquipmentCategories(): Promise<string[]> {
     throw new Error("No hay token de autenticación");
   }
 
-  const response = await fetch("http://localhost:5000/api/equipos/categorias", {
+  const response = await fetch(`${BASE_URL}/api/equipos/categorias`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,

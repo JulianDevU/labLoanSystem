@@ -1,12 +1,14 @@
 // src/services/userService.ts
 import Cookies from "js-cookie"
 
+const BASE_URL = process.env.NEXT_PUBLIC_BACK_ENV
+
 export async function registerUser(data: {
   nombre: string
   correo: string
   contrasena: string
 }) {
-  const response = await fetch("http://localhost:5000/api/usuarios", {
+  const response = await fetch(`${BASE_URL}/api/usuarios`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -32,7 +34,7 @@ export async function registerUser(data: {
 export async function getUser() {
   const token = Cookies.get("token")
 
-  const response = await fetch("http://localhost:5000/api/usuarios/me", {
+  const response = await fetch(`${BASE_URL}/api/usuarios/me`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

@@ -1,5 +1,7 @@
 import Cookies from "js-cookie";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BACK_ENV
+
 // Interface that matches your updated Mongoose schema
 export interface Loan {
   _id?: string;
@@ -114,11 +116,8 @@ export async function createLoan(data: CreateLoanData) {
     throw new Error("No hay token de autenticación");
   }
 
-  console.log("Token encontrado:", token.substring(0, 10) + "...");
-  console.log("Preparando petición POST a http://localhost:5000/api/prestamos");
-
   try {
-    const response = await fetch("http://localhost:5000/api/prestamos", {
+    const response = await fetch(`${BASE_URL}/api/prestamos`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -169,7 +168,7 @@ export async function getLoans(filters?: LoansFilters): Promise<LoanFromApi[]> {
     if (filters.todos) queryParams.append("todos", filters.todos.toString());
   }
 
-  const url = `http://localhost:5000/api/prestamos${
+  const url = `${BASE_URL}/api/prestamos${
     queryParams.toString() ? `?${queryParams.toString()}` : ""
   }`;
   console.log("Obteniendo préstamos con URL:", url);
@@ -199,7 +198,7 @@ export async function getLoanById(id: string): Promise<LoanFromApi> {
     throw new Error("No hay token de autenticación");
   }
 
-  const response = await fetch(`http://localhost:5000/api/prestamos/${id}`, {
+  const response = await fetch(`${BASE_URL}/api/prestamos/${id}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -226,7 +225,7 @@ export async function updateLoan(id: string, data: UpdateLoanData) {
 
   console.log("Actualizando préstamo:", id, "con datos:", data);
 
-  const response = await fetch(`http://localhost:5000/api/prestamos/${id}`, {
+  const response = await fetch(`${BASE_URL}/api/prestamos/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -253,7 +252,7 @@ export async function deleteLoan(id: string): Promise<void> {
     throw new Error("No hay token de autenticación");
   }
 
-  const response = await fetch(`http://localhost:5000/api/prestamos/${id}`, {
+  const response = await fetch(`${BASE_URL}/api/prestamos/${id}`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -281,7 +280,7 @@ export async function generateLoanPDF(
   }
 
   const response = await fetch(
-    `http://localhost:5000/api/prestamos/${id}/pdf`,
+    `${BASE_URL}/api/prestamos/${id}/pdf`,
     {
       method: "GET",
       headers: {
@@ -321,7 +320,7 @@ export async function generateLoansReport(
     if (filters.hasta) queryParams.append("hasta", filters.hasta);
   }
 
-  const url = `http://localhost:5000/api/prestamos/reporte${
+  const url = `${BASE_URL}/api/prestamos/reporte${
     queryParams.toString() ? `?${queryParams.toString()}` : ""
   }`;
 
@@ -355,7 +354,7 @@ export async function checkOverdueLoans(): Promise<{
   }
 
   const response = await fetch(
-    "http://localhost:5000/api/prestamos/verificar-vencidos",
+    `${BASE_URL}/api/prestamos/verificar-vencidos`,
     {
       method: "GET",
       headers: {

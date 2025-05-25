@@ -8,6 +8,9 @@ import { Button } from "@/src/components/ui/button"
 import { Badge } from "@/src/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/src/components/ui/avatar"
 import Image from "next/image"
+
+const BASE_URL = process.env.NEXT_PUBLIC_BACK_ENV
+
 // Componente para mostrar la imagen de evidencia con fallback
 function EvidenciaFoto({ evidencia_foto }: { evidencia_foto?: string }) {
   const [imgSrc, setImgSrc] = useState<string | undefined>(evidencia_foto);
@@ -20,7 +23,7 @@ function EvidenciaFoto({ evidencia_foto }: { evidencia_foto?: string }) {
   // Construir la URL si es relativa
   let displayUrl = imgSrc;
   if (imgSrc && !isBase64 && !imgSrc.startsWith("http")) {
-    displayUrl = `http://localhost:5000/${imgSrc.replace(/^\/+/, "")}`;
+    displayUrl = `${BASE_URL}/${imgSrc.replace(/^\/+/, "")}`;
   }
 
   if (!imgSrc) {

@@ -1,9 +1,11 @@
 import Cookies from "js-cookie";
 
+const BASE_URL = process.env.NEXT_PUBLIC_BACK_ENV
+
 export async function getLaboratories() {
   const token = Cookies.get('token');
 
-  const response = await fetch("http://localhost:5000/api/laboratorios", {
+  const response = await fetch(`${BASE_URL}/api/laboratorios`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
