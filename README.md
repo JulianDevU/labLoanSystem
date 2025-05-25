@@ -83,9 +83,8 @@ proyecto_final/
 - Autenticación y roles de usuario
 
 ## Manuales
-- [Manual Técnico](./MANUAL_TECNICO.md)
-- [Manual de Usuario](./MANUAL_USUARIO.md)
-
+- [Manual Técnico](./client/public/MANUAL_TECNICO.md)
+- [Manual de Usuario](./client/public/MANUAL_USUARIO.md)
 ## Autores
 
 - Julian Granda Tamayo
