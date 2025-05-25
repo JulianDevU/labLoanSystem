@@ -32,13 +32,19 @@ Es una plataforma web para gestionar el préstamo y devolución de equipos de la
 - Cada equipo muestra su cantidad total y disponible.
 
 
+
 ### 5. Exportar datos
 - Puedes exportar el historial de préstamos o el inventario a Excel desde las opciones correspondientes.
 
-### 6. Cambiar contraseña
+### 6. Importar datos desde Excel
+- En la sección de importación puedes cargar datos de equipos usando un archivo Excel.
+- El sistema proporciona una plantilla de Excel para que la descarga y completes con tus datos antes de importar.
+- Sigue las instrucciones en pantalla para importar correctamente el inventario.
+
+### 7. Cambiar contraseña
 - Ve a tu perfil de usuario y utiliza la opción para cambiar tu contraseña.
 
-### 7. Cambiar tema (claro/oscuro)
+### 8. Cambiar tema (claro/oscuro)
 - En la parte superior derecha puedes alternar entre el tema claro y oscuro usando el botón de cambio de tema.
 
 
