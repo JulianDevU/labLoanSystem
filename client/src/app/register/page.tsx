@@ -59,7 +59,7 @@ export default function RegisterPage() {
 
 
   return (
-    <div className="container flex h-screen w-screen flex-col items-center justify-center">
+    <div className="flex min-h-screen w-full flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
       <Link href="/" className="absolute left-4 top-4 md:left-8 md:top-8 flex items-center gap-2 font-bold">
         <BeakerIcon className="h-6 w-6" />
         <span>LabLoanSystem</span>
