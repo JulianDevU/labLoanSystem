@@ -1,82 +1,94 @@
-# Sistema de Préstamo de Equipos (DESACTUALIZADO)
 
-Este proyecto es una API desarrollada con Node.js para la gestión de usuarios, préstamos de equipos y control de acceso mediante roles.
+# Sistema de Préstamo de Equipos de Laboratorio
+
+Este proyecto es una plataforma web completa para la gestión de préstamos y devoluciones de equipos de laboratorio, control de inventario, historial, usuarios y notificaciones. Incluye backend (Node.js/Express/MongoDB) y frontend (Next.js/React/TypeScript).
+
 
 ## Estructura del Proyecto
 
 ```
-backend/
-├── config/               # Configuración de la base de datos
-│   └── db.js
-├── controllers/          # Lógica de controladores para cada entidad
-│   ├── authController.js
-│   ├── equipmentController.js
-│   ├── loanController.js
-│   └── userController.js
-├── middleware/           # Middlewares para autenticación, manejo de errores, roles, etc.
-│   ├── auth.js
-│   ├── error.js
-│   └── roleCheck.js
-├── models/               # Modelos de Mongoose
-│   ├── Equipment.js
-│   ├── Loan.js
-│   └── User.js
-├── routes/               # Rutas del API
-│   ├── auth.js
-│   ├── equipment.js
-│   ├── loan.js
-│   └── user.js
-├── utils/                # Utilidades generales (PDF, validadores)
-│   ├── generatePDF.js
-│   └── validators.js
-├── .env                  # Variables de entorno (no subir a git)
-├── .env.example          # Ejemplo de variables de entorno
-├── app.js                # Punto de entrada del servidor
-├── package.json
+proyecto_final/
+├── backend/           # API REST Node.js/Express/MongoDB
+│   ├── config/        # Configuración de la base de datos
+│   ├── controllers/   # Lógica de negocio (préstamos, equipos, usuarios...)
+│   ├── middleware/    # Autenticación, manejo de errores, roles, uploads
+│   ├── models/        # Modelos de Mongoose
+│   ├── routes/        # Endpoints de la API
+│   ├── utils/         # Utilidades (PDF, validadores, helpers)
+│   ├── app.js, server.js
+│   └── ...
+├── client/            # Frontend Next.js/React/TypeScript
+│   ├── src/app/       # Páginas principales (loans, inventory, login, profile...)
+│   ├── src/components/# Componentes reutilizables (tablas, modales, formularios...)
+│   ├── src/services/  # Servicios para consumir la API
+│   ├── src/hooks/     # Hooks personalizados
+│   ├── src/styles/    # Estilos globales
+│   └── ...
+├── MANUAL_TECNICO.md  # Manual técnico actualizado
+├── MANUAL_USUARIO.md  # Manual de usuario actualizado
 └── README.md
 ```
 
-## Instalación
 
-1. Clonar el repositorio:
+## Instalación y Puesta en Marcha
+
+1. Clona el repositorio:
    ```bash
-   git clone <https://github.com/JulianDevU/proyecto_final.git>
+   git clone <url-del-repositorio>
+   cd proyecto_final
    ```
 
-2. Ingresar al directorio `backend`:
+2. Backend:
    ```bash
    cd backend
+   npm install --legacy-peer-deps
+   # Configura tu .env según .env.example
+   npm run dev
+   # El backend corre en http://localhost:5000
    ```
 
-3. Instalar las dependencias:
+3. Frontend:
    ```bash
-   npm install
+   cd ../client
+   npm install --legacy-peer-deps
+   npm run dev
+   # El frontend corre en http://localhost:3030
    ```
 
-4. Crear un archivo `.env` basado en `.env.example` con las variables de entorno necesarias (por ejemplo, cadena de conexión a MongoDB).
-
-5. Iniciar el servidor:
-   ```bash
-   npm start
-   ```
 
 ## Tecnologías Utilizadas
 
-- Node.js
-- Express
-- MongoDB + Mongoose
-- JWT (para autenticación)
-- Validaciones y middlewares personalizados
-- Generación de PDF
+- Node.js, Express, MongoDB, Mongoose
+- Next.js, React, TypeScript, TailwindCSS
+- JWT (autenticación)
+- Validaciones, middlewares personalizados
+- Generación de PDF y exportación a Excel
 
-## Scripts
 
-- `npm start`: Inicia el servidor en modo producción
-- `npm run dev`: (si está configurado) Ejecuta el servidor con nodemon para desarrollo
+## Scripts Útiles
+
+- `npm run dev` (en backend y client): Inicia ambos servidores en modo desarrollo
+- `npm run build` y `npm start` (en client): Para producción
+
+
+## Funcionalidades Destacadas
+
+- Registro y gestión de préstamos de equipos (con cantidades y fechas)
+- Devolución parcial o total de equipos, con nota adicional
+- Ajuste automático del inventario según devoluciones
+- Historial detallado de préstamos y devoluciones
+- Gestión de inventario: agregar, editar, eliminar equipos
+- Exportación de datos a Excel
+- Cambio de contraseña y cambio de tema (claro/oscuro)
+- Autenticación y roles de usuario
+
+## Manuales
+- [Manual Técnico](./MANUAL_TECNICO.md)
+- [Manual de Usuario](./MANUAL_USUARIO.md)
 
 ## Autores
 
-Julian Granda Tamayo
-Brahian Steven Salazar Isaza
-Juan David Obando Álvarez
-Juan Alejandro Giraldo Marin
+- Julian Granda Tamayo
+- Brahian Steven Salazar Isaza
+- Juan David Obando Álvarez
+- Juan Alejandro Giraldo Marin
