@@ -28,8 +28,20 @@ import { useToast } from "@/src/hooks/use-toast"
 import { registerLoan } from "@/src/services/loanService"
 import { getLaboratories } from "@/src/services/laboratoryService"
 import { ModalBase } from "@/src/components/modal"
-import { convertLocalToUTC, getMinDateTime } from "@/src/components/utils/dateUtils"
 
+const getMinDateTime = () => {
+  const ahora = new Date();
+  const fechaMinima = new Date(ahora.getTime() + (5 * 60 * 1000));
+  
+  // Formatear para input datetime-local (YYYY-MM-DDTHH:mm)
+  const year = fechaMinima.getFullYear();
+  const month = String(fechaMinima.getMonth() + 1).padStart(2, '0');
+  const day = String(fechaMinima.getDate()).padStart(2, '0');
+  const hours = String(fechaMinima.getHours()).padStart(2, '0');
+  const minutes = String(fechaMinima.getMinutes()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
 
 const formSchema = z.object({
   lab: z.string(),
@@ -98,13 +110,16 @@ export default function NewLoanPage() {
         console.error("Error cargando laboratorios", error)
       }
     }
-  
+
     fetchLabs()
-    setMinDateTime(getMinDateTime(5))
     
+    // CAMBIO 4: Establecer fecha mínima al cargar
+    setMinDateTime(getMinDateTime())
+    
+    // CAMBIO 5: Actualizar fecha mínima cada minuto
     const interval = setInterval(() => {
-      setMinDateTime(getMinDateTime(5))
-    }, 60000)
+      setMinDateTime(getMinDateTime())
+    }, 60000) // 1 minuto
     
     return () => clearInterval(interval)
   }, [])
@@ -180,7 +195,8 @@ export default function NewLoanPage() {
         nombre_beneficiado: data.beneficiaryName,
         correo_beneficiado: data.beneficiaryEmail,
         equipos: equipos,
-        fecha_devolucion: convertLocalToUTC(data.returnDate),
+        // CAMBIO 6: Convertir fecha a ISO string para envío al backend
+        fecha_devolucion: new Date(data.returnDate).toISOString(),
         evidencia_foto: data.photo,
         laboratorio_id: selectedLab._id,
         descripcion: data.description,
