@@ -13,6 +13,7 @@ import equipoRoutes from './routes/equipment.js';
 import prestamoRoutes from './routes/loan.js';
 import usuarioRoutes from './routes/user.js';
 import notificacionRoutes from './routes/notification.js';
+import uploadRoutes from './routes/upload.js';
 
 // Importar middleware de errores
 import { errorHandler, notFound } from './middleware/error.js';
@@ -42,6 +43,7 @@ app.use('/api/equipos', equipoRoutes);
 app.use('/api/prestamos', prestamoRoutes);
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/notificaciones', notificacionRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
