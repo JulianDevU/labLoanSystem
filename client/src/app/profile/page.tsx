@@ -59,6 +59,34 @@ export default function ProfilePage() {
                             </CardContent>
                         </Card>
                     </TabsContent>
+
+                    <div className="grid gap-4">
+                        <TabsContent value="personal" className="space-y-4">
+                            <div className="flex gap-4 flex-wrap">
+                                <Card className="flex-1 min-w-[300px]">
+                                    <CardHeader>
+                                        <CardTitle>Manual de usuario</CardTitle>
+                                        <CardDescription>Detalles sobre tu cuenta y datos personales.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-sm">Nombre: {user?.nombre}</p>
+                                        <p className="text-sm">Correo: {user?.correo}</p>
+                                        <p className="text-sm">Rol: {user?.tipo}</p>
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="flex-1 min-w-[300px]">
+                                    <CardHeader>
+                                        <CardTitle>Manual tecnico</CardTitle>
+                                        <CardDescription>Más detalles o configuración.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <p className="text-sm">Este es otro contenido que puedes personalizar.</p>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </TabsContent>
+                    </div>
                 </Tabs>
             </div>
         </DashboardShell>
