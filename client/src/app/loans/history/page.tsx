@@ -206,10 +206,11 @@ export default function LoanHistoryPage() {
             </div>
           </div>
 
-          <LoansHistoryTable 
-            lab={selectedLab} 
+          <LoansHistoryTable
+            lab={selectedLab}
             searchQuery={searchQuery}
             timeFilter={timeFilter}
+            statusFilter={statusFilter}
           />
         </CardContent>
       </Card>

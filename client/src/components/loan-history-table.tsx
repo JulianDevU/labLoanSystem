@@ -5,6 +5,7 @@ import { Button } from "@/src/components/ui/button"
 import { Badge } from "@/src/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/src/components/ui/avatar"
 import Image from "next/image"
+
 // Componente para mostrar la imagen de evidencia con fallback
 function EvidenciaFoto({ evidencia_foto }: { evidencia_foto?: string }) {
   const [imgSrc, setImgSrc] = useState<string | undefined>(evidencia_foto);
@@ -18,7 +19,7 @@ function EvidenciaFoto({ evidencia_foto }: { evidencia_foto?: string }) {
   // Construir la URL si es relativa
   let displayUrl = imgSrc;
   if (imgSrc && !isBase64 && !imgSrc.startsWith("http")) {
-    displayUrl = `${BASE_URL}/${imgSrc.replace(/^\/+/,'')}`;
+    displayUrl = `${BASE_URL}/${imgSrc.replace(/^\/+/, '')}`;
   }
 
   if (!imgSrc) {
@@ -73,6 +74,7 @@ function EvidenciaFoto({ evidencia_foto }: { evidencia_foto?: string }) {
     </>
   );
 }
+
 import { Loader2, AlertCircle } from "lucide-react"
 import { useToast } from "@/src/hooks/use-toast"
 import {
@@ -84,13 +86,21 @@ interface LoansTableProps {
   lab: string
   searchQuery: string
   timeFilter: string
+  statusFilter: string
 }
 
-export function LoansHistoryTable({ lab, searchQuery, timeFilter }: LoansTableProps) {
+export function LoansHistoryTable({ lab, searchQuery, timeFilter, statusFilter }: LoansTableProps) {
   const { toast } = useToast()
   const [loans, setLoans] = useState<LoanFromApi[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Función para determinar si un préstamo está vencido
+  const isLoanOverdue = (loan: LoanFromApi) => {
+    const now = new Date();
+    const returnDate = new Date(loan.fecha_devolucion);
+    return loan.estado === 'vencido' || (loan.estado === 'activo' && returnDate < now);
+  }
 
   // Cargar historial de préstamos
   const fetchLoans = async () => {
@@ -101,6 +111,19 @@ export function LoansHistoryTable({ lab, searchQuery, timeFilter }: LoansTablePr
       // Configurar filtros para obtener todos los préstamos
       const filters: any = {
         todos: true // Para obtener todos los préstamos del laboratorio
+      }
+
+      // FILTRO DE ESTADO MODIFICADO
+      if (statusFilter && statusFilter !== "todos") {
+        if (statusFilter === "vencido") {
+          // Para vencidos, no filtramos en el backend, lo haremos en el frontend
+          // porque necesitamos evaluar la lógica de vencimiento
+          filters.todos = true
+        } else {
+          filters.estado = statusFilter
+        }
+      } else {
+        filters.todos = true
       }
 
       // Filtro por tiempo
@@ -119,13 +142,24 @@ export function LoansHistoryTable({ lab, searchQuery, timeFilter }: LoansTablePr
       const allLoans = await getLoans(filters)
 
       // Filtrar por laboratorio si está seleccionado
-      const filteredLoans = lab
+      let filteredLoans = lab
         ? allLoans.filter(loan => {
           const matchById = loan.laboratorio_id._id === lab
           const matchByName = loan.laboratorio_id.nombre?.toLowerCase().includes(lab.toLowerCase())
           return matchById || matchByName
         })
         : allLoans
+
+      // APLICAR FILTRO DE ESTADO EN EL FRONTEND
+      if (statusFilter === "vencido") {
+        filteredLoans = filteredLoans.filter(loan => isLoanOverdue(loan))
+      } else if (statusFilter === "activo") {
+        filteredLoans = filteredLoans.filter(loan => 
+          loan.estado === 'activo' && !isLoanOverdue(loan)
+        )
+      } else if (statusFilter === "devuelto") {
+        filteredLoans = filteredLoans.filter(loan => loan.estado === 'devuelto')
+      }
 
       setLoans(filteredLoans)
     } catch (err) {
@@ -144,7 +178,7 @@ export function LoansHistoryTable({ lab, searchQuery, timeFilter }: LoansTablePr
   // Cargar préstamos cuando cambien los filtros
   useEffect(() => {
     fetchLoans()
-  }, [lab, timeFilter])
+  }, [lab, timeFilter, statusFilter])
 
   // Filtrar préstamos basado en la búsqueda
   const filteredLoans = loans.filter((loan) => {
@@ -167,8 +201,7 @@ export function LoansHistoryTable({ lab, searchQuery, timeFilter }: LoansTablePr
     const returnDate = new Date(loan.fecha_devolucion);
     const isLate = loan.fecha_devolucion_real &&
       new Date(loan.fecha_devolucion_real) > returnDate;
-    const isOverdue = loan.estado === 'vencido' || 
-                     (loan.estado === 'activo' && returnDate < now);
+    const isOverdue = isLoanOverdue(loan);
 
     if (loan.estado === 'devuelto') {
       if (isLate) {
@@ -200,7 +233,6 @@ export function LoansHistoryTable({ lab, searchQuery, timeFilter }: LoansTablePr
     )
   }
 
-  // Resto del código permanece igual...
   // Formatear fecha
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString("es-MX", {
@@ -256,7 +288,7 @@ export function LoansHistoryTable({ lab, searchQuery, timeFilter }: LoansTablePr
               variant="ghost"
               size="sm"
               className="mt-2"
-              onClick={() => {}}
+              onClick={() => { }}
             >
               Limpiar búsqueda
             </Button>
