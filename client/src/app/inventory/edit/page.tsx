@@ -16,279 +16,327 @@ import { LabSelector } from "@/src/components/lab-selector"
 import { useToast } from "@/src/hooks/use-toast"
 import { getEquipmentById, updateEquipment } from "@/src/services/equipmentService"
 import { getLaboratories } from "@/src/services/laboratoryService"
+import { ModalBase } from "@/src/components/modal"
 
 const formSchema = z.object({
-    lab: z.string(),
-    name: z.string().min(1, "El nombre es obligatorio"),
-    description: z.string().optional(),
-    serialNumber: z.string().optional(),
-    category: z.string().min(1, "La categoría es obligatoria"),
-    quantity: z.coerce.number().min(1, "La cantidad debe ser al menos 1"),
-    location: z.string().optional(),
-    notes: z.string().optional(),
+  lab: z.string(),
+  name: z.string().min(1, "El nombre es obligatorio"),
+  description: z.string().optional(),
+  serialNumber: z.string().optional(),
+  category: z.string().min(1, "La categoría es obligatoria"),
+  quantity: z.coerce.number().min(1, "La cantidad debe ser al menos 1"),
+  location: z.string().optional(),
+  notes: z.string().optional(),
 })
 
 type FormValues = z.infer<typeof formSchema>
 
 interface Lab {
-    _id: string
-    nombre: string
-    descripcion: string
-    slug: string
+  _id: string
+  nombre: string
+  descripcion: string
+  slug: string
 }
 
 export default function EditInventoryItemPage() {
-    const router = useRouter()
-    const searchParams = useSearchParams()
-    const { toast } = useToast()
-    const [labs, setLabs] = useState<Lab[]>([])
-    const [isSubmitting, setIsSubmitting] = useState(false)
-    const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { toast } = useToast()
+  const [labs, setLabs] = useState<Lab[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [modalInfo, setModalInfo] = useState({ title: "", description: "" })
 
-    const form = useForm<FormValues>({
-        resolver: zodResolver(formSchema),
-        defaultValues: {
-            lab: "",
-            name: "",
-            description: "",
-            serialNumber: "",
-            category: "",
-            quantity: 1,
-            location: "",
-            notes: "",
-        },
-    })
+  const [confirmationOpen, setConfirmationOpen] = useState(false)
+  const [pendingData, setPendingData] = useState<FormValues | null>(null)
 
-    const equipmentId = searchParams.get("id")
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      lab: "",
+      name: "",
+      description: "",
+      serialNumber: "",
+      category: "",
+      quantity: 1,
+      location: "",
+      notes: "",
+    },
+  })
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [labsResult, equipmentResult] = await Promise.all([
-                    getLaboratories(),
-                    equipmentId ? getEquipmentById(equipmentId) : Promise.reject("No se proporcionó ID de equipo"),
-                ])
+  const equipmentId = searchParams.get("id")
 
-                setLabs(labsResult.data)
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [labsResult, equipmentResult] = await Promise.all([
+          getLaboratories(),
+          equipmentId ? getEquipmentById(equipmentId) : Promise.reject("No se proporcionó ID de equipo"),
+        ])
 
-                const equipment = equipmentResult
+        setLabs(labsResult.data)
 
-                form.reset({
-                    lab: equipment.laboratorio_id.slug,
-                    name: equipment.nombre,
-                    description: equipment.descripcion || "",
-                    serialNumber: equipment.numero_serie || "",
-                    category: equipment.categoria,
-                    quantity: equipment.cantidad_total,
-                    location: equipment.ubicacion || "",
-                    notes: equipment.nota_adicional || "",
-                })
-            } catch (error) {
-                console.error("Error cargando datos:", error)
-                toast({
-                    title: "Error",
-                    description: "No se pudieron cargar los datos del equipo.",
-                })
-                router.push("/inventory")
-            } finally {
-                setIsLoading(false)
-            }
-        }
+        const equipment = equipmentResult
 
-        fetchData()
-    }, [equipmentId, form, router, toast])
-
-    const onSubmit = async (data: FormValues) => {
-        if (!equipmentId) {
-            toast({
-                title: "Error",
-                description: "ID del equipo no encontrado.",
-            });
-            return;
-        }
-
-        setIsSubmitting(true);
-        const selectedLab = labs.find((lab) => lab.slug === data.lab);
-
-        if (!selectedLab) {
-            toast({
-                title: "Error",
-                description: "Laboratorio inválido.",
-            });
-            setIsSubmitting(false);
-            return;
-        }
-
-        try {
-
-            const payload = {
-                nombre: data.name,
-                descripcion: data.description,
-                categoria: data.category,
-                cantidad_total: data.quantity,
-                numero_serie: data.serialNumber,
-                cantidad_disponible: data.quantity,
-                ubicacion: data.location,
-                nota_adicional: data.notes,
-                laboratorio_id: selectedLab._id,
-            };
-
-            console.log("Datos a enviar:", payload);
-
-            await updateEquipment(equipmentId, payload);
-
-            toast({
-                title: "Equipo actualizado exitosamente",
-                description: "Los datos del equipo han sido actualizados.",
-            });
-            router.push("/inventory");
-        } catch (error) {
-            toast({
-                title: "Error",
-                description: (error as Error).message,
-            });
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-
-    if (isLoading) {
-        return <p>Cargando...</p>
+        form.reset({
+          lab: equipment.laboratorio_id.slug,
+          name: equipment.nombre,
+          description: equipment.descripcion || "",
+          serialNumber: equipment.numero_serie || "",
+          category: equipment.categoria,
+          quantity: equipment.cantidad_total,
+          location: equipment.ubicacion || "",
+          notes: equipment.nota_adicional || "",
+        })
+      } catch (error) {
+        console.error("Error cargando datos:", error)
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los datos del equipo.",
+        })
+        router.push("/inventory")
+      } finally {
+        setIsLoading(false)
+      }
     }
 
-    return (
-        <DashboardShell>
-            <DashboardHeader heading="Editar equipo del inventario" text="Modifica los detalles del equipo seleccionado.">
-                <LabSelector
-                    value={form.watch("lab")}
-                    onValueChange={(value) => {
-                        form.setValue("lab", value)
-                    }}
+    fetchData()
+  }, [equipmentId, form, router, toast])
+
+  const handleConfirmSubmit = (data: FormValues) => {
+    setPendingData(data)
+    setConfirmationOpen(true)
+  }
+
+  const confirmAndSubmit = () => {
+    if (pendingData) {
+      onSubmit(pendingData)
+      setPendingData(null)
+      setConfirmationOpen(false)
+    }
+  }
+
+  const onSubmit = async (data: FormValues) => {
+    if (!equipmentId) {
+      toast({
+        title: "Error",
+        description: "ID del equipo no encontrado.",
+      })
+      return
+    }
+
+    setIsSubmitting(true)
+    const selectedLab = labs.find((lab) => lab.slug === data.lab)
+
+    if (!selectedLab) {
+      toast({
+        title: "Error",
+        description: "Laboratorio inválido.",
+      })
+      setIsSubmitting(false)
+      return
+    }
+
+    try {
+      const payload = {
+        nombre: data.name,
+        descripcion: data.description,
+        categoria: data.category,
+        cantidad_total: data.quantity,
+        numero_serie: data.serialNumber,
+        cantidad_disponible: data.quantity,
+        ubicacion: data.location,
+        nota_adicional: data.notes,
+        laboratorio_id: selectedLab._id,
+      }
+
+      console.log("Datos a enviar:", payload)
+
+      await updateEquipment(equipmentId, payload)
+
+      setModalInfo({
+        title: "Equipo actualizado exitosamente",
+        description: "Los datos del equipo han sido actualizados.",
+      })
+
+      setModalOpen(true)
+
+      setTimeout(() => {
+        router.push("/inventory")
+      }, 2500)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: (error as Error).message,
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  if (isLoading) {
+    return <p>Cargando...</p>
+  }
+
+  return (
+    <DashboardShell>
+      <DashboardHeader
+        heading="Editar equipo del inventario"
+        text="Modifica los detalles del equipo seleccionado."
+      >
+        <LabSelector
+          value={form.watch("lab")}
+          onValueChange={(value) => {
+            form.setValue("lab", value)
+          }}
+        />
+      </DashboardHeader>
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleConfirmSubmit)} className="space-y-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Información del equipo</CardTitle>
+              <CardDescription>Modifica los detalles del equipo.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nombre</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nombre del equipo" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-            </DashboardHeader>
 
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Información del equipo</CardTitle>
-                            <CardDescription>Modifica los detalles del equipo.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <FormField
-                                    control={form.control}
-                                    name="name"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Nombre</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Nombre del equipo" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Categoría</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Categoría" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-                                <FormField
-                                    control={form.control}
-                                    name="category"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Categoría</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Categoría" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Descripción</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Descripción del equipo" className="min-h-[100px]" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                            <FormField
-                                control={form.control}
-                                name="description"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Descripción</FormLabel>
-                                        <FormControl>
-                                            <Textarea placeholder="Descripción del equipo" className="min-h-[100px]" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="serialNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Número de serie</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Número de serie (si aplica)" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <FormField
-                                    control={form.control}
-                                    name="serialNumber"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Número de serie</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Número de serie (si aplica)" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                <FormField
+                  control={form.control}
+                  name="quantity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Cantidad</FormLabel>
+                      <FormControl>
+                        <Input type="number" min="1" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-                                <FormField
-                                    control={form.control}
-                                    name="quantity"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Cantidad</FormLabel>
-                                            <FormControl>
-                                                <Input type="number" min="1" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Ubicación de almacenamiento</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ubicación de almacenamiento" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                            <FormField
-                                control={form.control}
-                                name="location"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Ubicación de almacenamiento</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Ubicación de almacenamiento" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Notas adicionales</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Notas adicionales" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+            <CardFooter className="flex justify-end">
+              <Button type="button" variant="outline" className="mr-2" onClick={() => router.back()}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Actualizando equipo..." : "Actualizar equipo"}
+              </Button>
+            </CardFooter>
+          </Card>
+        </form>
+      </Form>
 
-                            <FormField
-                                control={form.control}
-                                name="notes"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Notas adicionales</FormLabel>
-                                        <FormControl>
-                                            <Textarea placeholder="Notas adicionales" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </CardContent>
-                        <CardFooter className="flex justify-end">
-                            <Button type="button" variant="outline" className="mr-2" onClick={() => router.back()}>
-                                Cancelar
-                            </Button>
-                            <Button type="submit" disabled={isSubmitting}>
-                                {isSubmitting ? "Actualizando equipo..." : "Actualizar equipo"}
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                </form>
-            </Form>
-        </DashboardShell>
-    )
+      {/* Modal de éxito */}
+      <ModalBase
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        title={modalInfo.title}
+        description={modalInfo.description}
+      />
+      <ModalBase
+        open={confirmationOpen}
+        onOpenChange={setConfirmationOpen}
+        title="Confirmar cambio de laboratorio"
+        description={`¿Estás seguro que deseas guardar este equipo en el laboratorio "${labs.find(l => l.slug === pendingData?.lab)?.nombre}"?`}
+      >
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="outline" onClick={() => setConfirmationOpen(false)}>
+            Cancelar
+          </Button>
+          <Button onClick={confirmAndSubmit}>
+            Sí, confirmar
+          </Button>
+        </div>
+      </ModalBase>
+    </DashboardShell>
+  )
 }
