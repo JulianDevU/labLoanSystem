@@ -7,6 +7,21 @@ Es una plataforma web para gestionar el préstamo y devolución de equipos de la
 1. Ingresa a la URL del sistema (por defecto: `http://localhost:3030`).
 2. Inicia sesión con tu usuario y contraseña.
 
+
+## Panel principal (Dashboard)
+
+Al ingresar al sistema, verás el **Dashboard** o panel principal, que te da una visión rápida del estado del laboratorio:
+
+- **Cartas de resumen (parte superior):**
+  - Muestran el número total de préstamos activos, vencidos, devueltos y la cantidad de equipos disponibles en inventario.
+  - Te permiten identificar rápidamente la situación general del laboratorio.
+
+- **Gráficas (parte derecha):**
+  - Visualizan estadísticas de préstamos por laboratorio, por tipo de beneficiario o por estado.
+  - Ayudan a detectar tendencias, laboratorios más usados o equipos más solicitados.
+
+Estas herramientas te permiten tomar decisiones rápidas y monitorear el uso de los recursos.
+
 ## Funcionalidades principales
 
 ### 1. Registrar un nuevo préstamo
