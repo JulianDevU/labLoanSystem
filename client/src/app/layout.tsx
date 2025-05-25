@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: 'Gestion Laboratorios',
   description: 'Intento de proyecto final',
   generator: 'nosotros',
+  icons: {
+    icon: '/prestamo.png',
+  },
 }
 
 export default function RootLayout({
