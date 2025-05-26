@@ -10,23 +10,34 @@ import { DashboardShell } from "@/src/components/dashboard-shell"
 import { LabSelector } from "@/src/components/lab-selector"
 import { SearchIcon, PlusIcon } from "lucide-react"
 import { LoansTable } from "@/src/components/loan-table"
+import { useTranslations } from "next-intl"
 
 export default function ActiveLoansPage() {
   const [selectedLab, setSelectedLab] = useState("fisica")
   const [searchQuery, setSearchQuery] = useState("")
+  const t = useTranslations("Loans")
+
+  const getLabName = (lab: string) => {
+    switch (lab) {
+      case "fisica": return t("physics")
+      case "telecomunicaciones": return t("telecommunications")
+      case "software": return t("software")
+      default: return lab
+    }
+  }
 
   return (
     <DashboardShell>
-      <DashboardHeader 
-        heading="Préstamos activos" 
-        text={`Gestiona los préstamos activos del laboratorio de ${selectedLab}.`}
+      <DashboardHeader
+        heading={t("pageTitle")}
+        text={t("pageDescription", { lab: getLabName(selectedLab) })}
       >
         <div className="flex flex-col gap-2 sm:flex-row">
           <LabSelector value={selectedLab} onValueChange={setSelectedLab} />
           <Button asChild>
             <Link href="/loans/new">
               <PlusIcon className="mr-2 h-4 w-4" />
-              Nuevo préstamo
+              {t("newLoanButton")}
             </Link>
           </Button>
         </div>
@@ -36,10 +47,8 @@ export default function ActiveLoansPage() {
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle>Préstamos activos</CardTitle>
-              <CardDescription>
-                Visualiza y gestiona todos los préstamos de equipos actuales.
-              </CardDescription>
+              <CardTitle>{t("activeLoansCardTitle")}</CardTitle>
+              <CardDescription>{t("activeLoansCardDescription")}</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -48,7 +57,7 @@ export default function ActiveLoansPage() {
             <div className="relative flex-1">
               <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar por ID, usuario, equipo..."
+                placeholder={t("searchPlaceholder")}
                 className="pl-8"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}

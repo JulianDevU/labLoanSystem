@@ -218,7 +218,10 @@
     "activeLoansCardTitle": "Préstamos activos",
     "activeLoansCardDescription": "Visualiza y gestiona todos los préstamos de equipos actuales.",
     "searchPlaceholder": "Buscar por ID, usuario, equipo...",
-    "newLoanButton": "Nuevo préstamo"
+    "newLoanButton": "Nuevo préstamo",
+    "physics": "fisica",
+    "telecommunications": "telecomunicaciones",
+    "software": "software"
   },
   "LoansHistory": {
     "pageTitle": "Historial de Préstamos",

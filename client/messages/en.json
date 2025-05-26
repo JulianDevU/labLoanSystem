@@ -218,7 +218,10 @@
         "activeLoansCardTitle": "Active loans",
         "activeLoansCardDescription": "View and manage all current equipment loans.",
         "searchPlaceholder": "Search by ID, user, equipment...",
-        "newLoanButton": "New loan"
+        "newLoanButton": "New loan",
+        "physics": "physics",
+        "telecommunications": "telecommunications",
+        "software": "software"
     },
     "LoansHistory": {
         "pageTitle": "Loan History",
