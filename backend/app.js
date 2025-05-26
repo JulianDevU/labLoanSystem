@@ -26,7 +26,15 @@ const app = express();
 // Configuración de middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:3030',
+    'http://localhost:3000',
+    'https://labloansystemfront.onrender.com',
+    'https://labloansystemback.onrender.com'
+  ],
+  credentials: true
+}));
 app.use(helmet());
 app.use(morgan('dev'));
 
