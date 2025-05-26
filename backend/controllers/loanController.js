@@ -112,6 +112,8 @@ export const getPrestamo = async (req, res) => {
 // @route   POST /api/prestamos
 // @access  Privado
 
+// ===== 1. ACTUALIZACIÓN DEL CONTROLADOR (loanController.js) =====
+
 export const crearPrestamo = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -134,14 +136,57 @@ export const crearPrestamo = async (req, res) => {
       }
     }
 
-    // Permitir recibir evidencia_foto como archivo o base64
     let evidencia_foto = null;
+    let evidencia_metadata = null;
+
     if (req.file) {
-      // Si se subió un archivo, guardar la ruta relativa
-      evidencia_foto = `/uploads/${req.file.filename}`;
+      // Si se subió un archivo físico, convertir a base64
+      const fs = await import('fs');
+      const fileBuffer = fs.readFileSync(req.file.path);
+      const base64 = `data:${req.file.mimetype};base64,${fileBuffer.toString('base64')}`;
+      
+      evidencia_foto = base64;
+      evidencia_metadata = {
+        originalName: req.file.originalname,
+        size: req.file.size,
+        mimeType: req.file.mimetype,
+        compressedSize: base64.length,
+        compressionRatio: Math.round((1 - (base64.length * 0.75) / req.file.size) * 100)
+      };
+
+      // Eliminar archivo temporal
+      fs.unlinkSync(req.file.path);
+      
     } else if (req.body.evidencia_foto) {
-      // Si viene en base64, guardar el string base64
+      // Si viene en base64 del frontend
       evidencia_foto = req.body.evidencia_foto;
+      
+      // Si también vienen los metadatos, usarlos
+      if (req.body.evidencia_metadata) {
+        try {
+          evidencia_metadata = typeof req.body.evidencia_metadata === 'string' 
+            ? JSON.parse(req.body.evidencia_metadata)
+            : req.body.evidencia_metadata;
+        } catch (e) {
+          console.warn('Error parsing evidencia_metadata:', e);
+        }
+      }
+    }
+
+    // Validar que se proporcionó evidencia
+    if (!evidencia_foto) {
+      return res.status(400).json({
+        success: false,
+        mensaje: 'La evidencia fotográfica es obligatoria'
+      });
+    }
+
+    // Validar tamaño de imagen base64 (aprox 1.5MB)
+    if (evidencia_foto.length > 2000000) {
+      return res.status(400).json({
+        success: false,
+        mensaje: 'La imagen es demasiado grande. Por favor, use una imagen más pequeña.'
+      });
     }
 
     const {
@@ -149,7 +194,7 @@ export const crearPrestamo = async (req, res) => {
       numero_identificacion,
       nombre_beneficiado,
       correo_beneficiado,
-      equipos, // Ahora recibimos un array de equipos
+      equipos,
       fecha_devolucion,
       laboratorio_id,
       descripcion
@@ -190,8 +235,8 @@ export const crearPrestamo = async (req, res) => {
       });
     }
 
-    // Crear el préstamo
-    const prestamo = await Prestamo.create({
+    // Crear el préstamo con imagen base64 y metadatos
+    const prestamoData = {
       tipo_beneficiado,
       numero_identificacion,
       nombre_beneficiado,
@@ -206,7 +251,14 @@ export const crearPrestamo = async (req, res) => {
       evidencia_foto,
       laboratorio_id,
       descripcion
-    });
+    };
+
+    // Agregar metadatos si están disponibles
+    if (evidencia_metadata) {
+      prestamoData.evidencia_metadata = evidencia_metadata;
+    }
+
+    const prestamo = await Prestamo.create(prestamoData);
 
     // Actualizar la disponibilidad de todos los equipos
     for (const equipoData of equiposData) {
@@ -270,34 +322,76 @@ export const actualizarPrestamo = async (req, res) => {
       });
     }
 
-    // Si se está devolviendo el equipo, restaurar inventario (ahora soporta devoluciones parciales)
+    if (req.file) {
+      // Si se subió un nuevo archivo
+      const fs = await import('fs');
+      const fileBuffer = fs.readFileSync(req.file.path);
+      const base64 = `data:${req.file.mimetype};base64,${fileBuffer.toString('base64')}`;
+      
+      req.body.evidencia_foto = base64;
+      req.body.evidencia_metadata = {
+        originalName: req.file.originalname,
+        size: req.file.size,
+        mimeType: req.file.mimetype,
+        compressedSize: base64.length,
+        compressionRatio: Math.round((1 - (base64.length * 0.75) / req.file.size) * 100)
+      };
+
+      // Eliminar archivo temporal
+      fs.unlinkSync(req.file.path);
+      
+    } else if (req.body.evidencia_foto && req.body.evidencia_foto !== prestamo.evidencia_foto) {
+      // Si viene una nueva imagen en base64
+      if (req.body.evidencia_metadata) {
+        try {
+          req.body.evidencia_metadata = typeof req.body.evidencia_metadata === 'string' 
+            ? JSON.parse(req.body.evidencia_metadata)
+            : req.body.evidencia_metadata;
+        } catch (e) {
+          console.warn('Error parsing evidencia_metadata:', e);
+        }
+      }
+    }
+
+    // Validar tamaño si hay nueva imagen
+    if (req.body.evidencia_foto && req.body.evidencia_foto.length > 2000000) {
+      return res.status(400).json({
+        success: false,
+        mensaje: 'La imagen es demasiado grande. Por favor, use una imagen más pequeña.'
+      });
+    }
+
+    // Si se está devolviendo el equipo, restaurar inventario
     if (req.body.estado === 'devuelto' && prestamo.estado === 'activo') {
       const equiposDevueltos = req.body.equipos_devueltos || [];
-      // Mapear cantidades devueltas por equipo
       const devueltosMap = new Map();
+      
       for (const devuelto of equiposDevueltos) {
         devueltosMap.set(String(devuelto.equipo_id), devuelto.cantidad);
       }
+      
       for (const equipoItem of prestamo.equipos) {
         const equipoId = String(equipoItem.equipo_id._id || equipoItem.equipo_id);
         const cantidadDevuelta = devueltosMap.has(equipoId) ? devueltosMap.get(equipoId) : equipoItem.cantidad;
         const cantidadPrestada = equipoItem.cantidad;
         const equipo = await Equipo.findById(equipoId);
+        
         if (equipo) {
-          // Sumar solo la cantidad devuelta al disponible
           equipo.cantidad_disponible += cantidadDevuelta;
-          // Si no se devolvió todo, restar la diferencia del total
           if (cantidadDevuelta < cantidadPrestada) {
             equipo.cantidad_total -= (cantidadPrestada - cantidadDevuelta);
             if (equipo.cantidad_total < 0) equipo.cantidad_total = 0;
-            if (equipo.cantidad_disponible > equipo.cantidad_total) equipo.cantidad_disponible = equipo.cantidad_total;
+            if (equipo.cantidad_disponible > equipo.cantidad_total) {
+              equipo.cantidad_disponible = equipo.cantidad_total;
+            }
           }
           await equipo.save();
         }
       }
+      
       req.body.fecha_devolucion_real = new Date();
-      // Guardar cantidades devueltas y nota en el préstamo
       req.body.equipos_devueltos = equiposDevueltos;
+      
       if (req.body.nota_devolucion) {
         prestamo.nota_devolucion = req.body.nota_devolucion;
       }

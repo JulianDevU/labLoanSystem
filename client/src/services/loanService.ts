@@ -18,6 +18,13 @@ export interface Loan {
   fecha_devolucion_real?: Date | null;
   estado?: 'activo' | 'devuelto' | 'vencido';
   evidencia_foto?: string;
+  evidencia_metadata?: {
+    originalName: string;
+    size: number;
+    mimeType: string;
+    compressedSize: number;
+    compressionRatio: number;
+  };
   laboratorio_id: string;
   descripcion?: string;
 }
@@ -43,18 +50,23 @@ export interface LoanFromApi {
     };
     cantidad: number;
   }>;
-  // NUEVO: cantidades devueltas por equipo
   equipos_devueltos?: Array<{
     equipo_id: string | { _id: string };
     cantidad: number;
   }>;
-  // NUEVO: nota de devolución
   nota_devolucion?: string;
   fecha_prestamo: string;
   fecha_devolucion: string;
   fecha_devolucion_real?: string;
   estado: "activo" | "devuelto" | "vencido";
   evidencia_foto?: string;
+  evidencia_metadata?: {
+    originalName: string;
+    size: number;
+    mimeType: string;
+    compressedSize: number;
+    compressionRatio: number;
+  };
   laboratorio_id: {
     _id: string;
     nombre: string;
@@ -76,16 +88,31 @@ export interface CreateLoanData {
     cantidad: number;
   }>;
   fecha_devolucion: string;
-  evidencia_foto?: string;
+  evidencia_foto?: string | File;
+  evidencia_metadata?: {
+    originalName: string;
+    size: number;
+    mimeType: string;
+    compressedSize: number;
+    compressionRatio: number;
+  }; // <-- Agregado aquí
   laboratorio_id: string;
   descripcion?: string;
 }
+
 
 // Interface for loan updates
 export interface UpdateLoanData {
   fecha_devolucion?: string;
   estado?: "activo" | "devuelto" | "vencido";
-  evidencia_foto?: string;
+  evidencia_foto?: string | File;
+  evidencia_metadata?: {
+    originalName: string;
+    size: number;
+    mimeType: string;
+    compressedSize: number;
+    compressionRatio: number;
+  }; // <-- También aquí
   descripcion?: string;
   equipos_devueltos?: Array<{
     equipo_id: string;
@@ -93,6 +120,7 @@ export interface UpdateLoanData {
   }>;
   nota_devolucion?: string;
 }
+
 
 // Interface for filtering loans
 export interface LoansFilters {
@@ -105,7 +133,50 @@ export interface LoansFilters {
   todos?: boolean;
 }
 
+// Función auxiliar para convertir File a base64 con metadatos
+async function fileToBase64WithMetadata(file: File): Promise<{
+  base64: string;
+  metadata: {
+    originalName: string;
+    size: number;
+    mimeType: string;
+    compressedSize: number;
+    compressionRatio: number;
+  };
+}> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      const metadata = {
+        originalName: file.name,
+        size: file.size,
+        mimeType: file.type,
+        compressedSize: base64.length,
+        compressionRatio: Math.round((1 - (base64.length * 0.75) / file.size) * 100) // Aproximación
+      };
+      resolve({ base64, metadata });
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 // Create a new loan with multiple equipment support
+function validateImageFile(file: File) {
+  const maxSize = 3 * 1024 * 1024; // Aumentar a 3MB para dar margen antes de compresión
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+  
+  if (file.size > maxSize) {
+    throw new Error('La imagen debe ser menor a 3MB');
+  }
+  
+  if (!allowedTypes.includes(file.type)) {
+    throw new Error('Solo se permiten imágenes JPEG, PNG o WebP');
+  }
+}
+
+// Función mejorada para crear préstamos
 export async function createLoan(data: CreateLoanData) {
   console.log("FUNCIÓN createLoan LLAMADA CON DATOS:", data);
 
@@ -117,13 +188,45 @@ export async function createLoan(data: CreateLoanData) {
   }
 
   try {
+    let requestData = { ...data };
+    let headers = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    };
+
+    // Si es un archivo File, convertir a base64 con metadatos
+    if (data.evidencia_foto instanceof File) {
+      console.log("Procesando archivo File:", data.evidencia_foto.name);
+      
+      // Validar archivo
+      validateImageFile(data.evidencia_foto);
+      
+      // Convertir a base64 con metadatos
+      const { base64, metadata } = await fileToBase64WithMetadata(data.evidencia_foto);
+      
+      // Verificar tamaño final del base64
+      if (base64.length > 2000000) {
+        throw new Error('La imagen comprimida sigue siendo demasiado grande. Intente con una imagen más pequeña.');
+      }
+      
+      requestData = {
+        ...data,
+        evidencia_foto: base64,
+        evidencia_metadata: metadata
+      };
+      
+      console.log("Archivo convertido:", {
+        originalSize: metadata.size,
+        compressedSize: metadata.compressedSize,
+        compressionRatio: metadata.compressionRatio,
+        finalBase64Size: base64.length
+      });
+    }
+
     const response = await fetch(`${BASE_URL}/api/prestamos`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
+      headers,
+      body: JSON.stringify(requestData),
     });
 
     console.log("Respuesta recibida:", {
@@ -137,7 +240,7 @@ export async function createLoan(data: CreateLoanData) {
 
     if (!response.ok) {
       console.error("Error en la respuesta:", result);
-      throw new Error(result.mensaje || "Error al crear el préstamo");
+      throw new Error(result.mensaje || result.error || "Error al crear el préstamo");
     }
 
     return result;
@@ -147,7 +250,6 @@ export async function createLoan(data: CreateLoanData) {
   }
 }
 
-// Get all loans with optional filters
 export async function getLoans(filters?: LoansFilters): Promise<LoanFromApi[]> {
   const token = Cookies.get("token");
 
@@ -190,7 +292,6 @@ export async function getLoans(filters?: LoansFilters): Promise<LoanFromApi[]> {
   return result.data;
 }
 
-// Get a loan by ID
 export async function getLoanById(id: string): Promise<LoanFromApi> {
   const token = Cookies.get("token");
 
@@ -215,7 +316,7 @@ export async function getLoanById(id: string): Promise<LoanFromApi> {
   return result.data;
 }
 
-// Update a loan
+// Update a loan - ACTUALIZADA para manejar archivos
 export async function updateLoan(id: string, data: UpdateLoanData) {
   const token = Cookies.get("token");
 
@@ -225,23 +326,49 @@ export async function updateLoan(id: string, data: UpdateLoanData) {
 
   console.log("Actualizando préstamo:", id, "con datos:", data);
 
-  const response = await fetch(`${BASE_URL}/api/prestamos/${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
+  try {
+    let requestData: any = { ...data };
+    let headers: Record<string, string> = {
       Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(data),
-  });
+    };
 
-  const result = await response.json();
+    // Si hay una imagen nueva como File, procesarla
+    if (data.evidencia_foto instanceof File) {
+      console.log("Procesando nueva imagen para actualización:", data.evidencia_foto.name);
+      
+      // Validar archivo
+      validateImageFile(data.evidencia_foto);
+      
+      // Convertir a base64 con metadatos
+      const { base64, metadata } = await fileToBase64WithMetadata(data.evidencia_foto);
+      
+      requestData = {
+        ...data,
+        evidencia_foto: base64,
+        evidencia_metadata: metadata
+      };
+    }
 
-  if (!response.ok) {
-    const fallbackMessage = result?.mensaje || result?.error;
-    throw new Error(fallbackMessage || "Error al actualizar préstamo");
+    headers["Content-Type"] = "application/json";
+
+    const response = await fetch(`${BASE_URL}/api/prestamos/${id}`, {
+      method: "PUT",
+      headers,
+      body: JSON.stringify(requestData),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      const fallbackMessage = result?.mensaje || result?.error;
+      throw new Error(fallbackMessage || "Error al actualizar préstamo");
+    }
+
+    return result.data;
+  } catch (error) {
+    console.error("Error al actualizar préstamo:", error);
+    throw error;
   }
-
-  return result.data;
 }
 
 // Delete a loan
@@ -404,7 +531,6 @@ export async function getReturnedLoans(): Promise<LoanFromApi[]> {
   return getLoans({ estado: "devuelto" });
 }
 
-// Register a new loan - updated for multiple equipment
 export async function registerLoan(data: {
   tipo_beneficiado: 'estudiante' | 'docente';
   numero_identificacion: string;
@@ -419,57 +545,23 @@ export async function registerLoan(data: {
   laboratorio_id: string;
   descripcion?: string;
 }) {
-  const token = Cookies.get("token");
-  if (!token) {
-    throw new Error("No hay token de autenticación");
-  }
+  // Usar la función createLoan que ya maneja todo
+  return createLoan(data);
+}
 
+// Función utilitaria para obtener información de compresión
+export function getImageCompressionInfo(loan: LoanFromApi): string | null {
+  if (!loan.evidencia_metadata) return null;
+  
+  const { size, compressedSize, compressionRatio } = loan.evidencia_metadata;
+  const originalKB = Math.round(size / 1024);
+  const compressedKB = Math.round((compressedSize * 0.75) / 1024); // Aproximación del tamaño real
+  
+  return `Original: ${originalKB}KB → Comprimida: ${compressedKB}KB (${compressionRatio}% reducción)`;
+}
 
-  // Detectar si la evidencia es base64 (string) o un archivo (File)
-  const isBase64 = typeof data.evidencia_foto === "string" && data.evidencia_foto.startsWith("data:image");
-  const isFile = typeof window !== 'undefined' && typeof File !== 'undefined' && data.evidencia_foto instanceof File;
-
-  let body;
-  let headers: Record<string, string> = {
-    Authorization: `Bearer ${token}`,
-  };
-
-  if (isFile) {
-    // Enviar como FormData
-    body = new FormData();
-    body.append("tipo_beneficiado", data.tipo_beneficiado);
-    body.append("numero_identificacion", data.numero_identificacion);
-    body.append("nombre_beneficiado", data.nombre_beneficiado);
-    body.append("correo_beneficiado", data.correo_beneficiado);
-    body.append("fecha_devolucion", data.fecha_devolucion);
-    body.append("laboratorio_id", data.laboratorio_id);
-    if (data.descripcion) body.append("descripcion", data.descripcion);
-    // Equipos como JSON string
-    body.append("equipos", JSON.stringify(data.equipos));
-    // Archivo
-    if (data.evidencia_foto) {
-      body.append("evidencia_foto", data.evidencia_foto);
-    }
-  } else {
-    // Enviar como JSON (base64 o sin imagen)
-    headers["Content-Type"] = "application/json";
-    // Construir el objeto sin evidencia_foto si no existe o no es base64
-    const jsonData: any = { ...data };
-    if (!isBase64) {
-      delete jsonData.evidencia_foto;
-    }
-    body = JSON.stringify(jsonData);
-  }
-
-  const response = await fetch(`${BASE_URL}/api/prestamos`, {
-    method: "POST",
-    headers,
-    body,
-  });
-
-  const result = await response.json();
-  if (!response.ok) {
-    throw new Error(result.mensaje || "Error al crear el préstamo");
-  }
-  return result;
+// Función para validar si una imagen necesita ser re-comprimida
+export function shouldRecompressImage(file: File): boolean {
+  const maxRecommendedSize = 1024 * 1024; // 1MB
+  return file.size > maxRecommendedSize;
 }
