@@ -415,9 +415,61 @@ export async function registerLoan(data: {
     cantidad: number;
   }>;
   fecha_devolucion: string;
-  evidencia_foto?: string;
+  evidencia_foto?: string | File;
   laboratorio_id: string;
   descripcion?: string;
 }) {
-  return createLoan(data);
+  const token = Cookies.get("token");
+  if (!token) {
+    throw new Error("No hay token de autenticación");
+  }
+
+
+  // Detectar si la evidencia es base64 (string) o un archivo (File)
+  const isBase64 = typeof data.evidencia_foto === "string" && data.evidencia_foto.startsWith("data:image");
+  const isFile = typeof window !== 'undefined' && typeof File !== 'undefined' && data.evidencia_foto instanceof File;
+
+  let body;
+  let headers: Record<string, string> = {
+    Authorization: `Bearer ${token}`,
+  };
+
+  if (isFile) {
+    // Enviar como FormData
+    body = new FormData();
+    body.append("tipo_beneficiado", data.tipo_beneficiado);
+    body.append("numero_identificacion", data.numero_identificacion);
+    body.append("nombre_beneficiado", data.nombre_beneficiado);
+    body.append("correo_beneficiado", data.correo_beneficiado);
+    body.append("fecha_devolucion", data.fecha_devolucion);
+    body.append("laboratorio_id", data.laboratorio_id);
+    if (data.descripcion) body.append("descripcion", data.descripcion);
+    // Equipos como JSON string
+    body.append("equipos", JSON.stringify(data.equipos));
+    // Archivo
+    if (data.evidencia_foto) {
+      body.append("evidencia_foto", data.evidencia_foto);
+    }
+  } else {
+    // Enviar como JSON (base64 o sin imagen)
+    headers["Content-Type"] = "application/json";
+    // Construir el objeto sin evidencia_foto si no existe o no es base64
+    const jsonData: any = { ...data };
+    if (!isBase64) {
+      delete jsonData.evidencia_foto;
+    }
+    body = JSON.stringify(jsonData);
+  }
+
+  const response = await fetch(`${BASE_URL}/api/prestamos`, {
+    method: "POST",
+    headers,
+    body,
+  });
+
+  const result = await response.json();
+  if (!response.ok) {
+    throw new Error(result.mensaje || "Error al crear el préstamo");
+  }
+  return result;
 }

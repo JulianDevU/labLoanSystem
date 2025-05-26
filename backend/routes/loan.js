@@ -25,7 +25,10 @@ router.use(protect);
 router.get('/', filtroPrestamoValidator, getPrestamos);
 router.get('/:id', getPrestamo);
 router.get('/:id/pdf', generarPDF);
-router.post('/', crearPrestamoValidator, crearPrestamo);
+import upload from '../middleware/upload.js';
+
+// Permitir subir archivo de imagen o base64
+router.post('/', upload.single('evidencia_foto'), crearPrestamoValidator, crearPrestamo);
 router.put('/:id', actualizarPrestamoValidator, actualizarPrestamo);
 
 // Rutas solo para administradores

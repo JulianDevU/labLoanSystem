@@ -121,6 +121,17 @@ export const crearPrestamo = async (req, res) => {
       });
     }
 
+
+    // Permitir recibir evidencia_foto como archivo o base64
+    let evidencia_foto = null;
+    if (req.file) {
+      // Si se subió un archivo, guardar la ruta relativa
+      evidencia_foto = `/uploads/${req.file.filename}`;
+    } else if (req.body.evidencia_foto) {
+      // Si viene en base64, guardar el string base64
+      evidencia_foto = req.body.evidencia_foto;
+    }
+
     const {
       tipo_beneficiado,
       numero_identificacion,
@@ -128,7 +139,6 @@ export const crearPrestamo = async (req, res) => {
       correo_beneficiado,
       equipos, // Ahora recibimos un array de equipos
       fecha_devolucion,
-      evidencia_foto,
       laboratorio_id,
       descripcion
     } = req.body;
