@@ -86,9 +86,6 @@
         "subtitle": "Manage equipment loans and inventory in the laboratories.",
         "tabOverview": "Overview",
         "tabLoans": "Active loans",
-        "physics": "physics",
-        "telecommunications": "telecommunications",
-        "software": "software",
         "tabInventory": "Inventory",
         "recentLoansTitle": "Recent loans",
         "recentLoansDescription": "Latest equipment loans in the {lab} laboratory.",
@@ -218,10 +215,7 @@
         "activeLoansCardTitle": "Active loans",
         "activeLoansCardDescription": "View and manage all current equipment loans.",
         "searchPlaceholder": "Search by ID, user, equipment...",
-        "newLoanButton": "New loan",
-        "physics": "physics",
-        "telecommunications": "telecommunications",
-        "software": "software"
+        "newLoanButton": "New loan"
     },
     "LoansHistory": {
         "pageTitle": "Loan History",
@@ -304,5 +298,10 @@
         "emailInvalid": "Invalid email address",
         "passwordMin": "Password must be at least 6 characters long",
         "confirmPasswordMismatch": "Passwords do not match"
+    },
+    "Laboratory": {
+        "physics": "physics",
+        "telecommunications": "telecommunications",
+        "software": "software"
     }
 }

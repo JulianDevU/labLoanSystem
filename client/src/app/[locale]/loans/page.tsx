@@ -16,12 +16,13 @@ export default function ActiveLoansPage() {
   const [selectedLab, setSelectedLab] = useState("fisica")
   const [searchQuery, setSearchQuery] = useState("")
   const t = useTranslations("Loans")
+  const l = useTranslations("Laboratory")
 
   const getLabName = (lab: string) => {
     switch (lab) {
-      case "fisica": return t("physics")
-      case "telecomunicaciones": return t("telecommunications")
-      case "software": return t("software")
+      case "fisica": return l("physics")
+      case "telecomunicaciones": return l("telecommunications")
+      case "software": return l("software")
       default: return lab
     }
   }

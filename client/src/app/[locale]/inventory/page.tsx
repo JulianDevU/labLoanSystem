@@ -9,17 +9,29 @@ import { DashboardHeader } from "@/src/components/dashboard-header"
 import { DashboardShell } from "@/src/components/dashboard-shell"
 import { LabSelector } from "@/src/components/lab-selector"
 import { InventoryTable } from "@/src/components/inventory-table"
-import { PlusIcon, UploadIcon, SearchIcon } from "lucide-react"
+import { PlusIcon, SearchIcon } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 export default function InventoryPage() {
   const [selectedLab, setSelectedLab] = useState("fisica")
   const [searchQuery, setSearchQuery] = useState("")
+  const t = useTranslations("Inventory")
+  const l = useTranslations("Laboratory")
+
+  const getLabName = (lab: string) => {
+    switch (lab) {
+      case "fisica": return l("physics")
+      case "telecomunicaciones": return l("telecommunications")
+      case "software": return l("software")
+      default: return lab
+    }
+  }
 
   return (
     <DashboardShell>
       <DashboardHeader
-        heading="Gestión de Inventario"
-        text={`Gestiona el inventario de equipos para el laboratorio de ${selectedLab}.`}
+        heading={t("title")}
+        text={t("subtitle", { lab: getLabName(selectedLab) })}
       >
         <LabSelector value={selectedLab} onValueChange={setSelectedLab} />
       </DashboardHeader>
@@ -28,14 +40,14 @@ export default function InventoryPage() {
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle>Inventario de Equipos</CardTitle>
-              <CardDescription>Visualiza, agrega, edita o elimina equipos del inventario.</CardDescription>
+              <CardTitle>{t("cardTitle")}</CardTitle>
+              <CardDescription>{t("cardDescription")}</CardDescription>
             </div>
             <div className="flex flex-col gap-2 sm:flex-row">
               <Button asChild>
                 <Link href="/inventory/new">
                   <PlusIcon className="mr-2 h-4 w-4" />
-                  Agregar Artículo
+                  {t("addButton")}
                 </Link>
               </Button>
             </div>
@@ -46,7 +58,7 @@ export default function InventoryPage() {
             <div className="relative flex-1">
               <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar en inventario..."
+                placeholder={t("searchPlaceholder")}
                 className="pl-8"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}

@@ -87,9 +87,6 @@
     "tabOverview": "Resumen",
     "tabLoans": "Préstamos activos",
     "physics": "fisica",
-    "telecommunications": "telecomunicaciones",
-    "software": "software",
-    "tabInventory": "Inventario",
     "recentLoansTitle": "Préstamos recientes",
     "recentLoansDescription": "Últimos préstamos de equipos en el laboratorio de {lab}.",
     "activeLoansTitle": "Préstamos activos",
@@ -218,10 +215,7 @@
     "activeLoansCardTitle": "Préstamos activos",
     "activeLoansCardDescription": "Visualiza y gestiona todos los préstamos de equipos actuales.",
     "searchPlaceholder": "Buscar por ID, usuario, equipo...",
-    "newLoanButton": "Nuevo préstamo",
-    "physics": "fisica",
-    "telecommunications": "telecomunicaciones",
-    "software": "software"
+    "newLoanButton": "Nuevo préstamo"
   },
   "LoansHistory": {
     "pageTitle": "Historial de Préstamos",
@@ -304,5 +298,10 @@
     "emailInvalid": "Correo electrónico inválido",
     "passwordMin": "La contraseña debe tener al menos 6 caracteres",
     "confirmPasswordMismatch": "Las contraseñas no coinciden"
+  },
+  "Laboratory": {
+    "physics": "fisica",
+    "telecommunications": "telecomunicaciones",
+    "software": "software"
   }
 }

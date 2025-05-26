@@ -21,12 +21,13 @@ export default function DashboardPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter] = useState("todos")
   const t = useTranslations('Dashboard')
+  const l = useTranslations("Laboratory")
 
   const getLabName = (lab: string) => {
     switch (lab) {
-      case "fisica": return t('physics')
-      case "telecomunicaciones": t('telecommunications')
-      case "software": return t('software')
+      case "fisica": return l('physics')
+      case "telecomunicaciones": l('telecommunications')
+      case "software": return l('software')
       default: return lab
     }
   }
