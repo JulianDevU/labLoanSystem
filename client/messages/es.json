@@ -4,7 +4,21 @@
     "about": "Go to the about page"
   },
   "Login": {
-    "title": "Login"
+    "title": "Inicio de sesión",
+    "description": "Ingresa tus credenciales para acceder al sistema",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "ejemplo@correo.com",
+    "passwordLabel": "Contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "button": "Iniciar sesión",
+    "buttonLoading": "Iniciando sesión...",
+    "noAccount": "¿No tienes cuenta? Regístrate aquí",
+    "successTitle": "Inicio de sesión exitoso",
+    "successDescription": "Bienvenido al Sistema de Gestión de Préstamos de Laboratorio",
+    "error": "Error al iniciar sesión",
+    "termsNotice": "Al iniciar sesión, aceptas nuestros",
+    "termsLink": "Términos de servicio",
+    "privacyLink": "Política de privacidad"
   },
   "Privacy": {
     "title": "Política de privacidad",
@@ -47,5 +61,26 @@
     "governingLawText": "Estos términos y condiciones se regirán e interpretarán de acuerdo con las leyes del país donde LabLoanSystem está registrada.",
     "contact": "Contacto",
     "contactText": "Si tiene alguna pregunta sobre estos Términos y Condiciones, no dude en contactarnos a través de nuestro formulario de contacto."
+  }
+  ,
+  "Register": {
+    "title": "Registro de usuario",
+    "description": "Ingresa tus datos para registrarte y acceder al sistema",
+    "nameLabel": "Nombre completo*",
+    "namePlaceholder": "John Doe",
+    "emailLabel": "Correo electrónico*",
+    "emailPlaceholder": "ejemplo@correo.com",
+    "passwordLabel": "Contraseña*",
+    "confirmPasswordLabel": "Confirmar contraseña*",
+    "button": "Registrar usuario",
+    "buttonLoading": "Registrando usuario...",
+    "successTitle": "Registro exitoso",
+    "successDescription": "Bienvenido al Sistema de Gestión de Préstamos de Laboratorio",
+    "error": "Error al registrar",
+    "errorDefault": "Algo salió mal",
+    "alreadyAccount": "¿Ya tienes una cuenta?",
+    "termsNotice": "Al registrarte, aceptas nuestros",
+    "termsLink": "Términos de servicio",
+    "privacyLink": "Política de privacidad"
   }
 }

@@ -4,7 +4,21 @@
         "about": "Go to the about page"
     },
     "Login": {
-        "title": "Login"
+        "title": "Login",
+        "description": "Enter your credentials to access the system",
+        "emailLabel": "Email",
+        "emailPlaceholder": "example@email.com",
+        "passwordLabel": "Password",
+        "forgotPassword": "Forgot your password?",
+        "button": "Login",
+        "buttonLoading": "Logging in...",
+        "noAccount": "Don't have an account? Register here",
+        "successTitle": "Login successful",
+        "successDescription": "Welcome to the Laboratory Loan Management System",
+        "error": "Login error",
+        "termsNotice": "By logging in, you accept our",
+        "termsLink": "Terms of Service",
+        "privacyLink": "Privacy Policy"
     },
     "Privacy": {
         "title": "Privacy policy",
@@ -47,5 +61,26 @@
         "governingLawText": "These terms and conditions shall be governed by and construed in accordance with the laws of the country where LabLoanSystem is registered.",
         "contact": "Contact",
         "contactText": "If you have any questions about these Terms and Conditions, please feel free to contact us through our contact form."
+    }
+    ,
+    "Register": {
+        "title": "User registration",
+        "description": "Enter your details to register and access the system",
+        "nameLabel": "Full name*",
+        "namePlaceholder": "John Doe",
+        "emailLabel": "Email*",
+        "emailPlaceholder": "example@email.com",
+        "passwordLabel": "Password*",
+        "confirmPasswordLabel": "Confirm password*",
+        "button": "Register user",
+        "buttonLoading": "Registering user...",
+        "successTitle": "Registration successful",
+        "successDescription": "Welcome to the Laboratory Loan Management System",
+        "error": "Registration error",
+        "errorDefault": "Something went wrong",
+        "alreadyAccount": "Already have an account?",
+        "termsNotice": "By registering, you accept our",
+        "termsLink": "Terms of Service",
+        "privacyLink": "Privacy Policy"
     }
 }
