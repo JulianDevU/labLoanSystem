@@ -97,7 +97,7 @@ export default function NewLoanPage() {
       equipment: [],
       description: "",
       returnDate: "",
-      photo: undefined as unknown as File, // Forzar tipo File, pero sin valor inicial
+      photo: undefined as unknown as File,
     },
   });
 

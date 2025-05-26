@@ -72,8 +72,23 @@ const prestamoSchema = new Schema({
   evidencia_foto: {
     type: String,
     trim: true,
-    required: [true, 'La evidencia fotografica es obligatoria']
+    required: [true, 'La evidencia fotográfica es obligatoria'],
+    validate: {
+      validator: function(v) {
+        // Validar que no sea demasiado grande (aprox 1MB en base64)
+        return v.length <= 1400000; // ~1MB en base64
+      },
+      message: 'La imagen es demasiado grande. Por favor, use una imagen más pequeña.'
+    }
   },
+  evidencia_metadata: {
+    originalName: String,
+    size: Number,
+    mimeType: String,
+    compressedSize: Number,
+    compressionRatio: Number
+  },
+  
   laboratorio_id: {
     type: Schema.Types.ObjectId,
     ref: 'Laboratorio',
@@ -93,13 +108,13 @@ prestamoSchema.index({ numero_identificacion: 1, estado: 1 });
 prestamoSchema.index({ 'equipos.equipo_id': 1, estado: 1 });
 prestamoSchema.index({ fecha_devolucion: 1, estado: 1 });
 
-// CAMBIO 1: Validación personalizada con margen de tiempo
+// Validación personalizada con margen de tiempo
 prestamoSchema.pre('validate', function(next) {
   if (!this.equipos || this.equipos.length === 0) {
     this.invalidate('equipos', 'Debe seleccionar al menos un equipo');
   }
   
-  // NUEVA VALIDACIÓN: Verificar que la fecha de devolución sea futura
+  // Verificar que la fecha de devolución sea futura
   if (this.fecha_devolucion) {
     const ahora = new Date();
     const fechaDevolucion = new Date(this.fecha_devolucion);
@@ -116,7 +131,7 @@ prestamoSchema.pre('validate', function(next) {
   next();
 });
 
-// CAMBIO 2: Método mejorado para verificar vencimiento
+// Método para verificar vencimiento
 prestamoSchema.methods.estaVencido = function() {
   if (this.estado === 'devuelto') return false;
   
@@ -126,7 +141,7 @@ prestamoSchema.methods.estaVencido = function() {
   return fechaDevolucion < ahora;
 };
 
-// CAMBIO 3: Middleware mejorado para actualizar estado
+// Middleware para actualizar estado
 prestamoSchema.pre('save', function(next) {
   if (this.fecha_devolucion_real) {
     this.estado = 'devuelto';
@@ -135,6 +150,34 @@ prestamoSchema.pre('save', function(next) {
   }
   next();
 });
+
+// Método estático para crear préstamo con imagen comprimida
+prestamoSchema.statics.crearConImagen = async function(prestamoData, archivoImagen) {
+  try {
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(archivoImagen);
+    });
+    
+    const prestamoCompleto = {
+      ...prestamoData,
+      evidencia_foto: base64,
+      evidencia_metadata: {
+        originalName: archivoImagen.name,
+        size: archivoImagen.size,
+        mimeType: archivoImagen.type,
+        compressedSize: base64.length,
+        compressionRatio: Math.round((1 - (base64.length / archivoImagen.size)) * 100)
+      }
+    };
+    
+    return await this.create(prestamoCompleto);
+  } catch (error) {
+    throw new Error(`Error al procesar la imagen: ${error.message}`);
+  }
+};
 
 const Prestamo = mongoose.model('Prestamo', prestamoSchema);
 
