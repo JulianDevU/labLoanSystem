@@ -30,7 +30,7 @@ app.use(cors({
   origin: [
     'http://localhost:3030',
     'http://localhost:3000',
-    'https://labloansystemfront.onrender.com',
+    'https://lab-loan-system-kappa.vercel.app',
     'https://labloansystemback.onrender.com'
   ],
   credentials: true
