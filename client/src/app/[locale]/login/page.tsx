@@ -14,8 +14,13 @@ import { BeakerIcon } from "@/src/components/icons"
 import { useToast } from "@/src/hooks/use-toast"
 import { login } from "@/src/services/loginService"
 
+interface Props {
+  translations: {
+    title: string
+  }
+}
 
-export default function LoginPage() {
+export default function LoginPage({ translations }: Props) {
   const router = useRouter()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
@@ -53,7 +58,7 @@ export default function LoginPage() {
       </Link>
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center">Iniciar sesión</CardTitle>
+          <CardTitle className="text-2xl text-center">Inicio de sesion</CardTitle>
           <CardDescription className="text-center">Ingresa tus credenciales para acceder al sistema</CardDescription>
         </CardHeader>
         <CardContent>

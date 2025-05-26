@@ -1,0 +1,51 @@
+{
+    "HomePage": {
+        "title": "Hello world!",
+        "about": "Go to the about page"
+    },
+    "Login": {
+        "title": "Login"
+    },
+    "Privacy": {
+        "title": "Privacy policy",
+        "introduction": "Introduction",
+        "introductionText": "At LabLoanSystem, we value and respect your privacy. This Privacy Policy describes how we collect, use, and protect your personal information when you visit our website and use our services.",
+        "collect": "Information we collect",
+        "collectText": "We collect various types of information in connection with the services we offer, including: Personal Information: Name, email address, telephone number and other contact information. Payment Information: Credit card details, billing address and other payment information. Technical Information: IP address, browser type, pages visited and other usage information.",
+        "information": "Use of information",
+        "informationText": "The information we collect is used to:",
+        "informationText1": "Provide and improve our services.",
+        "informationText2": "Process transactions and manage orders.",
+        "informationText3": "Communicate with you about your account or transactions.",
+        "informationText4": "Send updates, offers and news about our products and services.",
+        "informationText5": "Comply with legal and regulatory obligations.",
+        "share": "Share information",
+        "shareText": "We do not sell, trade or transfer your personal information to third parties without your consent, except in the following circumstances:",
+        "shareText1": "With service providers who assist us in the operation of our website and the provision of our services.",
+        "shareText2": "To comply with the law, enforce our policies, or protect our rights, property, or safety.",
+        "shareText3": "In the event of a merger, acquisition or sale of assets, where your information may be transferred as part of the business.",
+        "secure": "Information Security",
+        "secureText": "We implement a variety of security measures to maintain the protection of your personal information. We use SSL encryption and other security mechanisms to protect information transmitted online.",
+        "change": "Changes to this Privacy Policy",
+        "changeText": "We reserve the right to update this Privacy Policy at any time. Any changes will be notified through our website and the date of the last update will be modified at the top of this document."
+    },
+    "TermsConditions": {
+        "title": "Terms and Conditions",
+        "introduction": "Introduction",
+        "introductionText": "Welcome to LabLoanSystem. By accessing and using our services, you agree to comply with these Terms and Conditions. If you do not agree, please do not use our services.",
+        "acceptance": "Acceptance of Terms",
+        "acceptanceText": "By using our services, you represent that you have the legal capacity to accept these Terms and Conditions.",
+        "useOfServices": "Use of Services",
+        "useOfServicesText": "The services offered by LabLoanSystem are for legal purposes only. You agree not to use our services for any illegal or unauthorized activities.",
+        "intellectualProperty": "Intellectual Property",
+        "intellectualPropertyText": "All intellectual property rights related to our services, including but not limited to trademarks, copyrights, and patents, are the property of LabLoanSystem.",
+        "limitationOfLiability": "Limitation of Liability",
+        "limitationOfLiabilityText": "LabLoanSystem shall not be liable for any direct, indirect, incidental, or consequential damages arising from your use of our services.",
+        "changesToTerms": "Changes to the Terms",
+        "changesToTermsText": "We reserve the right to modify these Terms and Conditions at any time. Any changes will be effective immediately upon posting on our website.",
+        "governingLaw": "Governing Law",
+        "governingLawText": "These terms and conditions shall be governed by and construed in accordance with the laws of the country where LabLoanSystem is registered.",
+        "contact": "Contact",
+        "contactText": "If you have any questions about these Terms and Conditions, please feel free to contact us through our contact form."
+    }
+}
