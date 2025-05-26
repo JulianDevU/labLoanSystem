@@ -275,5 +275,23 @@
         "confirmLabChangeTitle": "Confirm laboratory",
         "confirmLabChangeDescription": "Are you sure you want to register this loan in the laboratory \"{lab}\"?",
         "confirmButton": "Yes, confirm"
+    },
+    "Profile": {
+        "pageTitle": "User Profile",
+        "pageDescription": "Manage your personal information and settings.",
+        "header": "User Profile",
+        "headerDescription": "Manage your personal information and settings.",
+        "tabsPersonal": "Personal Information",
+        "basicInfoCardTitle": "Basic Information",
+        "basicInfoCardDescription": "Details about your account and personal data.",
+        "nameLabel": "Name",
+        "emailLabel": "Email",
+        "roleLabel": "Role",
+        "userManualCardTitle": "User Manual",
+        "userManualCardDescription": "Here is a user manual to help you use the site.",
+        "userManualButton": "Download manual",
+        "techManualCardTitle": "Technical Manual",
+        "techManualCardDescription": "Here is a technical manual to know what the site contains.",
+        "techManualButton": "Download manual"
     }
 }
