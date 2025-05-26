@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useRef } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/src/components/ui/button"
@@ -13,47 +13,49 @@ import { BeakerIcon } from "@/src/components/icons"
 import { login } from "@/src/services/loginService"
 import { useTranslations } from "next-intl"
 import { ModalBase } from "@/src/components/modal"
+import { useForm } from "react-hook-form"
+import { LoginSchema, loginSchema } from "@/src/components/utils/validators"
+import { zodResolver } from "@hookform/resolvers/zod"
 
 export default function LoginPage() {
   const router = useRouter()
   const t = useTranslations('Login')
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const emailRef = useRef<HTMLInputElement>(null)
-  const passwordRef = useRef<HTMLInputElement>(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [modalInfo, setModalInfo] = useState({
     title: "",
     description: ""
   })
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginSchema>({
+    resolver: zodResolver(loginSchema),
+  })
+
+  const onSubmit = async (data: LoginSchema) => {
     setIsLoading(true)
-    setError(null)
-
-    const correo = emailRef.current?.value || ""
-    const contrasena = passwordRef.current?.value || ""
-
     try {
-      await login({ correo, contrasena })
+      await login({ correo: data.correo, contrasena: data.contrasena })
       setModalInfo({
         title: t('successTitle'),
         description: t('successDescription'),
       })
       setModalOpen(true)
-
       setTimeout(() => {
         router.push("/dashboard")
-      }, 2500)
+      }, 2000)
     } catch (error: any) {
       setModalInfo({
-        title: t('successTitle'),
+        title: t('error'),
         description: error.message || t('errorDefault'),
       })
       setModalOpen(true)
+    } finally {
+      setIsLoading(false)
     }
-    setIsLoading(false)
   }
 
   return (
@@ -73,41 +75,36 @@ export default function LoginPage() {
               <TabsTrigger value="staff" className="w-full">{t('staff')}</TabsTrigger>
             </TabsList>
             <TabsContent value="staff">
-              <form onSubmit={handleLogin}>
-                <div className="grid gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="email">{t('emailLabel')}</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder={t('emailPlaceholder')}
-                      required
-                      ref={emailRef}
-                      autoComplete="username"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="password">{t('passwordLabel')}</Label>
-                      <Link href="/forgot-password" className="text-sm text-muted-foreground hover:underline">
-                        {t('forgotPassword')}
-                      </Link>
-                    </div>
-                    <Input
-                      id="password"
-                      type="password"
-                      required
-                      ref={passwordRef}
-                      autoComplete="current-password"
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? t('buttonLoading') : t('button')}
-                  </Button>
-                  {error && (
-                    <p className="text-sm text-red-500 text-center mt-2">{error}</p>
-                  )}
+              <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="email">{t('emailLabel')}</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder={t('emailPlaceholder')}
+                    autoComplete="username"
+                    {...register("correo")}
+                  />
+                  {errors.correo && <p className="text-sm text-red-500">{errors.correo.message}</p>}
                 </div>
+                <div className="grid gap-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">{t('passwordLabel')}</Label>
+                    <Link href="/forgot-password" className="text-sm text-muted-foreground hover:underline">
+                      {t('forgotPassword')}
+                    </Link>
+                  </div>
+                  <Input
+                    id="password"
+                    type="password"
+                    autoComplete="current-password"
+                    {...register("contrasena")}
+                  />
+                  {errors.contrasena && <p className="text-sm text-red-500">{errors.contrasena.message}</p>}
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? t('buttonLoading') : t('button')}
+                </Button>
               </form>
               <div className="mt-2 flex flex-col items-center">
                 <Link href="/register" className="text-sm mt-3 text-muted-foreground hover:underline">
@@ -123,7 +120,7 @@ export default function LoginPage() {
             <Link href="/terms" className="underline underline-offset-4 hover:text-primary">
               {t('termsLink')}
             </Link>{" "}
-            y {" "}
+            y{" "}
             <Link href="/privacy" className="underline underline-offset-4 hover:text-primary">
               {t('privacyLink')}
             </Link>

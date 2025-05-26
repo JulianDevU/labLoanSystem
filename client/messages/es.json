@@ -13,6 +13,7 @@
     "successTitle": "Inicio de sesión exitoso",
     "successDescription": "Bienvenido al Sistema de Gestión de Préstamos de Laboratorio",
     "error": "Error al iniciar sesión",
+    "errorDefault": "Algo salió mal",
     "termsNotice": "Al iniciar sesión, aceptas nuestros",
     "termsLink": "Términos de servicio",
     "privacyLink": "Política de privacidad"
@@ -85,6 +86,9 @@
     "subtitle": "Gestiona los préstamos de equipos e inventario en los laboratorios.",
     "tabOverview": "Resumen",
     "tabLoans": "Préstamos activos",
+    "physics": "fisica",
+    "telecommunications": "telecomunicaciones",
+    "software": "software",
     "tabInventory": "Inventario",
     "recentLoansTitle": "Préstamos recientes",
     "recentLoansDescription": "Últimos préstamos de equipos en el laboratorio de {lab}.",
@@ -291,5 +295,11 @@
     "techManualCardTitle": "Manual técnico",
     "techManualCardDescription": "Aquí tienes un manual técnico para saber lo que contiene la página.",
     "techManualButton": "Descargar manual"
+  },
+  "Validation": {
+    "nameMin": "El nombre debe tener al menos 3 caracteres",
+    "emailInvalid": "Correo electrónico inválido",
+    "passwordMin": "La contraseña debe tener al menos 6 caracteres",
+    "confirmPasswordMismatch": "Las contraseñas no coinciden"
   }
 }

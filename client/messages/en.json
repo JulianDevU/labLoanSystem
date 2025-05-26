@@ -13,6 +13,7 @@
         "successTitle": "Login successful",
         "successDescription": "Welcome to the Laboratory Loan Management System",
         "error": "Login error",
+        "errorDefault": "Something went wrong",
         "termsNotice": "By logging in, you accept our",
         "termsLink": "Terms of Service",
         "privacyLink": "Privacy Policy"
@@ -85,6 +86,9 @@
         "subtitle": "Manage equipment loans and inventory in the laboratories.",
         "tabOverview": "Overview",
         "tabLoans": "Active loans",
+        "physics": "physics",
+        "telecommunications": "telecommunications",
+        "software": "software",
         "tabInventory": "Inventory",
         "recentLoansTitle": "Recent loans",
         "recentLoansDescription": "Latest equipment loans in the {lab} laboratory.",
@@ -291,5 +295,11 @@
         "techManualCardTitle": "Technical Manual",
         "techManualCardDescription": "Here is a technical manual to know what the site contains.",
         "techManualButton": "Download manual"
+    },
+    "Validation": {
+        "nameMin": "Name must be at least 3 characters long",
+        "emailInvalid": "Invalid email address",
+        "passwordMin": "Password must be at least 6 characters long",
+        "confirmPasswordMismatch": "Passwords do not match"
     }
 }

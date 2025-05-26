@@ -13,46 +13,48 @@ import { useRequireAuth } from "@/src/hooks/useRequireAuth"
 import { Search } from "lucide-react"
 import { LoansTable } from "@/src/components/loan-table"
 import { LoansHistoryTable } from "@/src/components/loan-history-table"
+import { useTranslations } from "next-intl"
 
 export default function DashboardPage() {
   useRequireAuth()
   const [selectedLab, setSelectedLab] = useState("fisica")
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter] = useState("todos")
+  const t = useTranslations('Dashboard')
 
   const getLabName = (lab: string) => {
     switch (lab) {
-      case "fisica": return "Física"
-      case "telecomunicaciones": return "Telecomunicaciones"
-      case "software": return "Software"
+      case "fisica": return t('physics')
+      case "telecomunicaciones": t('telecommunications')
+      case "software": return t('software')
       default: return lab
     }
   }
 
   return (
     <DashboardShell>
-      <DashboardHeader heading="Panel de Control" text="Gestiona los préstamos de equipos e inventario en los laboratorios.">
+      <DashboardHeader heading={t('title')} text={t('subtitle')}>
         <LabSelector value={selectedLab} onValueChange={setSelectedLab} />
       </DashboardHeader>
       <div className="grid gap-4 md:gap-8">
         <OverviewStats lab={selectedLab} />
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="overview">Resumen</TabsTrigger>
-            <TabsTrigger value="loans">Préstamos activos</TabsTrigger>
-            <TabsTrigger value="inventory">Inventario</TabsTrigger>
+            <TabsTrigger value="overview">{t('tabOverview')}</TabsTrigger>
+            <TabsTrigger value="loans">{t('tabLoans')}</TabsTrigger>
+            <TabsTrigger value="inventory">{t('tabInventory')}</TabsTrigger>
           </TabsList>
           <TabsContent value="overview" className="space-y-4">
             <div className="grid gap-4 w-full">
               <Card className="col-span-4">
                 <CardHeader>
-                  <CardTitle>Préstamos recientes</CardTitle>
+                  <CardTitle>{t('recentLoansTitle')}</CardTitle>
                   <CardDescription>
-                    Últimos préstamos de equipos en el laboratorio de {getLabName(selectedLab)}.
+                    {t('recentLoansDescription', { lab: getLabName(selectedLab) })}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <LoansHistoryTable lab={selectedLab} searchQuery={searchQuery} timeFilter="30days" statusFilter={statusFilter}/>
+                  <LoansHistoryTable lab={selectedLab} searchQuery={searchQuery} timeFilter="30days" statusFilter={statusFilter} />
                 </CardContent>
               </Card>
             </div>
@@ -60,9 +62,9 @@ export default function DashboardPage() {
           <TabsContent value="loans" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Préstamos activos</CardTitle>
+                <CardTitle>{t('activeLoansTitle')}</CardTitle>
                 <CardDescription>
-                  Listado de todos los préstamos de equipos vigentes para el laboratorio de {getLabName(selectedLab)}.
+                  {t('activeLoansDescription', { lab: getLabName(selectedLab) })}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -73,9 +75,9 @@ export default function DashboardPage() {
           <TabsContent value="inventory" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Inventario</CardTitle>
+                <CardTitle>{t('inventoryTitle')}</CardTitle>
                 <CardDescription>
-                  Inventario completo del laboratorio de {getLabName(selectedLab)}.
+                  {t('inventoryDescription', { lab: getLabName(selectedLab) })}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -83,7 +85,7 @@ export default function DashboardPage() {
                 <div className="relative">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Buscar equipos por nombre, categoría o ID..."
+                    placeholder={t('searchPlaceholder')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-8"
