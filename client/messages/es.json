@@ -347,5 +347,41 @@
     "physics": "fisica",
     "telecommunications": "telecomunicaciones",
     "software": "software"
+  },
+  "Settings": {
+    "header": "Configuración",
+    "headerDescription": "Administra tus preferencias y seguridad.",
+    "accountTab": "Cuenta",
+    "preferencesTab": "Preferencias",
+    
+    "changePasswordTitle": "Cambiar contraseña",
+    "changePasswordDescription": "Actualiza tu contraseña para mantener tu cuenta segura.",
+    "currentPasswordLabel": "Contraseña actual*",
+    "newPasswordLabel": "Nueva contraseña*",
+    "confirmPasswordLabel": "Confirmar nueva contraseña*",
+    "passwordPlaceholder": "********",
+    "changePasswordButton": "Cambiar contraseña",
+    "changingPasswordButton": "Cambiando contraseña...",
+    
+    "generalPreferencesTitle": "Preferencias Generales",
+    "generalPreferencesDescription": "Ajusta las preferencias generales de tu cuenta.",
+    "languageLabel": "Idioma",
+    "spanishOption": "Español",
+    "englishOption": "Inglés",
+    "savePreferencesButton": "Guardar preferencias",
+    
+    "passwordUpdatedTitle": "Contraseña actualizada",
+    "passwordUpdatedDescription": "Tu contraseña ha sido cambiada exitosamente.",
+    "passwordErrorTitle": "Error al cambiar contraseña",
+    "passwordErrorDescription": "Hubo un problema al cambiar tu contraseña",
+    "successTitle": "Éxito",
+    "errorTitle": "Error",
+    
+    "validation": {
+      "currentPasswordRequired": "La contraseña actual es obligatoria",
+      "newPasswordMinLength": "La nueva contraseña debe tener al menos 6 caracteres",
+      "confirmPasswordRequired": "Confirma tu nueva contraseña",
+      "passwordsNotMatch": "Las contraseñas no coinciden"
+    }
   }
 }
