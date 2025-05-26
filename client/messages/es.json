@@ -1,11 +1,8 @@
 {
-  "HomePage": {
-    "title": "Hello world!",
-    "about": "Go to the about page"
-  },
   "Login": {
     "title": "Inicio de sesión",
     "description": "Ingresa tus credenciales para acceder al sistema",
+    "staff": "Administrador",
     "emailLabel": "Correo electrónico",
     "emailPlaceholder": "ejemplo@correo.com",
     "passwordLabel": "Contraseña",
@@ -65,6 +62,7 @@
   "Register": {
     "title": "Registro de usuario",
     "description": "Ingresa tus datos para registrarte y acceder al sistema",
+    "staff": "Administrador",
     "nameLabel": "Nombre completo*",
     "namePlaceholder": "John Doe",
     "emailLabel": "Correo electrónico*",

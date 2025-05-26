@@ -5,13 +5,7 @@ import Cookies from "js-cookie"
 import DashboardPage from "@/src/app/[locale]/dashboard/page"
 import LoginPage from "@/src/app/[locale]/login/page"
 
-interface Props {
-  translations: {
-    title: string
-  }
-}
-
-export default function HomeClient({ translations }: Props) {
+export default function HomeClient() {
   const [isChecking, setIsChecking] = useState(true)
   const [hasToken, setHasToken] = useState(false)
 
@@ -23,5 +17,5 @@ export default function HomeClient({ translations }: Props) {
 
   if (isChecking) return null
 
-  return hasToken ? <DashboardPage /> : <LoginPage translations={translations} />
+  return hasToken ? <DashboardPage /> : <LoginPage />
 }

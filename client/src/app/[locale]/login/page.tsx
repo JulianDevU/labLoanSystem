@@ -1,6 +1,5 @@
 "use client"
 
-
 import type React from "react"
 import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
@@ -11,22 +10,22 @@ import { Input } from "@/src/components/ui/input"
 import { Label } from "@/src/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs"
 import { BeakerIcon } from "@/src/components/icons"
-import { useToast } from "@/src/hooks/use-toast"
 import { login } from "@/src/services/loginService"
+import { useTranslations } from "next-intl"
+import { ModalBase } from "@/src/components/modal"
 
-interface Props {
-  translations: {
-    title: string
-  }
-}
-
-export default function LoginPage({ translations }: Props) {
+export default function LoginPage() {
   const router = useRouter()
-  const { toast } = useToast()
+  const t = useTranslations('Login')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const emailRef = useRef<HTMLInputElement>(null)
   const passwordRef = useRef<HTMLInputElement>(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [modalInfo, setModalInfo] = useState({
+    title: "",
+    description: ""
+  })
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,14 +37,21 @@ export default function LoginPage({ translations }: Props) {
 
     try {
       await login({ correo, contrasena })
-      toast({
-        title: "Inicio de sesión exitoso",
-        description: "Bienvenido al Sistema de Gestión de Préstamos de Laboratorio",
+      setModalInfo({
+        title: t('successTitle'),
+        description: t('successDescription'),
       })
-      router.push("/dashboard")
-    } catch (err: any) {
-      setError(err.message || "Error al iniciar sesión")
-      setIsLoading(false)
+      setModalOpen(true)
+
+      setTimeout(() => {
+        router.push("/dashboard")
+      }, 2500)
+    } catch (error: any) {
+      setModalInfo({
+        title: t('successTitle'),
+        description: error.message || t('errorDefault'),
+      })
+      setModalOpen(true)
     }
     setIsLoading(false)
   }
@@ -58,23 +64,23 @@ export default function LoginPage({ translations }: Props) {
       </Link>
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center">Inicio de sesion</CardTitle>
-          <CardDescription className="text-center">Ingresa tus credenciales para acceder al sistema</CardDescription>
+          <CardTitle className="text-2xl text-center">{t('title')}</CardTitle>
+          <CardDescription className="text-center">{t('description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="staff" className="w-full">
             <TabsList className="w-full">
-              <TabsTrigger value="staff" className="w-full">Personal</TabsTrigger>
+              <TabsTrigger value="staff" className="w-full">{t('staff')}</TabsTrigger>
             </TabsList>
             <TabsContent value="staff">
               <form onSubmit={handleLogin}>
                 <div className="grid gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="email">Correo electrónico</Label>
+                    <Label htmlFor="email">{t('emailLabel')}</Label>
                     <Input
                       id="email"
                       type="email"
-                      placeholder="ejemplo@correo.com"
+                      placeholder={t('emailPlaceholder')}
                       required
                       ref={emailRef}
                       autoComplete="username"
@@ -82,9 +88,9 @@ export default function LoginPage({ translations }: Props) {
                   </div>
                   <div className="grid gap-2">
                     <div className="flex items-center justify-between">
-                      <Label htmlFor="password">Contraseña</Label>
+                      <Label htmlFor="password">{t('passwordLabel')}</Label>
                       <Link href="/forgot-password" className="text-sm text-muted-foreground hover:underline">
-                        ¿Olvidaste tu contraseña?
+                        {t('forgotPassword')}
                       </Link>
                     </div>
                     <Input
@@ -96,7 +102,7 @@ export default function LoginPage({ translations }: Props) {
                     />
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
+                    {isLoading ? t('buttonLoading') : t('button')}
                   </Button>
                   {error && (
                     <p className="text-sm text-red-500 text-center mt-2">{error}</p>
@@ -104,8 +110,8 @@ export default function LoginPage({ translations }: Props) {
                 </div>
               </form>
               <div className="mt-2 flex flex-col items-center">
-                <Link href="/" className="text-sm mt-3 text-muted-foreground hover:underline">
-                  ¿No tienes cuenta? Regístrate aquí
+                <Link href="/register" className="text-sm mt-3 text-muted-foreground hover:underline">
+                  {t('noAccount')}
                 </Link>
               </div>
             </TabsContent>
@@ -113,17 +119,23 @@ export default function LoginPage({ translations }: Props) {
         </CardContent>
         <CardFooter className="flex flex-col">
           <p className="mt-2 text-xs text-center text-muted-foreground">
-            Al iniciar sesión, aceptas nuestros {" "}
+            {t('termsNotice')}{" "}
             <Link href="/terms" className="underline underline-offset-4 hover:text-primary">
-              Términos de servicio
+              {t('termsLink')}
             </Link>{" "}
             y {" "}
             <Link href="/privacy" className="underline underline-offset-4 hover:text-primary">
-              Política de privacidad
+              {t('privacyLink')}
             </Link>
           </p>
         </CardFooter>
       </Card>
+      <ModalBase
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        title={modalInfo.title}
+        description={modalInfo.description}
+      />
     </div>
   )
 }

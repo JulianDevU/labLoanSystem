@@ -11,16 +11,22 @@ import { Input } from "@/src/components/ui/input"
 import { Label } from "@/src/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs"
 import { BeakerIcon } from "@/src/components/icons"
-import { useToast } from "@/src/hooks/use-toast"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { registerSchema, RegisterSchema } from "@/src/components/utils/validators"
 import { registerUser } from "@/src/services/userService"
+import { useTranslations } from "next-intl"
+import { ModalBase } from "@/src/components/modal"
 
 export default function RegisterPage() {
   const router = useRouter()
-  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const t = useTranslations('Register')
+  const [modalOpen, setModalOpen] = useState(false)
+  const [modalInfo, setModalInfo] = useState({
+    title: "",
+    description: ""
+  })
 
   const {
     register,
@@ -40,18 +46,22 @@ export default function RegisterPage() {
         contrasena: data.password
       })
 
-      toast({
-        title: "Registro exitoso",
-        description: "Bienvenido al Sistema de Gestión de Préstamos de Laboratorio",
+      setModalInfo({
+        title: t('successTitle'),
+        description: t('successDescription'),
       })
+      setModalOpen(true)
 
-      router.push("/dashboard")
+      setTimeout(() => {
+        router.push("/dashboard")
+      }, 2500)
     } catch (error: any) {
-      toast({
-        title: "Error al registrar",
-        description: error.message || "Algo salió mal",
-        variant: "destructive",
+      setModalInfo({
+        title: t('error'),
+        description: error.message || t('errorDefault'),
       })
+      setModalOpen(true)
+
     } finally {
       setIsLoading(false)
     }
@@ -66,43 +76,43 @@ export default function RegisterPage() {
       </Link>
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center">Registro de usuario</CardTitle>
-          <CardDescription className="text-center">Ingresa sus datos para registrase y acceder al sistema</CardDescription>
+          <CardTitle className="text-2xl text-center">{t('title')}</CardTitle>
+          <CardDescription className="text-center">{t('description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="staff" className="w-full">
             <TabsList className="w-full">
-              <TabsTrigger value="staff" className="w-full">Administradores</TabsTrigger>
+              <TabsTrigger value="staff" className="w-full">{t('staff')}</TabsTrigger>
             </TabsList>
             <TabsContent value="staff">
               <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="name">Nombre completo*</Label>
-                  <Input id="name" {...register("name")} placeholder="John Doe" />
+                  <Label htmlFor="name">{t('nameLabel')}</Label>
+                  <Input id="name" {...register("name")} placeholder={t('namePlaceholder')} />
                   {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="email">Correo electrónico*</Label>
-                  <Input id="email" type="email" {...register("email")} placeholder="ejemplo@correo.com" />
+                  <Label htmlFor="email">{t('emailLabel')}</Label>
+                  <Input id="email" type="email" {...register("email")} placeholder={t('emailPlaceholder')} />
                   {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="password">Contraseña*</Label>
+                  <Label htmlFor="password">{t('passwordLabel')}</Label>
                   <Input id="password" type="password" {...register("password")} />
                   {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="confirmPassword">Confirmar contraseña*</Label>
+                  <Label htmlFor="confirmPassword">{t('confirmPasswordLabel')}</Label>
                   <Input id="confirmPassword" type="password" {...register("confirmPassword")} />
                   {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>}
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Registrando usuario..." : "Registrar usuario"}
+                  {isLoading ? t('buttonLoading') : t('button')}
                 </Button>
               </form>
               <div className="mt-2 flex flex-col items-center">
                 <Link href="/login" className="text-sm mt-3 text-muted-foreground hover:underline">
-                  ¿Ya tienes una cuenta?
+                  {t('alreadyAccount')}
                 </Link>
               </div>
             </TabsContent>
@@ -110,17 +120,23 @@ export default function RegisterPage() {
         </CardContent>
         <CardFooter className="flex flex-col gap-2">
           <p className="mt-2 text-xs text-center text-muted-foreground">
-            Al registrarte, aceptas nuestros{" "}
+            {t('termsNotice')}{" "}
             <Link href="/terms" className="underline underline-offset-4 hover:text-primary">
-              Términos de servicio
+              {t('termsLink')}
             </Link>{" "}
             y{" "}
             <Link href="/privacy" className="underline underline-offset-4 hover:text-primary">
-              Política de privacidad
+              {t('privacyLink')}
             </Link>
           </p>
         </CardFooter>
       </Card>
+      <ModalBase
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        title={modalInfo.title}
+        description={modalInfo.description}
+      />
     </div>
   )
 }
