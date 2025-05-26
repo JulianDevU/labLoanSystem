@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState, useCallback } from "react"
+import { useRef, useState, useCallback, useEffect } from "react"
 import Webcam from "react-webcam"
 import Image from "next/image"
 import { Button } from "@/src/components/ui/button"
@@ -8,8 +8,8 @@ import { Card, CardContent } from "@/src/components/ui/card"
 import { Camera, Upload, X } from "lucide-react"
 
 interface ImageUploadProps {
-  value: string
-  onChange: (value: string) => void
+  value: File | null
+  onChange: (value: File | null) => void
 }
 
 const videoConstraints = {
@@ -23,37 +23,63 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isCapturing, setIsCapturing] = useState(false)
 
-  const capturePhoto = useCallback(() => {
-    const imageSrc = webcamRef.current?.getScreenshot()
-    if (imageSrc) {
-      onChange(imageSrc)
-      setIsCapturing(false)
+
+  // Convierte base64 a File
+  function base64ToFile(base64: string, filename: string): File {
+    const arr = base64.split(",");
+    if (arr.length < 2) throw new Error("Formato base64 inválido");
+    const mimeMatch = arr[0].match(/:(.*?);/);
+    if (!mimeMatch) throw new Error("No se pudo extraer el tipo MIME");
+    const mime = mimeMatch[1];
+    const bstr = atob(arr[1]);
+    const n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    for (let i = 0; i < n; i++) {
+      u8arr[i] = bstr.charCodeAt(i);
     }
-  }, [webcamRef, onChange])
+    return new File([u8arr], filename, { type: mime });
+  }
+
+  const capturePhoto = useCallback(() => {
+    const imageSrc = webcamRef.current?.getScreenshot();
+    if (imageSrc) {
+      const file = base64ToFile(imageSrc, `webcam_${Date.now()}.jpg`);
+      onChange(file);
+      setIsCapturing(false);
+    }
+  }, [webcamRef, onChange]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          onChange(event.target.result as string)
-        }
-      }
-      reader.readAsDataURL(file)
+      onChange(file);
     }
-  }
+  };
 
   const clearImage = () => {
-    onChange("")
+    onChange(null);
   }
+
+  // Manejo seguro de URL.createObjectURL
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  useEffect(() => {
+    if (value) {
+      const url = URL.createObjectURL(value);
+      setPreviewUrl(url);
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    } else {
+      setPreviewUrl("");
+    }
+  }, [value]);
 
   return (
     <div className="space-y-4">
       {value ? (
         <div className="relative aspect-video w-full">
           <Image
-            src={value}
+            src={previewUrl || "/placeholder.jpg"}
             alt="Uploaded"
             className="rounded-md object-cover"
             fill

@@ -65,10 +65,12 @@ const formSchema = z.object({
     }, {
       message: "La fecha de devolución debe ser al menos 5 minutos posterior a la hora actual"
     }),
-  photo: z.string().min(1, "La imagen es requerida"),
-})
+  photo: z
+    .instanceof(File, { message: "La imagen es requerida" })
+    .refine((file) => file && file.size > 0, { message: "La imagen es requerida" }),
+});
 
-type FormValues = z.infer<typeof formSchema>
+type FormValues = z.infer<typeof formSchema>;
 interface Lab {
   _id: string
   nombre: string
@@ -95,9 +97,9 @@ export default function NewLoanPage() {
       equipment: [],
       description: "",
       returnDate: "",
-      photo: "",
+      photo: undefined as unknown as File, // Forzar tipo File, pero sin valor inicial
     },
-  })
+  });
 
   const [labs, setLabs] = useState<Lab[]>([])
 
@@ -199,12 +201,11 @@ export default function NewLoanPage() {
         nombre_beneficiado: data.beneficiaryName,
         correo_beneficiado: data.beneficiaryEmail,
         equipos: equipos,
-        // CAMBIO 6: Convertir fecha a ISO string para envío al backend
         fecha_devolucion: new Date(data.returnDate).toISOString(),
-        evidencia_foto: data.photo,
+        evidencia_foto: data.photo as File,
         laboratorio_id: selectedLab._id,
         descripcion: data.description,
-      }
+      };
 
       console.log("Enviando datos del préstamo:", {
         ...loanData,
