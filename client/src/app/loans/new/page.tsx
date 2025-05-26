@@ -180,6 +180,30 @@ export default function NewLoanPage() {
     setIsSubmitting(true)
     const selectedLab = labs.find((lab) => lab.slug === data.lab)
 
+    // Protección extra: asegurar que equipment es un array
+    if (!Array.isArray(data.equipment)) {
+      toast({
+        title: "Error de selección",
+        description: "El valor de los equipos seleccionados es inválido. Intenta seleccionar de nuevo.",
+        variant: "destructive",
+      })
+      setIsSubmitting(false)
+      return
+    }
+
+    // Log para depuración
+    console.log("[DEBUG] Valor de data.equipment al enviar:", data.equipment)
+
+    if (data.equipment.length === 0) {
+      toast({
+        title: "Debes seleccionar al menos un equipo",
+        description: "Selecciona uno o más equipos antes de registrar el préstamo.",
+        variant: "destructive",
+      })
+      setIsSubmitting(false)
+      return
+    }
+
     if (!selectedLab) {
       toast({
         title: "Error",

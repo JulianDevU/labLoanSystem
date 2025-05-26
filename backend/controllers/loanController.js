@@ -111,6 +111,7 @@ export const getPrestamo = async (req, res) => {
 // @desc    Crear un nuevo préstamo
 // @route   POST /api/prestamos
 // @access  Privado
+
 export const crearPrestamo = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -121,6 +122,17 @@ export const crearPrestamo = async (req, res) => {
       });
     }
 
+    // --- PARSEAR EQUIPOS SI LLEGA COMO STRING (FormData) ---
+    if (typeof req.body.equipos === 'string') {
+      try {
+        req.body.equipos = JSON.parse(req.body.equipos);
+      } catch (e) {
+        return res.status(400).json({
+          success: false,
+          mensaje: 'El formato de equipos es inválido'
+        });
+      }
+    }
 
     // Permitir recibir evidencia_foto como archivo o base64
     let evidencia_foto = null;
