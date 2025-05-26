@@ -7,7 +7,6 @@ import { Input } from "@/src/components/ui/input"
 import { DashboardHeader } from "@/src/components/dashboard-header"
 import { DashboardShell } from "@/src/components/dashboard-shell"
 import { OverviewStats } from "@/src/components/overview-stats"
-import { InventorySummary } from "@/src/components/inventory-summary"
 import { LabSelector } from "@/src/components/lab-selector"
 import { InventoryTable } from "@/src/components/inventory-table" // Asegúrate de que la ruta sea correcta
 import { useRequireAuth } from "@/src/hooks/useRequireAuth"
@@ -19,6 +18,7 @@ export default function DashboardPage() {
   useRequireAuth()
   const [selectedLab, setSelectedLab] = useState("fisica")
   const [searchQuery, setSearchQuery] = useState("")
+  const [statusFilter] = useState("todos")
 
   const getLabName = (lab: string) => {
     switch (lab) {
@@ -43,7 +43,7 @@ export default function DashboardPage() {
             <TabsTrigger value="inventory">Inventario</TabsTrigger>
           </TabsList>
           <TabsContent value="overview" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            <div className="grid gap-4 w-full">
               <Card className="col-span-4">
                 <CardHeader>
                   <CardTitle>Préstamos recientes</CardTitle>
@@ -52,18 +52,7 @@ export default function DashboardPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <LoansHistoryTable lab={selectedLab} searchQuery={searchQuery} timeFilter="30days"/>
-                </CardContent>
-              </Card>
-              <Card className="col-span-3">
-                <CardHeader>
-                  <CardTitle>Resumen de inventario</CardTitle>
-                  <CardDescription>
-                    Inventario actual del laboratorio de {getLabName(selectedLab)}.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <InventorySummary lab={selectedLab} />
+                  <LoansHistoryTable lab={selectedLab} searchQuery={searchQuery} timeFilter="30days" statusFilter={statusFilter}/>
                 </CardContent>
               </Card>
             </div>
