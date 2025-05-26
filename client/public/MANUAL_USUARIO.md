@@ -16,11 +16,7 @@ Al ingresar al sistema, verás el **Dashboard** o panel principal, que te da una
   - Muestran el número total de préstamos activos, vencidos, devueltos y la cantidad de equipos disponibles en inventario.
   - Te permiten identificar rápidamente la situación general del laboratorio.
 
-- **Gráficas (parte derecha):**
-  - Visualizan estadísticas de préstamos por laboratorio, por tipo de beneficiario o por estado.
-  - Ayudan a detectar tendencias, laboratorios más usados o equipos más solicitados.
-
-Estas herramientas te permiten tomar decisiones rápidas y monitorear el uso de los recursos.
+Esta herramienta te permite tomar decisiones rápidas y monitorear el uso de los recursos.
 
 ## Funcionalidades principales
 
