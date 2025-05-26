@@ -17,6 +17,7 @@ import { useToast } from "@/src/hooks/use-toast"
 import { getEquipmentById, updateEquipment } from "@/src/services/equipmentService"
 import { getLaboratories } from "@/src/services/laboratoryService"
 import { ModalBase } from "@/src/components/modal"
+import { useTranslations } from "next-intl"
 
 const formSchema = z.object({
   lab: z.string(),
@@ -29,6 +30,7 @@ const formSchema = z.object({
   notes: z.string().optional(),
 })
 
+
 type FormValues = z.infer<typeof formSchema>
 
 interface Lab {
@@ -38,10 +40,12 @@ interface Lab {
   slug: string
 }
 
-export default function EditInventoryItemPage() {
+
+export default function EditInventoryPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
+  const t = useTranslations("EditInventory")
   const [labs, setLabs] = useState<Lab[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -92,8 +96,8 @@ export default function EditInventoryItemPage() {
       } catch (error) {
         console.error("Error cargando datos:", error)
         toast({
-          title: "Error",
-          description: "No se pudieron cargar los datos del equipo.",
+          title: t("errorTitle"),
+          description: t("errorLoadData"),
         })
         router.push("/inventory")
       } finally {
@@ -120,8 +124,8 @@ export default function EditInventoryItemPage() {
   const onSubmit = async (data: FormValues) => {
     if (!equipmentId) {
       toast({
-        title: "Error",
-        description: "ID del equipo no encontrado.",
+        title: t("errorTitle"),
+        description: t("errorNoId"),
       })
       return
     }
@@ -131,8 +135,8 @@ export default function EditInventoryItemPage() {
 
     if (!selectedLab) {
       toast({
-        title: "Error",
-        description: "Laboratorio inválido.",
+        title: t("errorTitle"),
+        description: t("errorInvalidLab"),
       })
       setIsSubmitting(false)
       return
@@ -156,8 +160,8 @@ export default function EditInventoryItemPage() {
       await updateEquipment(equipmentId, payload)
 
       setModalInfo({
-        title: "Equipo actualizado exitosamente",
-        description: "Los datos del equipo han sido actualizados.",
+        title: t("successTitle"),
+        description: t("successDescription"),
       })
 
       setModalOpen(true)
@@ -167,7 +171,7 @@ export default function EditInventoryItemPage() {
       }, 2500)
     } catch (error) {
       toast({
-        title: "Error",
+        title: t("errorTitle"),
         description: (error as Error).message,
       })
     } finally {
@@ -176,14 +180,14 @@ export default function EditInventoryItemPage() {
   }
 
   if (isLoading) {
-    return <p>Cargando...</p>
+    return <p>{t("loading")}</p>
   }
 
   return (
     <DashboardShell>
       <DashboardHeader
-        heading="Editar equipo del inventario"
-        text="Modifica los detalles del equipo seleccionado."
+        heading={t("header")}
+        text={t("headerDescription")}
       >
         <LabSelector
           value={form.watch("lab")}
@@ -197,8 +201,8 @@ export default function EditInventoryItemPage() {
         <form onSubmit={form.handleSubmit(handleConfirmSubmit)} className="space-y-8">
           <Card>
             <CardHeader>
-              <CardTitle>Información del equipo</CardTitle>
-              <CardDescription>Modifica los detalles del equipo.</CardDescription>
+              <CardTitle>{t("infoCardTitle")}</CardTitle>
+              <CardDescription>{t("infoCardDescription")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
@@ -207,9 +211,9 @@ export default function EditInventoryItemPage() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nombre</FormLabel>
+                      <FormLabel>{t("nameLabel")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Nombre del equipo" {...field} />
+                        <Input placeholder={t("namePlaceholder")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -221,9 +225,9 @@ export default function EditInventoryItemPage() {
                   name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Categoría</FormLabel>
+                      <FormLabel>{t("categoryLabel")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Categoría" {...field} />
+                        <Input placeholder={t("categoryPlaceholder")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -236,9 +240,10 @@ export default function EditInventoryItemPage() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Descripción</FormLabel>
+                    <FormLabel>{t("descriptionLabel")}</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Descripción del equipo" className="min-h-[100px]" {...field} />
+                      <Textarea placeholder={t("descriptionPlaceholder")}
+                        className="min-h-[100px]" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -251,9 +256,9 @@ export default function EditInventoryItemPage() {
                   name="serialNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Número de serie</FormLabel>
+                      <FormLabel>{t("serialNumberLabel")}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Número de serie (si aplica)" {...field} />
+                        <Input placeholder={t("serialNumberPlaceholder")} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -265,7 +270,7 @@ export default function EditInventoryItemPage() {
                   name="quantity"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Cantidad</FormLabel>
+                      <FormLabel>{t("quantityLabel")}</FormLabel>
                       <FormControl>
                         <Input type="number" min="1" {...field} />
                       </FormControl>
@@ -280,9 +285,9 @@ export default function EditInventoryItemPage() {
                 name="location"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Ubicación de almacenamiento</FormLabel>
+                    <FormLabel>{t("locationLabel")}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ubicación de almacenamiento" {...field} />
+                      <Input placeholder={t("locationPlaceholder")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -294,9 +299,9 @@ export default function EditInventoryItemPage() {
                 name="notes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Notas adicionales</FormLabel>
+                    <FormLabel>{t("notesLabel")}</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Notas adicionales" {...field} />
+                      <Textarea placeholder={t("notesPlaceholder")} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -305,10 +310,10 @@ export default function EditInventoryItemPage() {
             </CardContent>
             <CardFooter className="flex justify-end">
               <Button type="button" variant="outline" className="mr-2" onClick={() => router.back()}>
-                Cancelar
+                {t("cancelButton")}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Actualizando equipo..." : "Actualizar equipo"}
+                {isSubmitting ? t("updatingButton") : t("updateButton")}
               </Button>
             </CardFooter>
           </Card>
@@ -325,15 +330,15 @@ export default function EditInventoryItemPage() {
       <ModalBase
         open={confirmationOpen}
         onOpenChange={setConfirmationOpen}
-        title="Confirmar cambio de laboratorio"
-        description={`¿Estás seguro que deseas guardar este equipo en el laboratorio "${labs.find(l => l.slug === pendingData?.lab)?.nombre}"?`}
+        title={t("confirmLabChangeTitle")}
+        description={t("confirmLabChangeDescription", { lab: labs.find(l => l.slug === pendingData?.lab)?.nombre || "" })}
       >
         <div className="flex justify-end gap-2 mt-4">
           <Button variant="outline" onClick={() => setConfirmationOpen(false)}>
-            Cancelar
+            {t("cancelButton")}
           </Button>
           <Button onClick={confirmAndSubmit}>
-            Sí, confirmar
+            {t("confirmButton")}
           </Button>
         </div>
       </ModalBase>

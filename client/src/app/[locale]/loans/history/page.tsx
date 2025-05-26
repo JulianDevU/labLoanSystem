@@ -11,7 +11,10 @@ import { SearchIcon, Loader2, FileSpreadsheet, BarChart3 } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/src/components/ui/select"
 import { useToast } from "@/src/hooks/use-toast"
 import { LoansHistoryTable } from "@/src/components/loan-history-table"
+
 import { exportLoansSummaryToExcel, exportLoansToExcel } from "@/src/services/exportExcelService"
+import { useTranslations } from "next-intl"
+
 
 export default function LoanHistoryPage() {
   const { toast } = useToast()
@@ -21,6 +24,8 @@ export default function LoanHistoryPage() {
   const [statusFilter, setStatusFilter] = useState("todos")
   const [exportingDetailed, setExportingDetailed] = useState(false)
   const [exportingSummary, setExportingSummary] = useState(false)
+  const t = useTranslations("LoansHistory")
+  const l = useTranslations("Laboratory")
 
   // Construir filtros para la exportación
   const buildFilters = () => {
@@ -65,14 +70,14 @@ export default function LoanHistoryPage() {
       await exportLoansToExcel(filters)
 
       toast({
-        title: "Exportación exitosa",
-        description: "El historial detallado de préstamos se ha descargado correctamente",
+        title: t("exportSuccessTitle"),
+        description: t("exportSuccessDesc"),
       })
     } catch (err) {
       console.error("Error al exportar historial:", err)
-      const errorMessage = err instanceof Error ? err.message : "No se pudo exportar el historial"
+      const errorMessage = err instanceof Error ? err.message : t("exportErrorDesc")
       toast({
-        title: "Error en la exportación",
+        title: t("exportErrorTitle"),
         description: errorMessage,
         variant: "destructive",
       })
@@ -92,14 +97,14 @@ export default function LoanHistoryPage() {
       await exportLoansSummaryToExcel(filters)
 
       toast({
-        title: "Resumen exportado",
-        description: "El resumen estadístico se ha descargado correctamente",
+        title: t("summaryExportSuccessTitle"),
+        description: t("summaryExportSuccessDesc"),
       })
     } catch (err) {
       console.error("Error al exportar resumen:", err)
-      const errorMessage = err instanceof Error ? err.message : "No se pudo exportar el resumen"
+      const errorMessage = err instanceof Error ? err.message : t("summaryExportErrorDesc")
       toast({
-        title: "Error en la exportación",
+        title: t("exportErrorTitle"),
         description: errorMessage,
         variant: "destructive",
       })
@@ -111,8 +116,8 @@ export default function LoanHistoryPage() {
   return (
     <DashboardShell>
       <DashboardHeader
-        heading="Historial de Préstamos"
-        text={`Consulta todos los préstamos del laboratorio seleccionado.`}
+        heading={t("pageTitle")}
+        text={t("pageDescription")}
       >
         <LabSelector value={selectedLab} onValueChange={setSelectedLab} />
       </DashboardHeader>
@@ -121,8 +126,8 @@ export default function LoanHistoryPage() {
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle>Historial de Préstamos</CardTitle>
-              <CardDescription>Visualiza todos los préstamos de equipos completados y activos.</CardDescription>
+              <CardTitle>{t("historyCardTitle")}</CardTitle>
+              <CardDescription>{t("historyCardDescription")}</CardDescription>
             </div>
             <div className="flex gap-2">
               <Button
@@ -137,7 +142,7 @@ export default function LoanHistoryPage() {
                 ) : (
                   <BarChart3 className="h-4 w-4" />
                 )}
-                Resumen
+                {t("exportSummary")}
               </Button>
               <Button
                 variant="outline"
@@ -150,7 +155,7 @@ export default function LoanHistoryPage() {
                 ) : (
                   <FileSpreadsheet className="h-4 w-4" />
                 )}
-                Exportar Detallado
+                {t("exportDetailed")}
               </Button>
             </div>
           </div>
@@ -160,7 +165,7 @@ export default function LoanHistoryPage() {
             <div className="relative flex-1">
               <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar en el historial..."
+                placeholder={t("searchPlaceholder")}
                 className="pl-8"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -169,24 +174,24 @@ export default function LoanHistoryPage() {
             <div className="flex gap-2">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Estado" />
+                  <SelectValue placeholder={t("statusPlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  <SelectItem value="activo">Activos</SelectItem>
-                  <SelectItem value="devuelto">Devueltos</SelectItem>
-                  <SelectItem value="vencido">Vencidos</SelectItem>
+                  <SelectItem value="todos">{t("statusAll")}</SelectItem>
+                  <SelectItem value="activo">{t("statusActive")}</SelectItem>
+                  <SelectItem value="devuelto">{t("statusReturned")}</SelectItem>
+                  <SelectItem value="vencido">{t("statusOverdue")}</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={timeFilter} onValueChange={setTimeFilter}>
                 <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filtrar por tiempo" />
+                  <SelectValue placeholder={t("timePlaceholder")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todo el tiempo</SelectItem>
-                  <SelectItem value="30days">Últimos 30 días</SelectItem>
-                  <SelectItem value="90days">Últimos 90 días</SelectItem>
-                  <SelectItem value="year">Último año</SelectItem>
+                  <SelectItem value="all">{t("timeAll")}</SelectItem>
+                  <SelectItem value="30days">{t("time30days")}</SelectItem>
+                  <SelectItem value="90days">{t("time90days")}</SelectItem>
+                  <SelectItem value="year">{t("timeYear")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -196,11 +201,11 @@ export default function LoanHistoryPage() {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <FileSpreadsheet className="h-4 w-4" />
               <div className="flex-1">
-                <p className="font-medium">Opciones de Exportación:</p>
+                <p className="font-medium">{t("exportOptionsTitle")}</p>
                 <p className="text-xs">
-                  <strong>Detallado:</strong> Incluye todos los préstamos con información completa de equipos y fechas.
+                  <strong>{t("exportDetailed")}</strong> {t("exportDetailedDesc")}
                   <br />
-                  <strong>Resumen:</strong> Estadísticas agrupadas por laboratorio, estado y tipo de beneficiado.
+                  <strong>{t("exportSummary")}</strong> {t("exportSummaryDesc")}
                 </p>
               </div>
             </div>

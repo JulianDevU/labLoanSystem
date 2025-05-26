@@ -230,6 +230,8 @@
     "statusActive": "Activos",
     "statusReturned": "Devueltos",
     "statusOverdue": "Vencidos",
+    "statusPlaceholder": "Estado",
+    "timePlaceholder": "Filtrar por tiempo",
     "timeFilterLabel": "Filtrar por tiempo",
     "timeAll": "Todo el tiempo",
     "time30days": "Últimos 30 días",

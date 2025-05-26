@@ -13,6 +13,7 @@ import { Progress } from "@/src/components/ui/progress"
 import { AlertCircle, CheckCircle2, Download, FileSpreadsheet, Info } from "lucide-react"
 import { useToast } from "@/src/hooks/use-toast"
 import { importEquipmentFromExcel, generateExcelTemplate } from "@/src/services/importExcelService"
+import { useTranslations } from "next-intl"
 
 interface ImportResult {
   success: boolean
@@ -23,6 +24,7 @@ interface ImportResult {
 
 export default function ImportPage() {
   const { toast } = useToast()
+  const t = useTranslations("Import")
   const [selectedLab, setSelectedLab] = useState("")
   const [importStatus, setImportStatus] = useState<"idle" | "processing" | "success" | "error">("idle")
   const [importResult, setImportResult] = useState<ImportResult | null>(null)
@@ -33,8 +35,8 @@ export default function ImportPage() {
 
     if (!selectedLab) {
       toast({
-        title: "Error",
-        description: "Por favor, selecciona un laboratorio",
+        title: t("errorTitle"),
+        description: t("labRequired"),
         variant: "destructive",
       })
       return
@@ -70,14 +72,14 @@ export default function ImportPage() {
       if (result.success) {
         setImportStatus("success")
         toast({
-          title: "Importación exitosa",
-          description: `Se importaron ${result.importedCount} equipos correctamente`,
+          title: t("successTitle"),
+          description: t("successImported", { count: result.importedCount }),
         })
       } else {
         setImportStatus("error")
         toast({
-          title: "Importación con errores",
-          description: `Se encontraron ${result.errors.length} errores durante la importación`,
+          title: t("errorTitle"),
+          description: t("errorPartial", { count: result.importedCount, errors: result.errors.length }),
           variant: "destructive",
         })
       }
@@ -97,7 +99,7 @@ export default function ImportPage() {
       })
 
       toast({
-        title: "Error en la importación",
+        title: t("errorTitle"),
         description: errorMessage,
         variant: "destructive",
       })
@@ -108,13 +110,13 @@ export default function ImportPage() {
     try {
       generateExcelTemplate()
       toast({
-        title: "Plantilla descargada",
-        description: "La plantilla de inventario ha sido descargada exitosamente",
+        title: t("templateDownloaded"),
+        description: t("templateDownloadedDesc"),
       })
     } catch (error) {
       toast({
-        title: "Error al descargar",
-        description: "No se pudo descargar la plantilla",
+        title: t("templateDownloadError"),
+        description: t("templateDownloadErrorDesc"),
         variant: "destructive",
       })
     }
@@ -128,13 +130,13 @@ export default function ImportPage() {
 
   return (
     <DashboardShell>
-      <DashboardHeader heading="Importar datos" text="Importa equipos o usuarios desde archivos Excel.">
+      <DashboardHeader heading={t("title")} text={t("subtitle")}>
         <LabSelector value={selectedLab} onValueChange={setSelectedLab} />
       </DashboardHeader>
 
       <Tabs defaultValue="inventory" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="inventory">Importar inventario</TabsTrigger>
+          <TabsTrigger value="inventory">{t("tabInventory")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="inventory">
@@ -142,10 +144,10 @@ export default function ImportPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileSpreadsheet className="h-5 w-5" />
-                Importar datos de inventario
+                {t("cardTitle")}
               </CardTitle>
               <CardDescription>
-                Sube un archivo Excel (.xlsx) con los datos de inventario para el laboratorio seleccionado.
+                {t("cardDescription")}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -153,8 +155,8 @@ export default function ImportPage() {
                 <FileUpload
                   accept=".xlsx,.xls"
                   onUpload={(file) => handleFileUpload(file, "inventory")}
-                  buttonText="Seleccionar archivo Excel"
-                  description="El archivo debe tener columnas para Nombre, Descripción, Categoría, Cantidad, etc."
+                  buttonText={t("fileButton")}
+                  description={t("fileDescription")}
                   isProcessing={importStatus === "processing"}
                 />
               </div>
@@ -163,28 +165,26 @@ export default function ImportPage() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
                     <Info className="h-4 w-4 animate-pulse" />
-                    <span className="text-sm">Procesando archivo...</span>
+                    <span className="text-sm">{t("processing")}</span>
                   </div>
                   <Progress value={importProgress} className="w-full" />
-                  <p className="text-xs text-muted-foreground text-center">{importProgress}% completado</p>
+                  <p className="text-xs text-muted-foreground text-center">{t("progress", { progress: importProgress })}</p>
                 </div>
               )}
 
               {importStatus === "success" && importResult && (
                 <Alert className="bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-900">
                   <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-                  <AlertTitle>Importación exitosa</AlertTitle>
+                  <AlertTitle>{t("successTitle")}</AlertTitle>
                   <AlertDescription className="space-y-2">
-                    <p>
-                      Se importaron correctamente <strong>{importResult.importedCount}</strong> equipos.
-                    </p>
+                    <p dangerouslySetInnerHTML={{ __html: t("successImported", { count: importResult.importedCount }) }} />
                     {importResult.skippedRows > 0 && (
-                      <p className="text-sm">Se omitieron {importResult.skippedRows} filas vacías.</p>
+                      <p className="text-sm">{t("successSkipped", { skipped: importResult.skippedRows })}</p>
                     )}
                     {importResult.errors.length > 0 && (
                       <details className="mt-2">
                         <summary className="cursor-pointer text-sm font-medium">
-                          Ver {importResult.errors.length} advertencias
+                          {t("successWarnings", { count: importResult.errors.length })}
                         </summary>
                         <ul className="mt-2 text-xs space-y-1 max-h-32 overflow-y-auto">
                           {importResult.errors.slice(0, 10).map((error, index) => (
@@ -193,7 +193,7 @@ export default function ImportPage() {
                             </li>
                           ))}
                           {importResult.errors.length > 10 && (
-                            <li className="text-muted-foreground">... y {importResult.errors.length - 10} más</li>
+                            <li className="text-muted-foreground">{t("successMoreWarnings", { more: importResult.errors.length - 10 })}</li>
                           )}
                         </ul>
                       </details>
@@ -205,27 +205,24 @@ export default function ImportPage() {
               {importStatus === "error" && importResult && (
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Error en la importación</AlertTitle>
+                  <AlertTitle>{t("errorTitle")}</AlertTitle>
                   <AlertDescription className="space-y-2">
                     {importResult.importedCount > 0 ? (
-                      <p>
-                        Se importaron <strong>{importResult.importedCount}</strong> equipos, pero se encontraron{" "}
-                        <strong>{importResult.errors.length}</strong> errores.
-                      </p>
+                      <p dangerouslySetInnerHTML={{ __html: t("errorPartial", { count: importResult.importedCount, errors: importResult.errors.length }) }} />
                     ) : (
-                      <p>No se pudo completar la importación.</p>
+                      <p>{t("errorNone")}</p>
                     )}
 
                     <details className="mt-2">
                       <summary className="cursor-pointer text-sm font-medium">
-                        Ver errores ({importResult.errors.length})
+                        {t("errorList", { count: importResult.errors.length })}
                       </summary>
                       <ul className="mt-2 text-xs space-y-1 max-h-32 overflow-y-auto">
                         {importResult.errors.slice(0, 10).map((error, index) => (
                           <li key={index}>• {error}</li>
                         ))}
                         {importResult.errors.length > 10 && (
-                          <li className="text-muted-foreground">... y {importResult.errors.length - 10} más</li>
+                          <li className="text-muted-foreground">{t("errorMore", { more: importResult.errors.length - 10 })}</li>
                         )}
                       </ul>
                     </details>
@@ -236,58 +233,57 @@ export default function ImportPage() {
               {(importStatus === "success" || importStatus === "error") && (
                 <div className="flex justify-center">
                   <Button onClick={resetImport} variant="outline">
-                    Importar otro archivo
+                    {t("importAnother")}
                   </Button>
                 </div>
               )}
 
               <div className="rounded-md bg-muted p-4">
-                <h3 className="mb-2 font-medium">Formato esperado</h3>
+                <h3 className="mb-2 font-medium">{t("formatTitle")}</h3>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Tu archivo Excel debe tener las siguientes columnas:
+                  {t("formatDescription")}
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-muted-foreground">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-red-600">•</span>
-                      <span>nombre (obligatorio)</span>
+                      <span>{t("colName")}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-red-600">•</span>
-                      <span>categoria (obligatorio)</span>
+                      <span>{t("colCategory")}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-red-600">•</span>
-                      <span>cantidad_total (obligatorio, numérico)</span>
+                      <span>{t("colTotal")}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-orange-600">•</span>
-                      <span>cantidad_disponible (auto si no se especifica)</span>
+                      <span>{t("colAvailable")}</span>
                     </div>
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-gray-400">•</span>
-                      <span>descripcion (opcional)</span>
+                      <span>{t("colDescription")}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-gray-400">•</span>
-                      <span>numero_serie (opcional)</span>
+                      <span>{t("colSerial")}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-gray-400">•</span>
-                      <span>ubicacion (opcional)</span>
+                      <span>{t("colLocation")}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-gray-400">•</span>
-                      <span>nota_adicional (opcional)</span>
+                      <span>{t("colNote")}</span>
                     </div>
                   </div>
                 </div>
                 <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                   <p className="text-xs text-blue-800 dark:text-blue-200">
-                    <strong>Nota:</strong> Si no especificas "Cantidad Disponible", se usará automáticamente el valor de
-                    "Cantidad Total". La cantidad disponible no puede ser mayor que la cantidad total.
+                    <strong>Nota:</strong> {t("note")}
                   </p>
                 </div>
               </div>
@@ -295,7 +291,7 @@ export default function ImportPage() {
             <CardFooter>
               <Button variant="outline" onClick={handleDownloadTemplate} className="flex items-center gap-2">
                 <Download className="h-4 w-4" />
-                Descargar plantilla
+                {t("downloadTemplate")}
               </Button>
             </CardFooter>
           </Card>
