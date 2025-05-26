@@ -28,6 +28,7 @@ import { useToast } from "@/src/hooks/use-toast"
 import { registerLoan } from "@/src/services/loanService"
 import { getLaboratories } from "@/src/services/laboratoryService"
 import { ModalBase } from "@/src/components/modal"
+import { useTranslations } from "next-intl"
 
 const getMinDateTime = () => {
   const ahora = new Date();
@@ -43,34 +44,34 @@ const getMinDateTime = () => {
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
-const formSchema = z.object({
+// Schema con traducciones
+const createFormSchema = (t: any) => z.object({
   lab: z.string(),
   beneficiaryType: z.enum(["estudiante", "docente"]),
-  beneficiaryId: z.string().min(1, "ID es requerido"),
-  beneficiaryName: z.string().min(1, "Nombre es requerido"),
-  beneficiaryEmail: z.string().email("Correo electrónico inválido"),
+  beneficiaryId: z.string().min(1, t('validation.idRequired')),
+  beneficiaryName: z.string().min(1, t('validation.nameRequired')),
+  beneficiaryEmail: z.string().email(t('validation.invalidEmail')),
   equipment: z.array(z.object({
     id: z.string(),
     name: z.string(),
     quantity: z.number().min(1)
-  })).min(1, "Debes seleccionar al menos un equipo"),
+  })).min(1, t('validation.equipmentRequired')),
   description: z.string().optional(),
   returnDate: z.string()
-    .min(1, "Fecha de devolución es requerida")
+    .min(1, t('validation.returnDateRequired'))
     .refine((date) => {
       const selectedDate = new Date(date);
       const now = new Date();
       const minDate = new Date(now.getTime() + (5 * 60 * 1000));
       return selectedDate >= minDate;
     }, {
-      message: "La fecha de devolución debe ser al menos 5 minutos posterior a la hora actual"
+      message: t('validation.returnDateMinimum')
     }),
   photo: z
-    .instanceof(File, { message: "La imagen es requerida" })
-    .refine((file) => file && file.size > 0, { message: "La imagen es requerida" }),
+    .instanceof(File, { message: t('validation.photoRequired') })
+    .refine((file) => file && file.size > 0, { message: t('validation.photoRequired') }),
 });
 
-type FormValues = z.infer<typeof formSchema>;
 interface Lab {
   _id: string
   nombre: string
@@ -83,8 +84,15 @@ export default function NewLoanPage() {
   const { toast } = useToast()
   const [selectedLab, setSelectedLab] = useState("fisica")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  // CAMBIO 3: Estado para fecha mínima
+  const t = useTranslations("NewLoan")
+  const l = useTranslations("Laboratory")
+  
+  // Estado para fecha mínima
   const [minDateTime, setMinDateTime] = useState("")
+
+  // Crear el schema con traducciones
+  const formSchema = createFormSchema(t)
+  type FormValues = z.infer<typeof formSchema>;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -115,10 +123,10 @@ export default function NewLoanPage() {
 
     fetchLabs()
     
-    // CAMBIO 4: Establecer fecha mínima al cargar
+    // Establecer fecha mínima al cargar
     setMinDateTime(getMinDateTime())
     
-    // CAMBIO 5: Actualizar fecha mínima cada minuto
+    // Actualizar fecha mínima cada minuto
     const interval = setInterval(() => {
       setMinDateTime(getMinDateTime())
     }, 60000) // 1 minuto
@@ -138,7 +146,7 @@ export default function NewLoanPage() {
         beneficiaryEmail: loanData.correo_beneficiado,
         laboratoryName: selectedLab.nombre,
         equipmentList: loanData.equipos.map((eq: any) => ({
-          name: form.getValues('equipment').find(item => item.id === eq.equipo_id)?.name || 'Equipo no encontrado',
+          name: form.getValues('equipment').find(item => item.id === eq.equipo_id)?.name || t('equipmentNotFound'),
           quantity: eq.cantidad
         })),
         loanDate: nowColombia.toISOString(),
@@ -155,15 +163,15 @@ export default function NewLoanPage() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.message || 'Error enviando notificación')
+        throw new Error(errorData.message || t('emailError'))
       }
 
       return true
     } catch (error) {
       console.error('Error enviando notificación por email:', error)
       toast({
-        title: "Advertencia",
-        description: "El préstamo se creó correctamente, pero no se pudo enviar la notificación por email.",
+        title: t('warningTitle'),
+        description: t('emailWarningDescription'),
         variant: "default",
       })
       return false
@@ -178,13 +186,13 @@ export default function NewLoanPage() {
 
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true)
-    const selectedLab = labs.find((lab) => lab.slug === data.lab)
+    const selectedLabData = labs.find((lab) => lab.slug === data.lab)
 
     // Protección extra: asegurar que equipment es un array
     if (!Array.isArray(data.equipment)) {
       toast({
-        title: "Error de selección",
-        description: "El valor de los equipos seleccionados es inválido. Intenta seleccionar de nuevo.",
+        title: t('selectionErrorTitle'),
+        description: t('selectionErrorDescription'),
         variant: "destructive",
       })
       setIsSubmitting(false)
@@ -196,18 +204,18 @@ export default function NewLoanPage() {
 
     if (data.equipment.length === 0) {
       toast({
-        title: "Debes seleccionar al menos un equipo",
-        description: "Selecciona uno o más equipos antes de registrar el préstamo.",
+        title: t('equipmentSelectionTitle'),
+        description: t('equipmentSelectionDescription'),
         variant: "destructive",
       })
       setIsSubmitting(false)
       return
     }
 
-    if (!selectedLab) {
+    if (!selectedLabData) {
       toast({
-        title: "Error",
-        description: "Laboratorio seleccionado no válido",
+        title: t('errorTitle'),
+        description: t('invalidLabError'),
       })
       setIsSubmitting(false)
       return
@@ -227,7 +235,7 @@ export default function NewLoanPage() {
         equipos: equipos,
         fecha_devolucion: new Date(data.returnDate).toISOString(),
         evidencia_foto: data.photo as File,
-        laboratorio_id: selectedLab._id,
+        laboratorio_id: selectedLabData._id,
         descripcion: data.description,
       };
 
@@ -241,11 +249,11 @@ export default function NewLoanPage() {
       await registerLoan(loanData)
 
       // Enviar notificación por email
-      await sendLoanNotification(loanData, selectedLab)
+      await sendLoanNotification(loanData, selectedLabData)
 
       setModalInfo({
-        title: "Préstamo creado exitosamente",
-        description: `El préstamo con ${equipos.length} equipo(s) ha sido registrado correctamente y se ha enviado una notificación por email.`,
+        title: t('successTitle'),
+        description: t('successDescription', { count: equipos.length }),
       })
       setModalOpen(true)
 
@@ -257,8 +265,8 @@ export default function NewLoanPage() {
       console.error("Error al crear préstamo:", error)
 
       setModalInfo({
-        title: "Error",
-        description: error.message || "Hubo un error al crear el préstamo",
+        title: t('errorTitle'),
+        description: error.message || t('genericError'),
       })
       setModalOpen(true)
 
@@ -270,8 +278,8 @@ export default function NewLoanPage() {
   return (
     <DashboardShell>
       <DashboardHeader
-        heading="Nuevo Préstamo"
-        text="Registra un nuevo préstamo de equipos para un estudiante o profesor."
+        heading={t('header')}
+        text={t('headerDescription')}
       >
         <LabSelector
           value={selectedLab}
@@ -287,8 +295,8 @@ export default function NewLoanPage() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <Card>
             <CardHeader>
-              <CardTitle>Información del Beneficiario</CardTitle>
-              <CardDescription>Ingresa los datos del estudiante o profesor que recibirá los equipos.</CardDescription>
+              <CardTitle>{t('beneficiaryInfoTitle')}</CardTitle>
+              <CardDescription>{t('beneficiaryInfoDescription')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -296,7 +304,7 @@ export default function NewLoanPage() {
                 name="beneficiaryType"
                 render={({ field }) => (
                   <FormItem className="space-y-3">
-                    <FormLabel>Tipo de Beneficiario</FormLabel>
+                    <FormLabel>{t('beneficiaryTypeLabel')}</FormLabel>
                     <FormControl>
                       <RadioGroup
                         onValueChange={field.onChange}
@@ -307,13 +315,13 @@ export default function NewLoanPage() {
                           <FormControl>
                             <RadioGroupItem value="estudiante" />
                           </FormControl>
-                          <FormLabel className="font-normal">Estudiante</FormLabel>
+                          <FormLabel className="font-normal">{t('studentOption')}</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-2 space-y-0">
                           <FormControl>
                             <RadioGroupItem value="docente" />
                           </FormControl>
-                          <FormLabel className="font-normal">Profesor</FormLabel>
+                          <FormLabel className="font-normal">{t('teacherOption')}</FormLabel>
                         </FormItem>
                       </RadioGroup>
                     </FormControl>
@@ -328,9 +336,9 @@ export default function NewLoanPage() {
                   name="beneficiaryId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Número de Identificación</FormLabel>
+                      <FormLabel>{t('idLabel')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ingresa el número de identificación" {...field} />
+                        <Input placeholder={t('idPlaceholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -342,9 +350,9 @@ export default function NewLoanPage() {
                   name="beneficiaryName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nombre Completo</FormLabel>
+                      <FormLabel>{t('nameLabel')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ingresa el nombre completo" {...field} />
+                        <Input placeholder={t('namePlaceholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -357,12 +365,12 @@ export default function NewLoanPage() {
                 name="beneficiaryEmail"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Correo Electrónico</FormLabel>
+                    <FormLabel>{t('emailLabel')}</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="Ingresa el correo electrónico" {...field} />
+                      <Input type="email" placeholder={t('emailPlaceholder')} {...field} />
                     </FormControl>
                     <FormDescription>
-                      Se enviará una notificación a este correo cuando el préstamo sea completado.
+                      {t('emailDescription')}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -373,8 +381,8 @@ export default function NewLoanPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Detalles del Préstamo</CardTitle>
-              <CardDescription>Selecciona los equipos y especifica los detalles del préstamo.</CardDescription>
+              <CardTitle>{t('loanDetailsTitle')}</CardTitle>
+              <CardDescription>{t('loanDetailsDescription')}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
@@ -382,7 +390,7 @@ export default function NewLoanPage() {
                 name="equipment"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Equipos</FormLabel>
+                    <FormLabel>{t('equipmentLabel')}</FormLabel>
                     <FormControl>
                       <EquipmentSelector
                         lab={selectedLab}
@@ -392,7 +400,7 @@ export default function NewLoanPage() {
                       />
                     </FormControl>
                     <FormDescription>
-                      Selecciona uno o más equipos para este préstamo. Puedes ajustar las cantidades según sea necesario.
+                      {t('equipmentDescription')}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -404,10 +412,10 @@ export default function NewLoanPage() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Descripción</FormLabel>
+                    <FormLabel>{t('descriptionLabel')}</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Ingresa detalles adicionales sobre este préstamo (opcional)"
+                        placeholder={t('descriptionPlaceholder')}
                         className="min-h-[100px]"
                         {...field}
                       />
@@ -417,13 +425,12 @@ export default function NewLoanPage() {
                 )}
               />
 
-              {/* CAMBIO 7: Campo de fecha con fecha mínima y descripción actualizada */}
               <FormField
                 control={form.control}
                 name="returnDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Fecha de Devolución Esperada</FormLabel>
+                    <FormLabel>{t('returnDateLabel')}</FormLabel>
                     <FormControl>
                       <Input 
                         type="datetime-local" 
@@ -432,10 +439,10 @@ export default function NewLoanPage() {
                       />
                     </FormControl>
                     <FormDescription>
-                      Especifica cuándo se espera que se devuelvan todos los equipos.
+                      {t('returnDateDescription')}
                       <br />
                       <small className="text-yellow-600">
-                        ⚠️ La fecha debe ser al menos 5 minutos posterior a la hora actual.
+                        ⚠️ {t('returnDateWarning')}
                       </small>
                     </FormDescription>
                     <FormMessage />
@@ -448,11 +455,11 @@ export default function NewLoanPage() {
                 name="photo"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Evidencia Fotográfica</FormLabel>
+                    <FormLabel>{t('photoLabel')}</FormLabel>
                     <FormControl>
                       <ImageUpload value={field.value} onChange={field.onChange} />
                     </FormControl>
-                    <FormDescription>Toma una foto de los equipos entregados como evidencia.</FormDescription>
+                    <FormDescription>{t('photoDescription')}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -460,10 +467,10 @@ export default function NewLoanPage() {
             </CardContent>
             <CardFooter className="flex justify-end">
               <Button type="button" variant="outline" className="mr-2" onClick={() => router.back()}>
-                Cancelar
+                {t('cancelButton')}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Creando Préstamo..." : "Crear Préstamo"}
+                {isSubmitting ? t('creatingButton') : t('createButton')}
               </Button>
             </CardFooter>
           </Card>
