@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
+import { useTranslations } from "next-intl"
 import { Button } from "@/src/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/src/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/src/components/ui/form"
@@ -31,6 +32,7 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>
 
+
 interface Lab {
   _id: string
   nombre: string
@@ -43,6 +45,8 @@ export default function NewInventoryItemPage() {
   const { toast } = useToast()
   const [selectedLab, setSelectedLab] = useState("fisica")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const t = useTranslations("NewInventory")
+  const l = useTranslations("Laboratory")
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -85,8 +89,8 @@ export default function NewInventoryItemPage() {
 
     if (!selectedLab) {
       toast({
-        title: "Error",
-        description: "Laboratorio seleccionado no válido",
+        title: t("errorTitle", { default: "Error" }),
+        description: t("errorInvalidLab", { default: "Laboratorio seleccionado no válido" }),
       })
       setIsSubmitting(false)
       return
@@ -108,8 +112,8 @@ export default function NewInventoryItemPage() {
       await registerEquipment(payload)
 
       setModalInfo({
-        title: "Equipo agregado exitosamente",
-        description: "El nuevo equipo ha sido añadido al inventario.",
+        title: t("successTitle", { default: "Equipo agregado exitosamente" }),
+        description: t("successDescription", { default: "El nuevo equipo ha sido registrado en el inventario." }),
       })
       setModalOpen(true)
 
@@ -119,8 +123,8 @@ export default function NewInventoryItemPage() {
 
     } catch (error: any) {
       setModalInfo({
-        title: "Error",
-        description: error.message || "Hubo un error al crear el préstamo",
+        title: t("errorTitle", { default: "Error" }),
+        description: error.message || t("errorAdd", { default: "No se pudo agregar el equipo." }),
       })
       setModalOpen(true)
 
@@ -131,7 +135,7 @@ export default function NewInventoryItemPage() {
 
   return (
     <DashboardShell>
-      <DashboardHeader heading="Agregar equipo al inventario" text="Agrega un nuevo equipo al inventario del laboratorio.">
+      <DashboardHeader heading={t("pageTitle", { default: "Agregar nuevo equipo" })} text={t("pageDescription", { default: "Agrega un nuevo equipo al inventario del laboratorio seleccionado." })}>
         <LabSelector
           value={selectedLab}
           onValueChange={(value) => {
@@ -145,8 +149,8 @@ export default function NewInventoryItemPage() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <Card>
             <CardHeader>
-              <CardTitle>Información del equipo</CardTitle>
-              <CardDescription>Ingresa los detalles del nuevo equipo.</CardDescription>
+            <CardTitle>{t("infoCardTitle", { default: "Información del equipo" })}</CardTitle>
+            <CardDescription>{t("infoCardDescription", { default: "Introduce los detalles del nuevo equipo." })}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
@@ -155,9 +159,9 @@ export default function NewInventoryItemPage() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nombre</FormLabel>
+                      <FormLabel>{t("nameLabel", { default: "Nombre" })}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Nombre del equipo" {...field} />
+                        <Input placeholder={t("namePlaceholder", { default: "Nombre del equipo" })} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -169,9 +173,9 @@ export default function NewInventoryItemPage() {
                   name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Categoría</FormLabel>
+                      <FormLabel>{t("categoryLabel", { default: "Categoría" })}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Categoría" {...field} />
+                        <Input placeholder={t("categoryPlaceholder", { default: "Categoría" })} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -184,9 +188,9 @@ export default function NewInventoryItemPage() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Descripción</FormLabel>
+                    <FormLabel>{t("descriptionLabel", { default: "Descripción" })}</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Descripción del equipo" className="min-h-[100px]" {...field} />
+                      <Textarea placeholder={t("descriptionPlaceholder", { default: "Descripción del equipo" })} className="min-h-[100px]" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -199,10 +203,10 @@ export default function NewInventoryItemPage() {
                   name="serialNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Número de serie</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Número de serie (si aplica)" {...field} />
-                      </FormControl>
+                    <FormLabel>{t("serialNumberLabel", { default: "Número de serie" })}</FormLabel>
+                    <FormControl>
+                      <Input placeholder={t("serialNumberPlaceholder", { default: "Número de serie (si aplica)" })} {...field} />
+                    </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -213,7 +217,7 @@ export default function NewInventoryItemPage() {
                   name="quantity"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Cantidad</FormLabel>
+                    <FormLabel>{t("quantityLabel", { default: "Cantidad" })}</FormLabel>
                       <FormControl>
                         <Input type="number" min="1" {...field} />
                       </FormControl>
@@ -228,9 +232,9 @@ export default function NewInventoryItemPage() {
                 name="location"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Ubicación de almacenamiento</FormLabel>
+                    <FormLabel>{t("locationLabel", { default: "Ubicación de almacenamiento" })}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Ubicación de almacenamiento" {...field} />
+                      <Input placeholder={t("locationPlaceholder", { default: "Ubicación de almacenamiento" })} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -242,9 +246,9 @@ export default function NewInventoryItemPage() {
                 name="notes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Notas adicionales</FormLabel>
+                    <FormLabel>{t("notesLabel", { default: "Notas adicionales" })}</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Notas adicionales" {...field} />
+                      <Textarea placeholder={t("notesPlaceholder", { default: "Notas adicionales" })} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -253,10 +257,10 @@ export default function NewInventoryItemPage() {
             </CardContent>
             <CardFooter className="flex justify-end">
               <Button type="button" variant="outline" className="mr-2" onClick={() => router.back()}>
-                Cancelar
+                {t("cancelButton", { default: "Cancelar" })}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Agregando equipo..." : "Agregar equipo"}
+                {isSubmitting ? t("addingButton", { default: "Agregando equipo..." }) : t("addButton", { default: "Agregar equipo" })}
               </Button>
             </CardFooter>
           </Card>
