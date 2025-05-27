@@ -11,7 +11,7 @@
 ### 1. Clonar el repositorio
 ```bash
 git clone <url-del-repositorio>
-cd proyecto_final
+cd labLoanSystem
 ```
 
 
