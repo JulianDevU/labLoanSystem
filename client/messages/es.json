@@ -425,5 +425,13 @@
   },
   "MobileSidebarComponent": {
     "menu": "Menú"
+  },
+  "InventorySummary": {
+    "loading": "Cargando...",
+    "available": "disponibles",
+    "errorTitle": "Error",
+    "errorDescription": "No se pudieron cargar los equipos del laboratorio",
+    "noEquipmentFound": "No se encontraron equipos en este laboratorio",
+    "category": "Categoría"
   }
 }

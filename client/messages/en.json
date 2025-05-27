@@ -426,5 +426,13 @@
   },
   "MobileSidebarComponent": {
     "menu": "Menu"
+  },
+  "InventorySummary": {
+    "loading": "Loading...",
+    "available": "available",
+    "errorTitle": "Error",
+    "errorDescription": "Could not load laboratory equipment",
+    "noEquipmentFound": "No equipment found in this laboratory",
+    "category": "Category"
   }
 }

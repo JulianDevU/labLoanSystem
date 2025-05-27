@@ -2,6 +2,7 @@ import { Progress } from "@/src/components/ui/progress"
 import { useEffect, useState } from "react"
 import { getEquipment } from "@/src/services/equipmentService"
 import { useToast } from "@/src/hooks/use-toast"
+import { useTranslations } from "next-intl"
 
 interface InventorySummaryProps {
   lab: string
@@ -19,6 +20,7 @@ export function InventorySummary({ lab }: InventorySummaryProps) {
   const { toast } = useToast()
   const [equipment, setEquipment] = useState<EquipmentItem[]>([])
   const [loading, setLoading] = useState(true)
+  const t = useTranslations("InventorySummary")
 
   useEffect(() => {
     const fetchEquipment = async () => {
@@ -50,8 +52,8 @@ export function InventorySummary({ lab }: InventorySummaryProps) {
       } catch (error) {
         console.error("Error al cargar equipos:", error)
         toast({
-          title: "Error",
-          description: "No se pudieron cargar los equipos del laboratorio",
+          title: t("errorTitle"),
+          description: t("errorDescription"),
           variant: "destructive"
         })
       } finally {
@@ -60,7 +62,7 @@ export function InventorySummary({ lab }: InventorySummaryProps) {
     }
 
     fetchEquipment()
-  }, [lab, toast])
+  }, [lab, toast, t])
 
   if (loading) {
     return (
@@ -68,8 +70,8 @@ export function InventorySummary({ lab }: InventorySummaryProps) {
         {[...Array(3)].map((_, index) => (
           <div key={index} className="space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Cargando...</span>
-              <span className="text-sm text-muted-foreground">0/0 disponibles</span>
+              <span className="text-sm font-medium">{t("loading")}</span>
+              <span className="text-sm text-muted-foreground">0/0 {t("available")}</span>
             </div>
             <Progress value={0} className="h-2" />
           </div>
@@ -81,7 +83,7 @@ export function InventorySummary({ lab }: InventorySummaryProps) {
   if (equipment.length === 0) {
     return (
       <div className="text-center text-sm text-muted-foreground py-4">
-        No se encontraron equipos en este laboratorio
+        {t("noEquipmentFound")}
       </div>
     )
   }
@@ -93,7 +95,7 @@ export function InventorySummary({ lab }: InventorySummaryProps) {
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">{item.nombre}</span>
             <span className="text-sm text-muted-foreground">
-              {item.cantidad_disponible}/{item.cantidad_total} disponibles
+              {item.cantidad_disponible}/{item.cantidad_total} {t("available")}
             </span>
           </div>
           <Progress 
@@ -101,7 +103,7 @@ export function InventorySummary({ lab }: InventorySummaryProps) {
             className="h-2" 
           />
           <div className="text-xs text-muted-foreground">
-            Categoría: {item.categoria}
+            {t("category")}: {item.categoria}
           </div>
         </div>
       ))}
