@@ -76,8 +76,7 @@ export const crearEquipoValidator = [
     .notEmpty()
     .withMessage('El nombre es obligatorio'),
   body('descripcion')
-    .optional()
-    .withMessage('La descripción no puede estar vacía'),
+    .optional(),
   body('categoria')
     .notEmpty()
     .withMessage('La categoría es obligatoria'),
@@ -104,8 +103,7 @@ export const actualizarEquipoValidator = [
     .notEmpty()
     .withMessage('El nombre no puede estar vacío'),
   body('descripcion')
-    .optional()
-    .withMessage('La descripción no puede estar vacía'),
+    .optional(),
   body('categoria')
     .optional()
     .notEmpty()
