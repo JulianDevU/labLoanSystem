@@ -536,5 +536,21 @@
     "returnSuccessDescription": "The loan has been successfully marked as returned.",
     "returnErrorTitle": "Error",
     "returnErrorDescription": "Could not complete the loan"
+  },
+  "OverviewStats": {
+    "loadingStats": "Loading statistics...",
+    "errorLoadingStats": "Could not load statistics",
+    "activeLoansTitle": "Active Loans",
+    "activeLoansDescription": "Equipment currently on loan",
+    "inventoryItemsTitle": "Inventory Items",
+    "inventoryItemsDescription": "Total equipment in inventory",
+    "overdueLoansTitle": "Overdue Loans",
+    "overdueLoansDescription": "Loans past their due date"
+  },
+  "UserNav": {
+    "errorFetchingUser": "Error fetching user",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Log out"
   }
 }

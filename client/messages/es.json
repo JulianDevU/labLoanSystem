@@ -536,5 +536,21 @@
     "returnSuccessDescription": "El préstamo ha sido marcado como devuelto exitosamente.",
     "returnErrorTitle": "Error",
     "returnErrorDescription": "No se pudo completar el préstamo"
+  },
+  "OverviewStats": {
+    "loadingStats": "Cargando estadísticas...",
+    "errorLoadingStats": "No se pudieron cargar las estadísticas",
+    "activeLoansTitle": "Préstamos activos",
+    "activeLoansDescription": "Equipos actualmente en préstamo",
+    "inventoryItemsTitle": "Equipos en inventario",
+    "inventoryItemsDescription": "Total de equipos en inventario",
+    "overdueLoansTitle": "Préstamos vencidos",
+    "overdueLoansDescription": "Préstamos fuera de fecha de devolución"
+  },
+  "UserNav": {
+    "errorFetchingUser": "Error al obtener usuario",
+    "profile": "Perfil",
+    "settings": "Configuración",
+    "logout": "Cerrar sesión"
   }
 }

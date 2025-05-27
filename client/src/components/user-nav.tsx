@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation"
 import { logout } from "../services/authService"
 import { getUser } from "../services/userService"
 import { useEffect, useState } from "react"
+import { useTranslations } from "next-intl"
 
 interface User {
   nombre: string
@@ -24,6 +25,7 @@ interface User {
 export function UserNav() {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
+  const t = useTranslations("UserNav")
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -31,12 +33,12 @@ export function UserNav() {
         const result = await getUser()
         setUser(result)
       } catch (error) {
-        console.error("Error al obtener usuario", error)
+        console.error(t("errorFetchingUser"), error)
       }
     }
 
     fetchUser()
-  }, [])
+  }, [t])
 
   const handleLogout = () => {
     logout()
@@ -64,11 +66,11 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => router.push("/profile")}>Perfil</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => router.push("/settings")}>Configuración</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push("/profile")}>{t("profile")}</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push("/settings")}>{t("settings")}</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleLogout}>Cerrar sesión</DropdownMenuItem>
+        <DropdownMenuItem onClick={handleLogout}>{t("logout")}</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
