@@ -6,6 +6,7 @@ import { useState, useRef } from "react"
 import { Button } from "@/src/components/ui/button"
 import { Loader2 } from "lucide-react"
 import type { ReactNode } from "react"
+import { useTranslations } from "next-intl"
 
 interface FileUploadProps {
   accept: string
@@ -25,7 +26,9 @@ export function FileUpload({
   isProcessing = false,
 }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false)
+  const [fileTypeError, setFileTypeError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const t = useTranslations("FileUpload")
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
@@ -43,7 +46,12 @@ export function FileUpload({
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0]
       if (isValidFileType(file)) {
+        setFileTypeError(null)
         onUpload(file)
+      } else {
+        setFileTypeError(
+          t("invalidFileType", { acceptedTypes: accept.replace(/,/g, ", ") })
+        )
       }
     }
   }
@@ -52,7 +60,12 @@ export function FileUpload({
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0]
       if (isValidFileType(file)) {
+        setFileTypeError(null)
         onUpload(file)
+      } else {
+        setFileTypeError(
+          t("invalidFileType", { acceptedTypes: accept.replace(/,/g, ", ") })
+        )
       }
     }
   }
@@ -86,7 +99,7 @@ export function FileUpload({
         {isProcessing ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Processing...
+            {t("processing")}
           </>
         ) : (
           <>
@@ -95,7 +108,12 @@ export function FileUpload({
           </>
         )}
       </Button>
-      {description && <p className="text-xs text-muted-foreground text-center">{description}</p>}
+      <p className="text-xs text-muted-foreground text-center">
+        {description || t("dragAndDrop")}
+      </p>
+      {fileTypeError && (
+        <p className="text-xs text-red-500 text-center">{fileTypeError}</p>
+      )}
       <input
         type="file"
         ref={fileInputRef}

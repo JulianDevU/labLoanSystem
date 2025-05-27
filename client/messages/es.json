@@ -353,7 +353,6 @@
     "headerDescription": "Administra tus preferencias y seguridad.",
     "accountTab": "Cuenta",
     "preferencesTab": "Preferencias",
-    
     "changePasswordTitle": "Cambiar contraseña",
     "changePasswordDescription": "Actualiza tu contraseña para mantener tu cuenta segura.",
     "currentPasswordLabel": "Contraseña actual*",
@@ -362,21 +361,18 @@
     "passwordPlaceholder": "********",
     "changePasswordButton": "Cambiar contraseña",
     "changingPasswordButton": "Cambiando contraseña...",
-    
     "generalPreferencesTitle": "Preferencias Generales",
     "generalPreferencesDescription": "Ajusta las preferencias generales de tu cuenta.",
     "languageLabel": "Idioma",
     "spanishOption": "Español",
     "englishOption": "Inglés",
     "savePreferencesButton": "Guardar preferencias",
-    
     "passwordUpdatedTitle": "Contraseña actualizada",
     "passwordUpdatedDescription": "Tu contraseña ha sido cambiada exitosamente.",
     "passwordErrorTitle": "Error al cambiar contraseña",
     "passwordErrorDescription": "Hubo un problema al cambiar tu contraseña",
     "successTitle": "Éxito",
     "errorTitle": "Error",
-    
     "validation": {
       "currentPasswordRequired": "La contraseña actual es obligatoria",
       "newPasswordMinLength": "La nueva contraseña debe tener al menos 6 caracteres",
@@ -395,7 +391,6 @@
     "addItem": "Agregar Artículo",
     "importData": "Importar Datos"
   },
-
   "EquipmentSelector": {
     "loadingEquipment": "Cargando equipos...",
     "errorLoadingEquipment": "Error al cargar equipos",
@@ -410,6 +405,10 @@
     "decrease": "Disminuir",
     "increase": "Aumentar",
     "noElementsFound": "No se encontraron elementos."
+  },
+  "FileUpload": {
+    "processing": "Procesando...",
+    "dragAndDrop": "Arrastra y suelta un archivo aquí o haz clic para seleccionar",
+    "invalidFileType": "Tipo de archivo no válido. Por favor, selecciona un archivo con formato {acceptedTypes}."
   }
- 
 }

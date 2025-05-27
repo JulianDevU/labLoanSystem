@@ -405,5 +405,10 @@
     "decrease": "Decrease",
     "increase": "Increase",
     "noElementsFound": "No elements found."
+  },
+  "FileUpload": {
+    "processing": "Processing...",
+    "dragAndDrop": "Drag and drop a file here or click to select",
+    "invalidFileType": "Invalid file type. Please select a {acceptedTypes} file."
   }
 }
