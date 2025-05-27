@@ -348,40 +348,47 @@
         "telecommunications": "telecommunications",
         "software": "software"
     },
-      "Settings": {
-    "header": "Settings",
-    "headerDescription": "Manage your preferences and security.",
-    "accountTab": "Account",
-    "preferencesTab": "Preferences",
-    
-    "changePasswordTitle": "Change password",
-    "changePasswordDescription": "Update your password to keep your account secure.",
-    "currentPasswordLabel": "Current password*",
-    "newPasswordLabel": "New password*",
-    "confirmPasswordLabel": "Confirm new password*",
-    "passwordPlaceholder": "********",
-    "changePasswordButton": "Change password",
-    "changingPasswordButton": "Changing password...",
-    
-    "generalPreferencesTitle": "General Preferences",
-    "generalPreferencesDescription": "Adjust your account's general preferences.",
-    "languageLabel": "Language",
-    "spanishOption": "Spanish",
-    "englishOption": "English",
-    "savePreferencesButton": "Save preferences",
-    
-    "passwordUpdatedTitle": "Password updated",
-    "passwordUpdatedDescription": "Your password has been successfully changed.",
-    "passwordErrorTitle": "Error changing password",
-    "passwordErrorDescription": "There was a problem changing your password",
-    "successTitle": "Success",
-    "errorTitle": "Error",
-    
-    "validation": {
-      "currentPasswordRequired": "Current password is required",
-      "newPasswordMinLength": "New password must be at least 6 characters long",
-      "confirmPasswordRequired": "Please confirm your new password",
-      "passwordsNotMatch": "Passwords do not match"
+    "Settings": {
+        "header": "Settings",
+        "headerDescription": "Manage your preferences and security.",
+        "accountTab": "Account",
+        "preferencesTab": "Preferences",
+        "changePasswordTitle": "Change password",
+        "changePasswordDescription": "Update your password to keep your account secure.",
+        "currentPasswordLabel": "Current password*",
+        "newPasswordLabel": "New password*",
+        "confirmPasswordLabel": "Confirm new password*",
+        "passwordPlaceholder": "********",
+        "changePasswordButton": "Change password",
+        "changingPasswordButton": "Changing password...",
+        "generalPreferencesTitle": "General Preferences",
+        "generalPreferencesDescription": "Adjust your account's general preferences.",
+        "languageLabel": "Language",
+        "spanishOption": "Spanish",
+        "englishOption": "English",
+        "savePreferencesButton": "Save preferences",
+        "passwordUpdatedTitle": "Password updated",
+        "passwordUpdatedDescription": "Your password has been successfully changed.",
+        "passwordErrorTitle": "Error changing password",
+        "passwordErrorDescription": "There was a problem changing your password",
+        "successTitle": "Success",
+        "errorTitle": "Error",
+        "validation": {
+            "currentPasswordRequired": "Current password is required",
+            "newPasswordMinLength": "New password must be at least 6 characters long",
+            "confirmPasswordRequired": "Please confirm your new password",
+            "passwordsNotMatch": "Passwords do not match"
+        }
+    },
+    "DashboardNav": {
+        "dashboard": "Dashboard",
+        "loans": "Loans",
+        "activeLoans": "Active Loans",
+        "newLoan": "New Loan",
+        "loanHistory": "Loan History",
+        "inventory": "Inventory",
+        "viewInventory": "View Inventory",
+        "addItem": "Add Item",
+        "importData": "Import Data"
     }
-  }
 }

@@ -4,56 +4,58 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/src/lib/utils"
 import { LayoutDashboard, FileSpreadsheet, Package, Upload } from "lucide-react"
-
-const navItems = [
-  {
-    title: "Panel de Control",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Préstamos",
-    href: "/loans",
-    icon: FileSpreadsheet,
-    submenu: [
-      {
-        title: "Préstamos Activos",
-        href: "/loans",
-      },
-      {
-        title: "Nuevo Préstamo",
-        href: "/loans/new",
-      },
-      {
-        title: "Historial de Préstamos",
-        href: "/loans/history",
-      },
-    ],
-  },
-  {
-    title: "Inventario",
-    href: "/inventory",
-    icon: Package,
-    submenu: [
-      {
-        title: "Ver Inventario",
-        href: "/inventory",
-      },
-      {
-        title: "Agregar Artículo",
-        href: "/inventory/new",
-      },
-    ],
-  },
-  {
-    title: "Importar Datos",
-    href: "/import",
-    icon: Upload,
-  },
-]
+import { useTranslations } from "next-intl"
 
 export function DashboardNav() {
   const pathname = usePathname()
+  const t = useTranslations("DashboardNav")
+
+  const navItems = [
+    {
+      title: t("dashboard"),
+      href: "/dashboard",
+      icon: LayoutDashboard,
+    },
+    {
+      title: t("loans"),
+      href: "/loans",
+      icon: FileSpreadsheet,
+      submenu: [
+        {
+          title: t("activeLoans"),
+          href: "/loans",
+        },
+        {
+          title: t("newLoan"),
+          href: "/loans/new",
+        },
+        {
+          title: t("loanHistory"),
+          href: "/loans/history",
+        },
+      ],
+    },
+    {
+      title: t("inventory"),
+      href: "/inventory",
+      icon: Package,
+      submenu: [
+        {
+          title: t("viewInventory"),
+          href: "/inventory",
+        },
+        {
+          title: t("addItem"),
+          href: "/inventory/new",
+        },
+      ],
+    },
+    {
+      title: t("importData"),
+      href: "/import",
+      icon: Upload,
+    },
+  ]
 
   return (
     <nav className="grid gap-1 px-2">
