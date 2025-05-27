@@ -89,8 +89,11 @@ export default function SettingsPage() {
   const locale = useLocale()
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newLocale = e.target.value
-    router.push(pathname, { locale: newLocale })
+    const newLocale = e.target.value;
+  
+    document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000`;
+  
+    router.push(pathname, { locale: newLocale });
   }
 
   return (
