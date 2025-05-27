@@ -45,7 +45,7 @@ export default function NewInventoryItemPage() {
   const { toast } = useToast()
   const [selectedLab, setSelectedLab] = useState("fisica")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const t = useTranslations("NewLoan")
+  const t = useTranslations("NewInventory")
   const l = useTranslations("Laboratory")
 
   const form = useForm<FormValues>({
