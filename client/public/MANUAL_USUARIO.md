@@ -58,6 +58,9 @@ Esta herramienta te permite tomar decisiones rápidas y monitorear el uso de los
 ### 8. Cambiar tema (claro/oscuro)
 - En la parte superior derecha puedes alternar entre el tema claro y oscuro usando el botón de cambio de tema.
 
+### 9. Cambiar idioma
+- Puedes cambiar el idioma del sistema desde la sección de configuración, ubicada en la parte superior derecha de la pantalla.
+- Selecciona el idioma de tu preferencia para que la interfaz se adapte automáticamente.
 
 ## Consejos de uso
 - Siempre verifica la cantidad de equipos al registrar o devolver un préstamo.

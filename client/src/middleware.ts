@@ -9,7 +9,6 @@ export default function middleware(request: NextRequest) {
 
   // Obtener el locale de la cookie o del header
   const cookieLocale = request.cookies.get('NEXT_LOCALE')?.value;
-  const headerLocale = request.headers.get('accept-language');
   
   // Si hay una cookie de locale, asegurarnos de que se mantenga
   if (cookieLocale && routing.locales.includes(cookieLocale as any)) {
