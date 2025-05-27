@@ -5,7 +5,7 @@ import { Button } from "@/src/components/ui/button"
 import { Card, CardContent } from "@/src/components/ui/card"
 import { Input } from "@/src/components/ui/input"
 import { Label } from "@/src/components/ui/label"
-import { ScrollArea } from "@/src/components/ui/scroll-area" // Ya estás usando esta, ¡excelente!
+import { ScrollArea } from "@/src/components/ui/scroll-area"
 import { Separator } from "@/src/components/ui/separator"
 import { Plus, Minus, X } from "lucide-react"
 import { Badge } from "@/src/components/ui/badge"
@@ -17,7 +17,6 @@ interface Equipment {
   quantity: number
 }
 
-// Support both single and multiple selection
 interface EquipmentSelectorProps {
   lab: string
   value: Equipment[] | string
@@ -38,7 +37,6 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
     import("@/src/services/equipmentService").then(({ getEquipment }) => {
       getEquipment()
         .then((data) => {
-          // Filtrado robusto: por _id, slug o nombre (consistente con InventoryTable)
           const filtered = data.filter((item: any) => {
             const matchById = item.laboratorio_id?._id === lab
             const matchBySlug = item.laboratorio_id?.slug === lab
@@ -60,7 +58,6 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
     available: item.cantidad_disponible ?? 0,
   }))
 
-  // Filtrar por búsqueda
   const filteredEquipment = currentEquipment.filter(
     (item) =>
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -95,16 +92,17 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
           <div className="space-y-2">
             <Label>{t("selectedEquipment")}</Label>
             <div className="rounded-md border p-2">
-              <div className="flex items-center justify-between gap-2 rounded-md border p-2">
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{selectedEquipment.name}</p>
-                  <p className="text-xs text-muted-foreground">{selectedEquipment.id}</p>
+              {/* Ajuste para evitar scroll horizontal en item seleccionado (modo single) */}
+              <div className="flex items-center justify-between gap-2 rounded-md border p-2 min-w-0">
+                <div className="flex-1 **min-w-0**"> {/* Añadido min-w-0 */}
+                  <p className="text-sm font-medium **truncate**">{selectedEquipment.name}</p> {/* Añadido truncate */}
+                  <p className="text-xs text-muted-foreground **truncate**">{selectedEquipment.id}</p> {/* Añadido truncate */}
                 </div>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 text-muted-foreground"
+                  className="h-7 w-7 text-muted-foreground **flex-shrink-0**" // Asegura que el botón no se encoja
                   onClick={clearSelection}
                 >
                   <X className="h-3 w-3" />
@@ -124,20 +122,20 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
           />
           <Card>
             <CardContent className="p-2">
-              {/* Aquí está el cambio clave: el ScrollArea ya tiene 'h-60' */}
-              <ScrollArea className="h-60 pr-4"> 
+              <ScrollArea className="h-60 pr-4">
                 <div className="space-y-2">
                   {filteredEquipment.map((item) => {
                     const isSelected = selectedEquipmentId === item.id
 
                     return (
                       <div key={item.id}>
-                        <div className="flex items-center justify-between py-2">
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">{item.name}</p>
+                        {/* Ajuste para evitar scroll horizontal en ítems disponibles (modo single) */}
+                        <div className="flex items-center justify-between py-2 min-w-0">
+                          <div className="flex-1 **min-w-0**"> {/* Añadido min-w-0 */}
+                            <p className="text-sm font-medium **truncate**">{item.name}</p> {/* Añadido truncate */}
                             <div className="flex items-center gap-2">
-                              <p className="text-xs text-muted-foreground">{item.id}</p>
-                              <Badge variant="outline" className="text-xs">
+                              <p className="text-xs text-muted-foreground **truncate**">{item.id}</p> {/* Añadido truncate */}
+                              <Badge variant="outline" className="text-xs **flex-shrink-0**"> {/* Asegura que el badge no se encoja */}
                                 {item.available} {t("available")}
                               </Badge>
                             </div>
@@ -146,7 +144,7 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
                             type="button"
                             variant={isSelected ? "default" : "ghost"}
                             size="sm"
-                            className="h-8 gap-1"
+                            className="h-8 gap-1 **flex-shrink-0**" // Asegura que el botón no se encoja
                             disabled={item.available === 0}
                             onClick={() => selectEquipment(item.id)}
                           >
@@ -177,14 +175,13 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
   // Original multiple selection logic
   const equipmentArray = Array.isArray(value) ? value : []
 
-  // Solo permite añadir si no se excede el stock disponible
   const addEquipment = (id: string, name: string) => {
     const item = currentEquipment.find(eq => eq.id === id)
     if (!item) return;
     const existingItem = equipmentArray.find((e) => e.id === id)
     const available = item.available;
     const selectedQuantity = existingItem ? existingItem.quantity : 0;
-    if (selectedQuantity >= available) return; // No permitir más de lo disponible
+    if (selectedQuantity >= available) return;
     if (existingItem) {
       onChange(equipmentArray.map((e) => (e.id === id ? { ...e, quantity: e.quantity + 1 } : e)))
     } else {
@@ -222,16 +219,16 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
       {equipmentArray.length > 0 && (
         <div className="space-y-2">
           <Label>{t("selectedEquipment")}</Label>
-          {/* Aplica ScrollArea al contenedor de equipos seleccionados si es necesario */}
-          <div className="rounded-md border p-2 max-h-48 overflow-y-auto"> 
+          <div className="rounded-md border p-2 max-h-48 overflow-y-auto">
             <div className="space-y-2">
               {equipmentArray.map((item) => (
-                <div key={item.id} className="flex items-center justify-between gap-2 rounded-md border p-2">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{item.name}</p>
-                    <p className="text-xs text-muted-foreground">{item.id}</p>
+                // Ajuste para evitar scroll horizontal en ítems seleccionados (modo múltiple)
+                <div key={item.id} className="flex items-center justify-between gap-2 rounded-md border p-2 min-w-0">
+                  <div className="flex-1 **min-w-0**"> {/* Añadido min-w-0 */}
+                    <p className="text-sm font-medium **truncate**">{item.name}</p> {/* Añadido truncate */}
+                    <p className="text-xs text-muted-foreground **truncate**">{item.id}</p> {/* Añadido truncate */}
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 **flex-shrink-0**"> {/* Asegura que los controles de cantidad no se encojan */}
                     <Button
                       type="button"
                       variant="outline"
@@ -247,7 +244,7 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
                       min="1"
                       value={item.quantity}
                       onChange={(e) => updateQuantity(item.id, Number.parseInt(e.target.value) || 1)}
-                      className="h-7 w-14 text-center"
+                      className="h-7 w-14 text-center **flex-shrink-0**" // Asegura que el input de cantidad no se encoja
                     />
                     <Button
                       type="button"
@@ -286,8 +283,7 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
         <Input placeholder={t("searchPlaceholder")} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
         <Card>
           <CardContent className="p-2">
-            {/* El ScrollArea ya tiene 'h-60' */}
-            <ScrollArea className="h-60 pr-4"> 
+            <ScrollArea className="h-60 pr-4">
               <div className="space-y-2">
                 {filteredEquipment.map((item) => {
                   const isSelected = equipmentArray.some((selected) => selected.id === item.id)
@@ -298,12 +294,13 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
 
                   return (
                     <div key={item.id}>
-                      <div className="flex items-center justify-between py-2">
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">{item.name}</p>
+                      {/* Ajuste para evitar scroll horizontal en ítems disponibles (modo múltiple) */}
+                      <div className="flex items-center justify-between py-2 min-w-0">
+                        <div className="flex-1 **min-w-0**"> {/* Añadido min-w-0 */}
+                          <p className="text-sm font-medium **truncate**">{item.name}</p> {/* Añadido truncate */}
                           <div className="flex items-center gap-2">
-                            <p className="text-xs text-muted-foreground">{item.id}</p>
-                            <Badge variant="outline" className="text-xs">
+                            <p className="text-xs text-muted-foreground **truncate**">{item.id}</p> {/* Añadido truncate */}
+                            <Badge variant="outline" className="text-xs **flex-shrink-0**"> {/* Asegura que el badge no se encoja */}
                               {remainingQuantity} {t("available")}
                             </Badge>
                           </div>
@@ -312,7 +309,7 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="h-8 gap-1"
+                          className="h-8 gap-1 **flex-shrink-0**" // Asegura que el botón no se encoja
                           disabled={remainingQuantity === 0}
                           onClick={() => addEquipment(item.id, item.name)}
                         >
