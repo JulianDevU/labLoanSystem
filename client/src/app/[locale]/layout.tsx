@@ -4,6 +4,7 @@ import { Providers } from '@/src/components/theme-provider'
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { notFound } from 'next/navigation';
 import { routing } from '@/src/i18n/routing';
+import { getMessages } from 'next-intl/server';
 
 
 export const metadata: Metadata = {
@@ -27,11 +28,13 @@ export default async function LocaleLayout({
     notFound();
   }
 
+  const messages = await getMessages({ locale });
+
   return (
     <html lang={locale}>
 
       <body>
-        <NextIntlClientProvider>
+        <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>
             {children}
           </Providers>
