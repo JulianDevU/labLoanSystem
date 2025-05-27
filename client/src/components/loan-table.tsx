@@ -8,11 +8,21 @@ import { Button } from "@/src/components/ui/button"
 import { Badge } from "@/src/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/src/components/ui/avatar"
 import Image from "next/image"
+import { CheckCircle2, Loader2, AlertCircle } from "lucide-react"
+import { useToast } from "@/src/hooks/use-toast"
+import { 
+  getActiveLoans, 
+  getOverdueLoans, 
+  updateLoan,
+  type LoanFromApi 
+} from "@/src/services/loanService"
+import { useTranslations } from "next-intl"
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACK_ENV
 
 // Componente para mostrar la imagen de evidencia con fallback
 function EvidenciaFoto({ evidencia_foto }: { evidencia_foto?: string }) {
+  const t = useTranslations("EvidenciaFoto")
   const [imgSrc, setImgSrc] = useState<string | undefined>(evidencia_foto);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -29,7 +39,7 @@ function EvidenciaFoto({ evidencia_foto }: { evidencia_foto?: string }) {
   if (!imgSrc) {
     return (
       <div className="h-16 w-24 flex items-center justify-center bg-muted rounded border">
-        <span className="text-xs text-muted-foreground">Sin foto</span>
+        <span className="text-xs text-muted-foreground">{t("noPhoto")}</span>
       </div>
     );
   }
@@ -39,11 +49,11 @@ function EvidenciaFoto({ evidencia_foto }: { evidencia_foto?: string }) {
       <div
         className="relative h-16 w-24 rounded overflow-hidden border bg-white cursor-pointer"
         onClick={() => setModalOpen(true)}
-        title="Ver imagen en grande"
+        title={t("viewImageTitle")}
       >
         <Image
           src={displayUrl || "/placeholder.jpg"}
-          alt="Evidencia fotográfica"
+          alt={t("altTextThumbnail")}
           fill
           style={{ objectFit: "cover" }}
           sizes="96px"
@@ -59,7 +69,7 @@ function EvidenciaFoto({ evidencia_foto }: { evidencia_foto?: string }) {
           <div className="relative bg-white rounded shadow-lg p-4" onClick={e => e.stopPropagation()}>
             <Image
               src={displayUrl || "/placeholder.jpg"}
-              alt="Evidencia fotográfica grande"
+              alt={t("altTextModal")}
               width={600}
               height={400}
               style={{ objectFit: "contain", maxHeight: "80vh", maxWidth: "90vw" }}
@@ -70,7 +80,7 @@ function EvidenciaFoto({ evidencia_foto }: { evidencia_foto?: string }) {
               className="absolute top-2 right-2 text-black bg-white rounded-full px-2 py-1 shadow"
               onClick={() => setModalOpen(false)}
             >
-              Cerrar
+              {t("closeButton")}
             </button>
           </div>
         </div>
@@ -78,14 +88,6 @@ function EvidenciaFoto({ evidencia_foto }: { evidencia_foto?: string }) {
     </>
   );
 }
-import { CheckCircle2, Loader2, AlertCircle } from "lucide-react"
-import { useToast } from "@/src/hooks/use-toast"
-import { 
-  getActiveLoans, 
-  getOverdueLoans, 
-  updateLoan,
-  type LoanFromApi 
-} from "@/src/services/loanService"
 
 interface LoansTableProps {
   lab: string
@@ -102,6 +104,7 @@ export function LoansTable({ lab, searchQuery }: LoansTableProps) {
   const [selectedLoan, setSelectedLoan] = useState<LoanFromApi | null>(null)
   const [equiposDevueltos, setEquiposDevueltos] = useState<{ equipo_id: string, cantidad: number }[]>([])
   const [notaDevolucion, setNotaDevolucion] = useState("")
+  const t = useTranslations("LoansTable")
 
   // Cargar préstamos activos
   const fetchLoans = async () => {
@@ -245,9 +248,9 @@ export function LoansTable({ lab, searchQuery }: LoansTableProps) {
       <div className="flex h-32 items-center justify-center">
         <div className="text-center">
           <AlertCircle className="h-6 w-6 text-destructive mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">{error}</p>
+          <p className="text-sm text-muted-foreground">{t("errorLoadingLoansDescription")}</p>
           <Button variant="outline" size="sm" className="mt-2" onClick={fetchLoans}>
-            Reintentar
+            {t("retryButton")}
           </Button>
         </div>
       </div>
@@ -272,7 +275,7 @@ export function LoansTable({ lab, searchQuery }: LoansTableProps) {
                 <div className="flex items-center gap-2">
                   <h3 className="font-medium">{loan.nombre_beneficiado}</h3>
                   <Badge variant="outline">
-                    {loan.tipo_beneficiado === 'estudiante' ? 'Estudiante' : 'Profesor'}
+                    {loan.tipo_beneficiado === 'estudiante' ? t("beneficiaryTypeStudent") : t("beneficiaryTypeProfessor")}
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">
@@ -282,23 +285,23 @@ export function LoansTable({ lab, searchQuery }: LoansTableProps) {
             </div>
             <div className="flex items-center gap-2">
               <Badge variant={isOverdue(loan) ? "destructive" : "default"}>
-                {isOverdue(loan) ? "Vencido" : "Activo"}
+                {isOverdue(loan) ? t("statusOverdue") : t("statusActive")}
               </Badge>
               <div className="text-right text-sm">
                 <p>
-                  <span className="font-medium">ID Préstamo:</span> {loan._id}
+                  <span className="font-medium">{t("loanId")}</span> {loan._id}
                 </p>
                 <p>
-                  <span className="font-medium">Fecha préstamo:</span>{" "}
+                  <span className="font-medium">{t("loanDate")}</span>{" "}
                   {formatDate(loan.fecha_prestamo)}
                 </p>
                 <p>
-                  <span className="font-medium">Devolver antes de:</span>{" "}
+                  <span className="font-medium">{t("returnBefore")}</span>{" "}
                   {formatDate(loan.fecha_devolucion)}
                 </p>
                 {loan.fecha_devolucion_real && (
                   <p>
-                    <span className="font-medium">Devuelto:</span>{" "}
+                    <span className="font-medium">{t("returned")}</span>{" "}
                     {formatDate(loan.fecha_devolucion_real)}
                   </p>
                 )}
@@ -308,7 +311,7 @@ export function LoansTable({ lab, searchQuery }: LoansTableProps) {
 
           <div className="mt-4 rounded-md bg-muted p-3">
             <h4 className="mb-2 font-medium">
-              Equipos prestados ({getTotalEquipmentCount(loan.equipos)} total)
+              {t("equipmentBorrowedTitle", { count: getTotalEquipmentCount(loan.equipos) })}
             </h4>
             <div className="space-y-3">
               {loan.equipos.map((equipo, index) => (
@@ -319,22 +322,22 @@ export function LoansTable({ lab, searchQuery }: LoansTableProps) {
                         {equipo.equipo_id.nombre}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        <span className="font-medium">ID:</span> {equipo.equipo_id._id}
+                        <span className="font-medium">{t("equipmentId")}</span> {equipo.equipo_id._id}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        <span className="font-medium">Categoría:</span> {equipo.equipo_id.categoria}
+                        <span className="font-medium">{t("equipmentCategory")}</span> {equipo.equipo_id.categoria}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        <span className="font-medium">Laboratorio:</span> {equipo.equipo_id.laboratorio_id.nombre}
+                        <span className="font-medium">{t("equipmentLaboratory")}</span> {equipo.equipo_id.laboratorio_id.nombre}
                       </p>
                       {equipo.equipo_id.descripcion && (
                         <p className="text-xs text-muted-foreground">
-                          <span className="font-medium">Descripción:</span> {equipo.equipo_id.descripcion}
+                          <span className="font-medium">{t("equipmentDescription")}</span> {equipo.equipo_id.descripcion}
                         </p>
                       )}
                     </div>
                     <Badge variant="secondary" className="ml-2">
-                      Cantidad: {equipo.cantidad}
+                      {t("equipmentQuantity")} {equipo.cantidad}
                     </Badge>
                   </div>
                 </div>
@@ -343,11 +346,11 @@ export function LoansTable({ lab, searchQuery }: LoansTableProps) {
             
             <div className="mt-3 pt-3 border-t border-muted-foreground/20">
               <p className="text-sm">
-                <span className="font-medium">Laboratorio del préstamo:</span> {loan.laboratorio_id.nombre}
+                <span className="font-medium">{t("loanLaboratory")}</span> {loan.laboratorio_id.nombre}
               </p>
               {loan.descripcion && (
                 <p className="text-sm mt-1">
-                  <span className="font-medium">Descripción:</span> {loan.descripcion}
+                  <span className="font-medium">{t("loanDescription")}</span> {loan.descripcion}
                 </p>
               )}
             </div>
@@ -363,17 +366,17 @@ export function LoansTable({ lab, searchQuery }: LoansTableProps) {
                 disabled={updatingLoan === loan._id}
               >
                 <CheckCircle2 className="h-4 w-4" />
-                Marcar como devuelto
+                {t("markAsReturnedButton")}
               </Button>
             </div>
           )}
 
       {/* Modal para devolución parcial y nota */}
-      <ModalBase open={modalOpen} onOpenChange={setModalOpen} title="Registrar devolución de equipos">
+      <ModalBase open={modalOpen} onOpenChange={setModalOpen} title={t("returnModalTitle")}>
         {selectedLoan && (
           <div className="space-y-4">
             <div>
-              <h4 className="font-medium mb-2">Cantidad devuelta por equipo</h4>
+              <h4 className="font-medium mb-2">{t("returnModalQuantityTitle")}</h4>
               {selectedLoan.equipos.map((eq, idx) => (
                 <div key={eq.equipo_id._id} className="flex items-center gap-2 mb-2">
                   <span className="w-40 truncate">{eq.equipo_id.nombre}</span>
@@ -385,24 +388,24 @@ export function LoansTable({ lab, searchQuery }: LoansTableProps) {
                     onChange={e => handleCantidadDevuelta(eq.equipo_id._id, Math.max(0, Math.min(Number(e.target.value), eq.cantidad)))}
                     className="w-24"
                   />
-                  <span className="text-xs text-muted-foreground">de {eq.cantidad}</span>
+                  <span className="text-xs text-muted-foreground">{t("returnModalOf")} {eq.cantidad}</span>
                 </div>
               ))}
             </div>
             <div>
-              <label className="block font-medium mb-1">Nota de devolución (opcional)</label>
+              <label className="block font-medium mb-1">{t("returnModalNoteLabel")}</label>
               <Textarea
                 value={notaDevolucion}
                 onChange={e => setNotaDevolucion(e.target.value)}
-                placeholder="Agrega una nota sobre la devolución..."
+                placeholder={t("returnModalNotePlaceholder")}
                 className="w-full"
                 rows={3}
               />
             </div>
             <div className="flex justify-end gap-2 mt-4">
-              <Button variant="ghost" onClick={() => setModalOpen(false)} disabled={updatingLoan !== null}>Cancelar</Button>
+              <Button variant="ghost" onClick={() => setModalOpen(false)} disabled={updatingLoan !== null}>{t("returnModalCancel")}</Button>
               <Button onClick={handleConfirmReturn} disabled={updatingLoan !== null}>
-                {updatingLoan ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} Confirmar devolución
+                {updatingLoan ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} {t("returnModalConfirm")}
               </Button>
             </div>
           </div>
@@ -416,8 +419,8 @@ export function LoansTable({ lab, searchQuery }: LoansTableProps) {
           <div className="text-center">
             <p className="text-muted-foreground">
               {searchQuery 
-                ? "No se encontraron préstamos que coincidan con la búsqueda." 
-                : "No hay préstamos activos en este momento."
+                ? t("noLoansFoundSearch")
+                : t("noActiveLoans")
               }
             </p>
             {searchQuery && (
@@ -427,7 +430,7 @@ export function LoansTable({ lab, searchQuery }: LoansTableProps) {
                 className="mt-2" 
                 onClick={() => {}}
               >
-                Limpiar búsqueda
+                {t("clearSearchButton")}
               </Button>
             )}
           </div>
