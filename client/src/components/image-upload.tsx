@@ -6,6 +6,7 @@ import Image from "next/image"
 import { Button } from "@/src/components/ui/button"
 import { Card, CardContent } from "@/src/components/ui/card"
 import { Camera, Upload, X, Loader2 } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 interface ImageUploadProps {
   value: File | null
@@ -31,6 +32,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isCapturing, setIsCapturing] = useState(false)
   const [isCompressing, setIsCompressing] = useState(false)
+  const t = useTranslations("ImageUpload")
 
   // Función para comprimir imagen
   const compressImage = useCallback((file: File): Promise<File> => {
@@ -202,7 +204,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
             </Button>
           </div>
           <div className="text-sm text-muted-foreground text-center">
-            Tamaño: {getFileInfo()}
+            {t("imageSize")} {getFileInfo()}
           </div>
         </div>
       ) : isCapturing ? (
@@ -223,10 +225,10 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
               {isCompressing ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Procesando...
+                  {t("processingImage")}
                 </>
               ) : (
-                'Capturar Foto'
+                t("capturePhoto")
               )}
             </Button>
             <Button 
@@ -234,7 +236,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
               onClick={() => setIsCapturing(false)}
               disabled={isCompressing}
             >
-              Cancelar
+              {t("cancel")}
             </Button>
           </div>
         </div>
@@ -245,7 +247,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
               <div className="flex flex-col items-center gap-2">
                 <Loader2 className="h-8 w-8 animate-spin" />
                 <p className="text-sm text-muted-foreground">
-                  Comprimiendo imagen...
+                  {t("compressingImage")}
                 </p>
               </div>
             ) : (
@@ -257,7 +259,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
                     className="flex gap-2"
                   >
                     <Camera className="h-4 w-4" />
-                    Tomar Foto
+                    {t("takePhoto")}
                   </Button>
                   <Button
                     variant="outline"
@@ -265,7 +267,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
                     className="flex gap-2"
                   >
                     <Upload className="h-4 w-4" />
-                    Subir Imagen
+                    {t("uploadImage")}
                   </Button>
                   <input
                     type="file"
@@ -277,10 +279,10 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
                 </div>
                 <div className="text-center space-y-1">
                   <p className="text-sm text-muted-foreground">
-                    Toma una foto o sube una imagen como evidencia para este préstamo
+                    {t("placeholderText1")}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Las imágenes se comprimen automáticamente para optimizar el envío
+                    {t("placeholderText2")}
                   </p>
                 </div>
               </>

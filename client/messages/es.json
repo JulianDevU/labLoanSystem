@@ -410,5 +410,17 @@
     "processing": "Procesando...",
     "dragAndDrop": "Arrastra y suelta un archivo aquí o haz clic para seleccionar",
     "invalidFileType": "Tipo de archivo no válido. Por favor, selecciona un archivo con formato {acceptedTypes}."
+  },
+  "ImageUpload": {
+    "processingImage": "Procesando imagen...",
+    "errorProcessingImage": "Error al procesar la imagen. Por favor, inténtalo de nuevo.",
+    "imageSize": "Tamaño:",
+    "capturePhoto": "Capturar Foto",
+    "cancel": "Cancelar",
+    "takePhoto": "Tomar Foto",
+    "uploadImage": "Subir Imagen",
+    "placeholderText1": "Toma una foto o sube una imagen como evidencia para este préstamo",
+    "placeholderText2": "Las imágenes se comprimen automáticamente para optimizar el envío",
+    "compressingImage": "Comprimiendo imagen..."
   }
 }

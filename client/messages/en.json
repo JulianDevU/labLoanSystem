@@ -410,5 +410,18 @@
     "processing": "Processing...",
     "dragAndDrop": "Drag and drop a file here or click to select",
     "invalidFileType": "Invalid file type. Please select a {acceptedTypes} file."
+  },
+  
+  "ImageUpload": {
+    "processingImage": "Processing image...",
+    "errorProcessingImage": "Error processing image. Please try again.",
+    "imageSize": "Size:",
+    "capturePhoto": "Capture Photo",
+    "cancel": "Cancel",
+    "takePhoto": "Take Photo",
+    "uploadImage": "Upload Image",
+    "placeholderText1": "Take a photo or upload an image as evidence for this loan",
+    "placeholderText2": "Images are automatically compressed for optimized upload",
+    "compressingImage": "Compressing image..."
   }
 }
