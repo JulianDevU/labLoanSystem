@@ -74,21 +74,23 @@ export function DashboardNav() {
               <item.icon className="mr-2 h-4 w-4" />
               <span>{item.title}</span>
             </Link>
-
-            {isActive && item.submenu && (
+            {item.submenu && (
               <div className="ml-6 mt-1 grid gap-1">
-                {item.submenu.map((subitem, subindex) => (
-                  <Link
-                    key={subindex}
-                    href={subitem.href}
-                    className={cn(
-                      "block rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
-                      pathname === subitem.href ? "bg-accent/50" : "transparent",
-                    )}
-                  >
-                    {subitem.title}
-                  </Link>
-                ))}
+                {item.submenu.map((subitem, subindex) => {
+                  const isSubActive = pathname === subitem.href
+                  return (
+                    <Link
+                      key={subindex}
+                      href={subitem.href}
+                      className={cn(
+                        "block rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
+                        isSubActive ? "bg-accent/50" : "transparent",
+                      )}
+                    >
+                      {subitem.title}
+                    </Link>
+                  )
+                })}
               </div>
             )}
           </div>

@@ -27,7 +27,6 @@ export function MobileSidebar() {
               <X className="w-5 h-5" />
             </button>
           </div>
-
           <DashboardNav />
         </Dialog.Content>
       </Dialog.Portal>
