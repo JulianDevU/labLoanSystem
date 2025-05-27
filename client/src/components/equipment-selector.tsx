@@ -9,6 +9,7 @@ import { ScrollArea } from "@/src/components/ui/scroll-area"
 import { Separator } from "@/src/components/ui/separator"
 import { Plus, Minus, X } from "lucide-react"
 import { Badge } from "@/src/components/ui/badge"
+import { useTranslations } from "next-intl"
 
 interface Equipment {
   id: string
@@ -29,6 +30,7 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
   const [equipment, setEquipment] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const t = useTranslations('EquipmentSelector')
 
   useEffect(() => {
     setLoading(true)
@@ -81,17 +83,17 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
     }
 
     if (loading) {
-      return <p className="text-center text-muted-foreground">Cargando equipos...</p>
+      return <p className="text-center text-muted-foreground">{t("loadingEquipment")}</p>
     }
     if (error) {
-      return <p className="text-center text-red-500">{error}</p>
+      return <p className="text-center text-red-500">{t("errorLoadingEquipment")}</p>
     }
 
     return (
       <div className="space-y-4">
         {selectedEquipment && (
           <div className="space-y-2">
-            <Label>Equipo Seleccionado</Label>
+            <Label>{t("selectedEquipment")}</Label>
             <div className="rounded-md border p-2">
               <div className="flex items-center justify-between gap-2 rounded-md border p-2">
                 <div className="flex-1">
@@ -106,7 +108,7 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
                   onClick={clearSelection}
                 >
                   <X className="h-3 w-3" />
-                  <span className="sr-only">Remove</span>
+                  <span className="sr-only">{t("remove")}</span>
                 </Button>
               </div>
             </div>
@@ -114,9 +116,9 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
         )}
 
         <div className="space-y-2">
-          <Label>Equipos Disponibles</Label>
+          <Label>{t("availableEquipment")}</Label>
           <Input 
-            placeholder="Buscar equipo..." 
+            placeholder={t("searchPlaceholder")} 
             value={searchQuery} 
             onChange={(e) => setSearchQuery(e.target.value)} 
           />
@@ -135,7 +137,7 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
                             <div className="flex items-center gap-2">
                               <p className="text-xs text-muted-foreground">{item.id}</p>
                               <Badge variant="outline" className="text-xs">
-                                {item.available} disponibles
+                                {item.available} {t("available")}
                               </Badge>
                             </div>
                           </div>
@@ -147,10 +149,10 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
                             disabled={item.available === 0}
                             onClick={() => selectEquipment(item.id)}
                           >
-                            {isSelected ? "Seleccionado" : (
+                            {isSelected ? t("selected") : (
                               <>
                                 <Plus className="h-4 w-4" />
-                                Seleccionar
+                                {t("select")}
                               </>
                             )}
                           </Button>
@@ -160,7 +162,7 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
                     )
                   })}
                   {filteredEquipment.length === 0 && (
-                    <p className="py-4 text-center text-sm text-muted-foreground">No se encontraron elementos.</p>
+                    <p className="py-4 text-center text-sm text-muted-foreground">{t("noElementsFound")}</p>
                   )}
                 </div>
               </ScrollArea>
@@ -208,17 +210,17 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
   }
 
   if (loading) {
-    return <p className="text-center text-muted-foreground">Cargando equipos...</p>
+    return <p className="text-center text-muted-foreground">{t("loadingEquipment")}</p>
   }
   if (error) {
-    return <p className="text-center text-red-500">{error}</p>
+    return <p className="text-center text-red-500">{t("errorLoadingEquipment")}</p>
   }
 
   return (
     <div className="space-y-4">
       {equipmentArray.length > 0 && (
         <div className="space-y-2">
-          <Label>Selected Equipment</Label>
+          <Label>{t("selectedEquipment")}</Label>
           <div className="rounded-md border p-2">
             <div className="space-y-2">
               {equipmentArray.map((item) => (
@@ -236,7 +238,7 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
                     >
                       <Minus className="h-3 w-3" />
-                      <span className="sr-only">Decrease</span>
+                      <span className="sr-only">{t("decrease")}</span>
                     </Button>
                     <Input
                       type="number"
@@ -257,7 +259,7 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
                       })()}
                     >
                       <Plus className="h-3 w-3" />
-                      <span className="sr-only">Increase</span>
+                      <span className="sr-only">{t("increase")}</span>
                     </Button>
                     <Button
                       type="button"
@@ -267,7 +269,7 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
                       onClick={() => removeEquipment(item.id)}
                     >
                       <X className="h-3 w-3" />
-                      <span className="sr-only">Remove</span>
+                      <span className="sr-only">{t("remove")}</span>
                     </Button>
                   </div>
                 </div>
@@ -278,8 +280,8 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
       )}
 
       <div className="space-y-2">
-        <Label>Equipos Disponibles</Label>
-        <Input placeholder="Buscar equipo..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+        <Label>{t("availableEquipment")}</Label>
+        <Input placeholder={t("searchPlaceholder")} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
         <Card>
           <CardContent className="p-2">
             <ScrollArea className="h-60 pr-4">
@@ -299,7 +301,7 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
                           <div className="flex items-center gap-2">
                             <p className="text-xs text-muted-foreground">{item.id}</p>
                             <Badge variant="outline" className="text-xs">
-                              {remainingQuantity} disponibles
+                              {remainingQuantity} {t("available")}
                             </Badge>
                           </div>
                         </div>
@@ -312,7 +314,7 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
                           onClick={() => addEquipment(item.id, item.name)}
                         >
                           <Plus className="h-4 w-4" />
-                          Agregar
+                          {t("add")}
                         </Button>
                       </div>
                       <Separator />
@@ -320,7 +322,7 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
                   )
                 })}
                 {filteredEquipment.length === 0 && (
-                  <p className="py-4 text-center text-sm text-muted-foreground">No se encontraron elementos.</p>
+                  <p className="py-4 text-center text-sm text-muted-foreground">{t("noElementsFound")}</p>
                 )}
               </div>
             </ScrollArea>

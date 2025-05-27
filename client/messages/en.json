@@ -390,5 +390,20 @@
         "viewInventory": "View Inventory",
         "addItem": "Add Item",
         "importData": "Import Data"
-    }
+    },
+    "EquipmentSelector": {
+    "loadingEquipment": "Loading equipment...",
+    "errorLoadingEquipment": "Error loading equipment",
+    "selectedEquipment": "Selected Equipment",
+    "remove": "Remove",
+    "availableEquipment": "Available Equipment",
+    "searchPlaceholder": "Search equipment...",
+    "available": "available",
+    "selected": "Selected",
+    "select": "Select",
+    "add": "Add",
+    "decrease": "Decrease",
+    "increase": "Increase",
+    "noElementsFound": "No elements found."
+  }
 }

@@ -394,6 +394,22 @@
     "viewInventory": "Ver Inventario",
     "addItem": "Agregar Artículo",
     "importData": "Importar Datos"
+  },
+
+  "EquipmentSelector": {
+    "loadingEquipment": "Cargando equipos...",
+    "errorLoadingEquipment": "Error al cargar equipos",
+    "selectedEquipment": "Equipo Seleccionado",
+    "remove": "Eliminar",
+    "availableEquipment": "Equipos Disponibles",
+    "searchPlaceholder": "Buscar equipo...",
+    "available": "disponibles",
+    "selected": "Seleccionado",
+    "select": "Seleccionar",
+    "add": "Agregar",
+    "decrease": "Disminuir",
+    "increase": "Aumentar",
+    "noElementsFound": "No se encontraron elementos."
   }
  
 }
