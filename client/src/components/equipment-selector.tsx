@@ -96,15 +96,15 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
             <Label>{t("selectedEquipment")}</Label>
             <div className="rounded-md border p-2">
               <div className="flex items-center justify-between gap-2 rounded-md border p-2">
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{selectedEquipment.name}</p>
-                  <p className="text-xs text-muted-foreground">{selectedEquipment.id}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{selectedEquipment.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{selectedEquipment.id}</p>
                 </div>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 text-muted-foreground"
+                  className="h-7 w-7 text-muted-foreground shrink-0"
                   onClick={clearSelection}
                 >
                   <X className="h-3 w-3" />
@@ -124,19 +124,19 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
           />
           <Card>
             <CardContent className="p-2">
-              <ScrollArea className="h-60 pr-4">
+              <ScrollArea className="h-60 pr-2">
                 <div className="space-y-2">
                   {filteredEquipment.map((item) => {
                     const isSelected = selectedEquipmentId === item.id
 
                     return (
                       <div key={item.id}>
-                        <div className="flex items-center justify-between py-2">
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">{item.name}</p>
-                            <div className="flex items-center gap-2">
-                              <p className="text-xs text-muted-foreground">{item.id}</p>
-                              <Badge variant="outline" className="text-xs">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 py-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{item.name}</p>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="text-xs text-muted-foreground truncate max-w-[120px] sm:max-w-none">{item.id}</p>
+                              <Badge variant="outline" className="text-xs shrink-0">
                                 {item.available} {t("available")}
                               </Badge>
                             </div>
@@ -145,7 +145,7 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
                             type="button"
                             variant={isSelected ? "default" : "ghost"}
                             size="sm"
-                            className="h-8 gap-1"
+                            className="h-8 gap-1 w-full sm:w-auto shrink-0"
                             disabled={item.available === 0}
                             onClick={() => selectEquipment(item.id)}
                           >
@@ -173,7 +173,7 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
     )
   }
 
-  // Original multiple selection logic
+  // Original multiple selection logic with mobile improvements
   const equipmentArray = Array.isArray(value) ? value : []
 
   // Solo permite añadir si no se excede el stock disponible
@@ -224,48 +224,55 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
           <div className="rounded-md border p-2">
             <div className="space-y-2">
               {equipmentArray.map((item) => (
-                <div key={item.id} className="flex items-center justify-between gap-2 rounded-md border p-2">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{item.name}</p>
-                    <p className="text-xs text-muted-foreground">{item.id}</p>
+                <div key={item.id} className="flex flex-col sm:flex-row sm:items-center gap-2 rounded-md border p-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{item.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{item.id}</p>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                    >
-                      <Minus className="h-3 w-3" />
-                      <span className="sr-only">{t("decrease")}</span>
-                    </Button>
-                    <Input
-                      type="number"
-                      min="1"
-                      value={item.quantity}
-                      onChange={(e) => updateQuantity(item.id, Number.parseInt(e.target.value) || 1)}
-                      className="h-7 w-14 text-center"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      disabled={(() => {
-                        const eq = currentEquipment.find(eq => eq.id === item.id);
-                        return eq ? item.quantity >= eq.available : false;
-                      })()}
-                    >
-                      <Plus className="h-3 w-3" />
-                      <span className="sr-only">{t("increase")}</span>
-                    </Button>
+                  
+                  {/* Mobile: Stack controls vertically, Desktop: Horizontal */}
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    {/* Quantity controls row */}
+                    <div className="flex items-center gap-1 justify-center">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 shrink-0"
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                      >
+                        <Minus className="h-3 w-3" />
+                        <span className="sr-only">{t("decrease")}</span>
+                      </Button>
+                      <Input
+                        type="number"
+                        min="1"
+                        value={item.quantity}
+                        onChange={(e) => updateQuantity(item.id, Number.parseInt(e.target.value) || 1)}
+                        className="h-8 w-16 text-center shrink-0"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="h-8 w-8 shrink-0"
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        disabled={(() => {
+                          const eq = currentEquipment.find(eq => eq.id === item.id);
+                          return eq ? item.quantity >= eq.available : false;
+                        })()}
+                      >
+                        <Plus className="h-3 w-3" />
+                        <span className="sr-only">{t("increase")}</span>
+                      </Button>
+                    </div>
+                    
+                    {/* Remove button */}
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7 text-muted-foreground"
+                      className="h-8 w-8 text-muted-foreground shrink-0 self-center"
                       onClick={() => removeEquipment(item.id)}
                     >
                       <X className="h-3 w-3" />
@@ -284,7 +291,7 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
         <Input placeholder={t("searchPlaceholder")} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
         <Card>
           <CardContent className="p-2">
-            <ScrollArea className="h-60 pr-4">
+            <ScrollArea className="h-60 pr-2">
               <div className="space-y-2">
                 {filteredEquipment.map((item) => {
                   const isSelected = equipmentArray.some((selected) => selected.id === item.id)
@@ -295,12 +302,12 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
 
                   return (
                     <div key={item.id}>
-                      <div className="flex items-center justify-between py-2">
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">{item.name}</p>
-                          <div className="flex items-center gap-2">
-                            <p className="text-xs text-muted-foreground">{item.id}</p>
-                            <Badge variant="outline" className="text-xs">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 py-2">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{item.name}</p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-xs text-muted-foreground truncate max-w-[120px] sm:max-w-none">{item.id}</p>
+                            <Badge variant="outline" className="text-xs shrink-0">
                               {remainingQuantity} {t("available")}
                             </Badge>
                           </div>
@@ -309,7 +316,7 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="h-8 gap-1"
+                          className="h-8 gap-1 w-full sm:w-auto shrink-0"
                           disabled={remainingQuantity === 0}
                           onClick={() => addEquipment(item.id, item.name)}
                         >

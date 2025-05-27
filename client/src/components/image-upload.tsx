@@ -5,18 +5,12 @@ import Webcam from "react-webcam"
 import Image from "next/image"
 import { Button } from "@/src/components/ui/button"
 import { Card, CardContent } from "@/src/components/ui/card"
-import { Camera, Upload, X, Loader2 } from "lucide-react"
+import { Camera, Upload, X, Loader2, RefreshCw } from "lucide-react" // Import RefreshCw icon
 import { useTranslations } from "next-intl"
 
 interface ImageUploadProps {
   value: File | null
   onChange: (value: File | null) => void
-}
-
-const videoConstraints = {
-  width: 1280,
-  height: 720,
-  facingMode: "user" as const,
 }
 
 // Configuración de compresión
@@ -32,21 +26,22 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isCapturing, setIsCapturing] = useState(false)
   const [isCompressing, setIsCompressing] = useState(false)
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("user") // New state for camera facing mode
   const t = useTranslations("ImageUpload")
 
-  // Función para comprimir imagen
+  // Function to compress image
   const compressImage = useCallback((file: File): Promise<File> => {
     return new Promise((resolve) => {
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d')!
       const img = new window.Image()
-      
+
       img.onload = () => {
-        // Calcular nuevas dimensiones manteniendo aspect ratio
+        // Calculate new dimensions maintaining aspect ratio
         let { width, height } = img
         const maxWidth = COMPRESSION_CONFIG.maxWidth
         const maxHeight = COMPRESSION_CONFIG.maxHeight
-        
+
         if (width > height) {
           if (width > maxWidth) {
             height = (height * maxWidth) / width
@@ -58,20 +53,20 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
             height = maxHeight
           }
         }
-        
+
         canvas.width = width
         canvas.height = height
-        
-        // Dibujar imagen redimensionada
+
+        // Draw resized image
         ctx.drawImage(img, 0, 0, width, height)
-        
-        // Función recursiva para ajustar calidad hasta alcanzar el tamaño deseado
+
+        // Recursive function to adjust quality until desired size is reached
         const tryCompress = (quality: number) => {
           canvas.toBlob((blob) => {
             if (blob) {
               const sizeKB = blob.size / 1024
-              
-              // Si el tamaño es aceptable o la calidad ya es muy baja, usar este resultado
+
+              // If size is acceptable or quality is already very low, use this result
               if (sizeKB <= COMPRESSION_CONFIG.maxSizeKB || quality <= 0.1) {
                 const compressedFile = new File([blob], file.name, {
                   type: 'image/jpeg',
@@ -79,40 +74,40 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
                 })
                 resolve(compressedFile)
               } else {
-                // Reducir calidad y volver a intentar
+                // Reduce quality and try again
                 tryCompress(quality - 0.1)
               }
             }
           }, 'image/jpeg', quality)
         }
-        
+
         tryCompress(COMPRESSION_CONFIG.quality)
       }
-      
+
       img.src = URL.createObjectURL(file)
     })
   }, [])
 
-  // Convierte base64 a File y lo comprime
+  // Converts base64 to File and compresses it
   const base64ToFile = useCallback(async (base64: string, filename: string): Promise<File> => {
     const arr = base64.split(",")
-    if (arr.length < 2) throw new Error("Formato base64 inválido")
-    
+    if (arr.length < 2) throw new Error("Invalid base64 format")
+
     const mimeMatch = arr[0].match(/:(.*?);/)
-    if (!mimeMatch) throw new Error("No se pudo extraer el tipo MIME")
-    
+    if (!mimeMatch) throw new Error("Could not extract MIME type")
+
     const mime = mimeMatch[1]
     const bstr = atob(arr[1])
     const n = bstr.length
     const u8arr = new Uint8Array(n)
-    
+
     for (let i = 0; i < n; i++) {
       u8arr[i] = bstr.charCodeAt(i)
     }
-    
+
     const originalFile = new File([u8arr], filename, { type: mime })
-    
-    // Comprimir la imagen
+
+    // Compress the image
     setIsCompressing(true)
     try {
       const compressedFile = await compressImage(originalFile)
@@ -131,8 +126,8 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
         onChange(file)
         setIsCapturing(false)
       } catch (error) {
-        console.error('Error al procesar la imagen:', error)
-        alert('Error al procesar la imagen. Por favor, inténtalo de nuevo.')
+        console.error('Error processing image:', error)
+        alert('Error processing image. Please try again.')
       } finally {
         setIsCompressing(false)
       }
@@ -147,8 +142,8 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
         const compressedFile = await compressImage(file)
         onChange(compressedFile)
       } catch (error) {
-        console.error('Error al comprimir la imagen:', error)
-        alert('Error al procesar la imagen. Por favor, inténtalo de nuevo.')
+        console.error('Error compressing image:', error)
+        alert('Error processing image. Please try again.')
       } finally {
         setIsCompressing(false)
       }
@@ -159,7 +154,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
     onChange(null)
   }
 
-  // Manejo seguro de URL.createObjectURL
+  // Safe handling of URL.createObjectURL
   const [previewUrl, setPreviewUrl] = useState<string>("")
   useEffect(() => {
     if (value) {
@@ -173,12 +168,17 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
     }
   }, [value])
 
-  // Mostrar información del archivo
+  // Display file information
   const getFileInfo = () => {
     if (!value) return null
     const sizeKB = Math.round(value.size / 1024)
     return `${sizeKB} KB`
   }
+
+  // Toggle camera facing mode
+  const toggleFacingMode = useCallback(() => {
+    setFacingMode((prevMode) => (prevMode === "user" ? "environment" : "user"))
+  }, [])
 
   return (
     <div className="space-y-4">
@@ -213,12 +213,12 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
             audio={false}
             ref={webcamRef}
             screenshotFormat="image/jpeg"
-            videoConstraints={videoConstraints}
+            videoConstraints={{ ...{ width: 1280, height: 720 }, facingMode }} // Use dynamic facingMode
             className="rounded-md w-full h-[600px] object-cover bg-black"
           />
           <div className="flex gap-2">
-            <Button 
-              onClick={capturePhoto} 
+            <Button
+              onClick={capturePhoto}
               className="flex-1"
               disabled={isCompressing}
             >
@@ -231,8 +231,16 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
                 t("capturePhoto")
               )}
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
+              onClick={toggleFacingMode} // Button to toggle camera
+              disabled={isCompressing}
+              title={t("switchCamera")}
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => setIsCapturing(false)}
               disabled={isCompressing}
             >
@@ -253,9 +261,9 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
             ) : (
               <>
                 <div className="flex gap-4">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setIsCapturing(true)} 
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsCapturing(true)}
                     className="flex gap-2"
                   >
                     <Camera className="h-4 w-4" />
