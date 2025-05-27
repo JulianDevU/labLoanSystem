@@ -23,8 +23,8 @@ const videoConstraints = {
 const COMPRESSION_CONFIG = {
   maxWidth: 1000,
   maxHeight: 700,
-  quality: 0.7,
-  maxSizeKB: 400,
+  quality: 0.6,
+  maxSizeKB: 250,
 };
 
 export function ImageUpload({ value, onChange }: ImageUploadProps) {
@@ -72,7 +72,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
               const sizeKB = blob.size / 1024
               
               // Si el tamaño es aceptable o la calidad ya es muy baja, usar este resultado
-              if (sizeKB <= COMPRESSION_CONFIG.maxSizeKB || quality <= 0.3) {
+              if (sizeKB <= COMPRESSION_CONFIG.maxSizeKB || quality <= 0.1) {
                 const compressedFile = new File([blob], file.name, {
                   type: 'image/jpeg',
                   lastModified: Date.now(),
