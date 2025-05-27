@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useLocale } from "next-intl"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs"
 import { Button } from "@/src/components/ui/button"
@@ -16,8 +17,8 @@ import { z } from "zod"
 import { changePassword } from "@/src/services/authService"
 import { ModalBase } from "@/src/components/modal"
 import { useTranslations } from "next-intl"
+import { usePathname, useRouter } from "@/src/i18n/navigation"
 
-// Schema de validación para cambio de contraseña con traducciones
 const createChangePasswordSchema = (t: any) => z.object({
   contrasenaActual: z.string().min(1, t('validation.currentPasswordRequired')),
   nuevaContrasena: z.string().min(6, t('validation.newPasswordMinLength')),
@@ -35,7 +36,6 @@ export default function SettingsPage() {
   const [tab, setTab] = useState("account")
   const [isChangingPassword, setIsChangingPassword] = useState(false)
 
-  // Crear el schema con traducciones
   const changePasswordSchema = createChangePasswordSchema(t)
   type ChangePasswordSchema = z.infer<typeof changePasswordSchema>
 
@@ -49,20 +49,12 @@ export default function SettingsPage() {
   })
 
   const [modalOpen, setModalOpen] = useState(false)
-  const [modalInfo, setModalInfo] = useState({
-    title: "",
-    description: ""
-  })
+  const [modalInfo, setModalInfo] = useState({ title: "", description: "" })
 
   const onPasswordSubmit = async (data: ChangePasswordSchema) => {
     setIsChangingPassword(true)
-
     try {
-      await changePassword({
-        contrasenaActual: data.contrasenaActual,
-        nuevaContrasena: data.nuevaContrasena,
-        confirmarContrasena: data.confirmarContrasena
-      })
+      await changePassword(data)
 
       toast({
         title: t('passwordUpdatedTitle'),
@@ -74,9 +66,7 @@ export default function SettingsPage() {
         description: t('passwordUpdatedDescription')
       })
       setModalOpen(true)
-
       resetPasswordForm()
-
     } catch (error: any) {
       toast({
         title: t('passwordErrorTitle'),
@@ -89,17 +79,23 @@ export default function SettingsPage() {
         description: error.message || t('passwordErrorDescription')
       })
       setModalOpen(true)
-
     } finally {
       setIsChangingPassword(false)
     }
   }
 
+  const router = useRouter()
+  const pathname = usePathname()
+  const locale = useLocale()
+
+  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newLocale = e.target.value
+    router.push(pathname, { locale: newLocale })
+  }
+
   return (
     <DashboardShell>
-      <DashboardHeader heading={t('header')} text={t('headerDescription')}>
-        {/* Puedes agregar botones o selectores aquí si quieres */}
-      </DashboardHeader>
+      <DashboardHeader heading={t('header')} text={t('headerDescription')} />
 
       <div className="grid gap-4 md:gap-8">
         <Tabs defaultValue={tab} onValueChange={setTab} className="space-y-4">
@@ -155,11 +151,7 @@ export default function SettingsPage() {
                     )}
                   </div>
 
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={isChangingPassword}
-                  >
+                  <Button type="submit" className="w-full" disabled={isChangingPassword}>
                     {isChangingPassword ? t('changingPasswordButton') : t('changePasswordButton')}
                   </Button>
                 </form>
@@ -180,20 +172,20 @@ export default function SettingsPage() {
                     <select
                       id="language"
                       name="language"
+                      onChange={handleLanguageChange}
+                      defaultValue={locale}
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <option value="es">{t('spanishOption')}</option>
                       <option value="en">{t('englishOption')}</option>
                     </select>
                   </div>
-                  <Button type="submit" className="w-full">
-                    {t('savePreferencesButton')}
-                  </Button>
                 </form>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
+
         <ModalBase
           open={modalOpen}
           onOpenChange={setModalOpen}
