@@ -462,5 +462,42 @@
   "LabSelector": {
     "placeholder": "Select laboratory",
     "errorLoading": "Error loading laboratories"
+  },
+  "EvidenciaFoto": {
+    "noPhoto": "No photo",
+    "viewImageTitle": "View large image",
+    "altTextThumbnail": "Photographic evidence",
+    "altTextModal": "Large photographic evidence",
+    "closeButton": "Close"
+  },
+  "LoansHistoryTable": {
+    "errorLoadingLoansTitle": "Error",
+    "errorLoadingLoansDescription": "Could not load loan history",
+    "loading": "Loading...",
+    "retryButton": "Retry",
+    "noLoansFoundSearch": "No loans found matching the search.",
+    "noLoansFoundHistory": "No loans found in history.",
+    "clearSearchButton": "Clear search",
+    "statusCompletedLate": "Completed Late",
+    "statusCompleted": "Completed",
+    "statusOverdue": "Overdue",
+    "statusActive": "Active",
+    "beneficiaryTypeStudent": "Student",
+    "beneficiaryTypeProfessor": "Professor",
+    "loanId": "Loan ID:",
+    "returned": "Returned:",
+    "dueDate": "Due date:",
+    "equipmentTitle": "Equipment",
+    "equipmentName": "Name:",
+    "equipmentId": "Equipment ID:",
+    "equipmentCategory": "Category:",
+    "equipmentLaboratory": "Laboratory:",
+    "equipmentDescription": "Description:",
+    "equipmentReturnedPartial": "Returned:",
+    "equipmentQuantity": "Quantity:",
+    "returnNote": "Return note:",
+    "loanDate": "Loan Date:",
+    "expectedReturn": "Expected Return:",
+    "of": "of"
   }
 }

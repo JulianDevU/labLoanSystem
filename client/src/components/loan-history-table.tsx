@@ -5,9 +5,11 @@ import { Button } from "@/src/components/ui/button"
 import { Badge } from "@/src/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/src/components/ui/avatar"
 import Image from "next/image"
+import { useTranslations } from "next-intl"
 
 // Componente para mostrar la imagen de evidencia con fallback
 function EvidenciaFoto({ evidencia_foto }: { evidencia_foto?: string }) {
+  const t = useTranslations("EvidenciaFoto")
   const [imgSrc, setImgSrc] = useState<string | undefined>(evidencia_foto);
   const [modalOpen, setModalOpen] = useState(false);
   const BASE_URL = process.env.NEXT_PUBLIC_BACK_ENV
@@ -25,7 +27,7 @@ function EvidenciaFoto({ evidencia_foto }: { evidencia_foto?: string }) {
   if (!imgSrc) {
     return (
       <div className="h-16 w-24 flex items-center justify-center bg-muted rounded border">
-        <span className="text-xs text-muted-foreground">Sin foto</span>
+        <span className="text-xs text-muted-foreground">{t("noPhoto")}</span>
       </div>
     );
   }
@@ -35,11 +37,11 @@ function EvidenciaFoto({ evidencia_foto }: { evidencia_foto?: string }) {
       <div
         className="relative h-16 w-24 rounded overflow-hidden border bg-white cursor-pointer"
         onClick={() => setModalOpen(true)}
-        title="Ver imagen en grande"
+        title={t("viewImageTitle")}
       >
         <Image
           src={displayUrl || "/placeholder.jpg"}
-          alt="Evidencia fotográfica"
+          alt={t("altTextThumbnail")}
           fill
           style={{ objectFit: "cover" }}
           sizes="96px"
@@ -55,7 +57,7 @@ function EvidenciaFoto({ evidencia_foto }: { evidencia_foto?: string }) {
           <div className="relative bg-white rounded shadow-lg p-4" onClick={e => e.stopPropagation()}>
             <Image
               src={displayUrl || "/placeholder.jpg"}
-              alt="Evidencia fotográfica grande"
+              alt={t("altTextModal")}
               width={600}
               height={400}
               style={{ objectFit: "contain", maxHeight: "80vh", maxWidth: "90vw" }}
@@ -66,7 +68,7 @@ function EvidenciaFoto({ evidencia_foto }: { evidencia_foto?: string }) {
               className="absolute top-2 right-2 text-black bg-white rounded-full px-2 py-1 shadow"
               onClick={() => setModalOpen(false)}
             >
-              Cerrar
+              {t("closeButton")}
             </button>
           </div>
         </div>
@@ -94,6 +96,8 @@ export function LoansHistoryTable({ lab, searchQuery, timeFilter, statusFilter }
   const [loans, setLoans] = useState<LoanFromApi[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const t = useTranslations("LoansHistoryTable")
+
 
   // Función para determinar si un préstamo está vencido
   const isLoanOverdue = (loan: LoanFromApi) => {
@@ -207,13 +211,13 @@ export function LoansHistoryTable({ lab, searchQuery, timeFilter, statusFilter }
       if (isLate) {
         return (
           <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-            Completado Tarde
+            {t("statusCompletedLate")}
           </Badge>
         )
       }
       return (
         <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-          Completado
+          {t("statusCompleted")}
         </Badge>
       )
     }
@@ -221,14 +225,14 @@ export function LoansHistoryTable({ lab, searchQuery, timeFilter, statusFilter }
     if (isOverdue) {
       return (
         <Badge variant="destructive">
-          Vencido
+          {t("statusOverdue")}
         </Badge>
       )
     }
 
     return (
       <Badge variant="default">
-        Activo
+        {t("statusActive")}
       </Badge>
     )
   }
@@ -264,9 +268,9 @@ export function LoansHistoryTable({ lab, searchQuery, timeFilter, statusFilter }
       <div className="flex h-32 items-center justify-center">
         <div className="text-center">
           <AlertCircle className="h-6 w-6 text-destructive mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">{error}</p>
+          <p className="text-sm text-muted-foreground">{t("errorLoadingLoansDescription")}</p>
           <Button variant="outline" size="sm" className="mt-2" onClick={fetchLoans}>
-            Reintentar
+            {t("retryButton")}
           </Button>
         </div>
       </div>
@@ -279,8 +283,8 @@ export function LoansHistoryTable({ lab, searchQuery, timeFilter, statusFilter }
         <div className="text-center">
           <p className="text-muted-foreground">
             {searchQuery
-              ? "No se encontraron préstamos que coincidan con la búsqueda."
-              : "No se encontraron préstamos en el historial."
+              ? t("noLoansFoundSearch")
+              : t("noLoansFoundHistory")
             }
           </p>
           {searchQuery && (
@@ -290,7 +294,7 @@ export function LoansHistoryTable({ lab, searchQuery, timeFilter, statusFilter }
               className="mt-2"
               onClick={() => { }}
             >
-              Limpiar búsqueda
+              {t("clearSearchButton")}
             </Button>
           )}
         </div>
@@ -316,7 +320,7 @@ export function LoansHistoryTable({ lab, searchQuery, timeFilter, statusFilter }
                 <div className="flex items-center gap-2">
                   <h3 className="font-medium">{loan.nombre_beneficiado}</h3>
                   <Badge variant="outline">
-                    {loan.tipo_beneficiado === 'estudiante' ? 'Estudiante' : 'Profesor'}
+                    {loan.tipo_beneficiado === 'estudiante' ? t("beneficiaryTypeStudent") : t("beneficiaryTypeProfessor")}
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">{loan.correo_beneficiado}</p>
@@ -326,16 +330,16 @@ export function LoansHistoryTable({ lab, searchQuery, timeFilter, statusFilter }
               {getStatusBadge(loan)}
               <div className="text-right text-sm">
                 <p>
-                  <span className="font-medium">ID Préstamo:</span> {loan._id}
+                  <span className="font-medium">{t("loanId")}</span> {loan._id}
                 </p>
                 {loan.fecha_devolucion_real ? (
                   <p>
-                    <span className="font-medium">Devuelto:</span>{" "}
+                    <span className="font-medium">{t("returned")}</span>{" "}
                     {formatDate(loan.fecha_devolucion_real)}
                   </p>
                 ) : (
                   <p>
-                    <span className="font-medium">Fecha límite:</span>{" "}
+                    <span className="font-medium">{t("dueDate")}</span>{" "}
                     {formatDate(loan.fecha_devolucion)}
                   </p>
                 )}
@@ -344,7 +348,7 @@ export function LoansHistoryTable({ lab, searchQuery, timeFilter, statusFilter }
           </div>
 
           <div className="mt-4 rounded-md bg-muted p-3">
-            <h4 className="mb-2 font-medium">Equipo</h4>
+            <h4 className="mb-2 font-medium">{t("equipmentTitle")}</h4>
             <div className="space-y-3">
               {loan.equipos.map((equipo, index) => {
                 // Buscar si hay devolución parcial para este equipo
@@ -361,35 +365,35 @@ export function LoansHistoryTable({ lab, searchQuery, timeFilter, statusFilter }
                     <div className="flex items-center justify-between">
                       <div className="space-y-1">
                         <p className="text-sm">
-                          <span className="font-medium">Nombre:</span> {equipo.equipo_id.nombre}
+                          <span className="font-medium">{t("equipmentName")}</span> {equipo.equipo_id.nombre}
                         </p>
                         <p className="text-sm">
-                          <span className="font-medium">ID Equipo:</span> {equipo.equipo_id._id}
+                          <span className="font-medium">{t("equipmentId")}</span> {equipo.equipo_id._id}
                         </p>
                         <p className="text-sm">
-                          <span className="font-medium">Categoría:</span> {equipo.equipo_id.categoria}
+                          <span className="font-medium">{t("equipmentCategory")}</span> {equipo.equipo_id.categoria}
                         </p>
                         <p className="text-sm">
-                          <span className="font-medium">Laboratorio:</span> {equipo.equipo_id.laboratorio_id.nombre}
+                          <span className="font-medium">{t("equipmentLaboratory")}</span> {equipo.equipo_id.laboratorio_id.nombre}
                         </p>
                         {equipo.equipo_id.descripcion && (
                           <p className="text-sm">
-                            <span className="font-medium">Descripción:</span> {equipo.equipo_id.descripcion}
+                            <span className="font-medium">{t("equipmentDescription")}</span> {equipo.equipo_id.descripcion}
                           </p>
                         )}
                         {loan.estado === 'devuelto' && devuelto && devuelto.cantidad !== equipo.cantidad && (
                           <p className="text-sm text-amber-700">
-                            <span className="font-medium">Devueltos:</span> {devuelto.cantidad} de {equipo.cantidad}
+                            <span className="font-medium">{t("equipmentReturnedPartial")}</span> {devuelto.cantidad} {t("of")} {equipo.cantidad}
                           </p>
                         )}
                         {loan.estado === 'devuelto' && devuelto && devuelto.cantidad === equipo.cantidad && (
                           <p className="text-sm text-green-700">
-                            <span className="font-medium">Devueltos:</span> {devuelto.cantidad} de {equipo.cantidad}
+                            <span className="font-medium">{t("equipmentReturnedPartial")}</span> {devuelto.cantidad} {t("of")} {equipo.cantidad}
                           </p>
                         )}
                       </div>
                       <Badge variant="secondary" className="ml-2">
-                        Cantidad: {equipo.cantidad}
+                        {t("equipmentQuantity")} {equipo.cantidad}
                       </Badge>
                     </div>
                   </div>
@@ -399,20 +403,20 @@ export function LoansHistoryTable({ lab, searchQuery, timeFilter, statusFilter }
 
             {loan.estado === 'devuelto' && loan.nota_devolucion && (
               <div className="mt-4 p-2 rounded bg-green-50 border border-green-200 text-green-800">
-                <span className="font-medium">Nota de devolución:</span> {loan.nota_devolucion}
+                <span className="font-medium">{t("returnNote")}</span> {loan.nota_devolucion}
               </div>
             )}
 
             <div className="mt-4 grid grid-cols-1 gap-4 text-sm text-muted-foreground sm:grid-cols-2">
               <div>
                 <p>
-                  <span className="font-medium">Fecha de Préstamo:</span>{" "}
+                  <span className="font-medium">{t("loanDate")}</span>{" "}
                   {formatDate(loan.fecha_prestamo)}
                 </p>
               </div>
               <div className="text-right">
                 <p>
-                  <span className="font-medium">Devolución Esperada:</span>{" "}
+                  <span className="font-medium">{t("expectedReturn")}</span>{" "}
                   {formatDate(loan.fecha_devolucion)}
                 </p>
               </div>

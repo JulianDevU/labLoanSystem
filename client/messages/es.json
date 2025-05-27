@@ -462,5 +462,42 @@
   "LabSelector": {
     "placeholder": "Selecciona laboratorio",
     "errorLoading": "Error cargando laboratorios"
+  },
+  "EvidenciaFoto": {
+    "noPhoto": "Sin foto",
+    "viewImageTitle": "Ver imagen en grande",
+    "altTextThumbnail": "Evidencia fotográfica",
+    "altTextModal": "Evidencia fotográfica grande",
+    "closeButton": "Cerrar"
+  },
+  "LoansHistoryTable": {
+    "errorLoadingLoansTitle": "Error",
+    "errorLoadingLoansDescription": "No se pudo cargar el historial de préstamos",
+    "loading": "Cargando...",
+    "retryButton": "Reintentar",
+    "noLoansFoundSearch": "No se encontraron préstamos que coincidan con la búsqueda.",
+    "noLoansFoundHistory": "No se encontraron préstamos en el historial.",
+    "clearSearchButton": "Limpiar búsqueda",
+    "statusCompletedLate": "Completado Tarde",
+    "statusCompleted": "Completado",
+    "statusOverdue": "Vencido",
+    "statusActive": "Activo",
+    "beneficiaryTypeStudent": "Estudiante",
+    "beneficiaryTypeProfessor": "Profesor",
+    "loanId": "ID Préstamo:",
+    "returned": "Devuelto:",
+    "dueDate": "Fecha límite:",
+    "equipmentTitle": "Equipo",
+    "equipmentName": "Nombre:",
+    "equipmentId": "ID Equipo:",
+    "equipmentCategory": "Categoría:",
+    "equipmentLaboratory": "Laboratorio:",
+    "equipmentDescription": "Descripción:",
+    "equipmentReturnedPartial": "Devueltos:",
+    "equipmentQuantity": "Cantidad:",
+    "returnNote": "Nota de devolución:",
+    "loanDate": "Fecha de Préstamo:",
+    "expectedReturn": "Devolución Esperada:",
+    "of": "de"
   }
 }
