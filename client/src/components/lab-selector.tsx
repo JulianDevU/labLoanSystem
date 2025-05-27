@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/src/components/ui/select"
 import { getLaboratories } from "../services/laboratoryService"
 import { BeakerIcon, CodeIcon, NetworkIcon } from "lucide-react"
+import { useTranslations } from "next-intl"
 
 function getIcon(nombre: string) {
   if (nombre.toLowerCase().includes("fisica")) return <BeakerIcon className="mr-2 h-4 w-4" />
@@ -24,6 +25,7 @@ interface LabSelectorProps {
 
 export function LabSelector({ value, onValueChange }: LabSelectorProps) {
   const [labs, setLabs] = useState<Lab[]>([])
+  const t = useTranslations("LabSelector")
 
   useEffect(() => {
     const fetchLabs = async () => {
@@ -31,16 +33,15 @@ export function LabSelector({ value, onValueChange }: LabSelectorProps) {
         const result = await getLaboratories()
         setLabs(result.data)
       } catch (error) {
-        console.error("Error cargando laboratorios", error)
+        console.error(t("errorLoading"), error)
       }
     }
 
     fetchLabs()
-  }, [])
+  }, [t])
 
   useEffect(() => {
     if (labs.length > 0 && !value) {
-      // Aquí enviamos el nombre en minúscula como valor
       onValueChange(labs[0].slug)
     }
   }, [labs, value, onValueChange])
@@ -48,7 +49,7 @@ export function LabSelector({ value, onValueChange }: LabSelectorProps) {
   return (
     <Select value={value} onValueChange={onValueChange}>
       <SelectTrigger className="w-[250px]">
-        <SelectValue placeholder="Selecciona laboratorio" />
+        <SelectValue placeholder={t("placeholder")} />
       </SelectTrigger>
       <SelectContent>
         {labs.map((lab) => (

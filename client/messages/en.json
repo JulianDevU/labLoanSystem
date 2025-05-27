@@ -458,5 +458,9 @@
     "equipmentDeletedDescription": "Equipment with ID {id} was successfully deleted.",
     "errorDeletingTitle": "Error Deleting",
     "errorDeletingDescription": "Could not delete equipment."
+  },
+  "LabSelector": {
+    "placeholder": "Select laboratory",
+    "errorLoading": "Error loading laboratories"
   }
 }
