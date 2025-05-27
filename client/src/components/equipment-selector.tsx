@@ -5,7 +5,7 @@ import { Button } from "@/src/components/ui/button"
 import { Card, CardContent } from "@/src/components/ui/card"
 import { Input } from "@/src/components/ui/input"
 import { Label } from "@/src/components/ui/label"
-import { ScrollArea } from "@/src/components/ui/scroll-area"
+import { ScrollArea } from "@/src/components/ui/scroll-area" // Ya estás usando esta, ¡excelente!
 import { Separator } from "@/src/components/ui/separator"
 import { Plus, Minus, X } from "lucide-react"
 import { Badge } from "@/src/components/ui/badge"
@@ -70,7 +70,7 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
   // Handle single selection mode
   if (single) {
     const selectedEquipmentId = typeof value === 'string' ? value : ''
-    const selectedEquipment = selectedEquipmentId 
+    const selectedEquipment = selectedEquipmentId
       ? currentEquipment.find(item => item.id === selectedEquipmentId)
       : null
 
@@ -117,14 +117,15 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
 
         <div className="space-y-2">
           <Label>{t("availableEquipment")}</Label>
-          <Input 
-            placeholder={t("searchPlaceholder")} 
-            value={searchQuery} 
-            onChange={(e) => setSearchQuery(e.target.value)} 
+          <Input
+            placeholder={t("searchPlaceholder")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
           <Card>
             <CardContent className="p-2">
-              <ScrollArea className="h-60 pr-4">
+              {/* Aquí está el cambio clave: el ScrollArea ya tiene 'h-60' */}
+              <ScrollArea className="h-60 pr-4"> 
                 <div className="space-y-2">
                   {filteredEquipment.map((item) => {
                     const isSelected = selectedEquipmentId === item.id
@@ -221,7 +222,8 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
       {equipmentArray.length > 0 && (
         <div className="space-y-2">
           <Label>{t("selectedEquipment")}</Label>
-          <div className="rounded-md border p-2">
+          {/* Aplica ScrollArea al contenedor de equipos seleccionados si es necesario */}
+          <div className="rounded-md border p-2 max-h-48 overflow-y-auto"> 
             <div className="space-y-2">
               {equipmentArray.map((item) => (
                 <div key={item.id} className="flex items-center justify-between gap-2 rounded-md border p-2">
@@ -284,7 +286,8 @@ export function EquipmentSelector({ lab, value, onChange, single = false }: Equi
         <Input placeholder={t("searchPlaceholder")} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
         <Card>
           <CardContent className="p-2">
-            <ScrollArea className="h-60 pr-4">
+            {/* El ScrollArea ya tiene 'h-60' */}
+            <ScrollArea className="h-60 pr-4"> 
               <div className="space-y-2">
                 {filteredEquipment.map((item) => {
                   const isSelected = equipmentArray.some((selected) => selected.id === item.id)

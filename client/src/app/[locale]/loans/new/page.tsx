@@ -1,5 +1,5 @@
 "use client"
-
+//prueba
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -33,14 +33,14 @@ import { useTranslations } from "next-intl"
 const getMinDateTime = () => {
   const ahora = new Date();
   const fechaMinima = new Date(ahora.getTime() + (5 * 60 * 1000));
-
+  
   // Formatear para input datetime-local (YYYY-MM-DDTHH:mm)
   const year = fechaMinima.getFullYear();
   const month = String(fechaMinima.getMonth() + 1).padStart(2, '0');
   const day = String(fechaMinima.getDate()).padStart(2, '0');
   const hours = String(fechaMinima.getHours()).padStart(2, '0');
   const minutes = String(fechaMinima.getMinutes()).padStart(2, '0');
-
+  
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
@@ -86,7 +86,7 @@ export default function NewLoanPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const t = useTranslations("NewLoan")
   const l = useTranslations("Laboratory")
-
+  
   // Estado para fecha mínima
   const [minDateTime, setMinDateTime] = useState("")
 
@@ -122,15 +122,15 @@ export default function NewLoanPage() {
     }
 
     fetchLabs()
-
+    
     // Establecer fecha mínima al cargar
     setMinDateTime(getMinDateTime())
-
+    
     // Actualizar fecha mínima cada minuto
     const interval = setInterval(() => {
       setMinDateTime(getMinDateTime())
     }, 60000) // 1 minuto
-
+    
     return () => clearInterval(interval)
   }, [])
 
@@ -260,7 +260,7 @@ export default function NewLoanPage() {
       setTimeout(() => {
         router.push("/loans")
       }, 2500)
-
+      
     } catch (error: any) {
       console.error("Error al crear préstamo:", error)
 
@@ -292,8 +292,8 @@ export default function NewLoanPage() {
       </DashboardHeader>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 pb-16 lg:pb-0">
-          <Card className="max-h-[calc(100vh-180px)] overflow-y-auto">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <Card>
             <CardHeader>
               <CardTitle>{t('beneficiaryInfoTitle')}</CardTitle>
               <CardDescription>{t('beneficiaryInfoDescription')}</CardDescription>
@@ -379,7 +379,7 @@ export default function NewLoanPage() {
             </CardContent>
           </Card>
 
-          <Card className="max-h-[calc(100vh-180px)] overflow-y-auto"> {/* Ajusta max-h y overflow-y-auto aquí también */}
+          <Card>
             <CardHeader>
               <CardTitle>{t('loanDetailsTitle')}</CardTitle>
               <CardDescription>{t('loanDetailsDescription')}</CardDescription>
@@ -432,10 +432,10 @@ export default function NewLoanPage() {
                   <FormItem>
                     <FormLabel>{t('returnDateLabel')}</FormLabel>
                     <FormControl>
-                      <Input
-                        type="datetime-local"
+                      <Input 
+                        type="datetime-local" 
                         min={minDateTime}
-                        {...field}
+                        {...field} 
                       />
                     </FormControl>
                     <FormDescription>
@@ -465,7 +465,7 @@ export default function NewLoanPage() {
                 )}
               />
             </CardContent>
-            <CardFooter className="flex justify-end sticky bottom-0 bg-background p-4 border-t"> {/* CardFooter sticky */}
+            <CardFooter className="flex justify-end">
               <Button type="button" variant="outline" className="mr-2" onClick={() => router.back()}>
                 {t('cancelButton')}
               </Button>
