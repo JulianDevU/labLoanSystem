@@ -10,11 +10,11 @@ import { Avatar, AvatarFallback } from "@/src/components/ui/avatar"
 import Image from "next/image"
 import { CheckCircle2, Loader2, AlertCircle } from "lucide-react"
 import { useToast } from "@/src/hooks/use-toast"
-import { 
-  getActiveLoans, 
-  getOverdueLoans, 
+import {
+  getActiveLoans,
+  getOverdueLoans,
   updateLoan,
-  type LoanFromApi 
+  type LoanFromApi
 } from "@/src/services/loanService"
 import { useTranslations } from "next-intl"
 
@@ -111,25 +111,25 @@ export function LoansTable({ lab, searchQuery }: LoansTableProps) {
     try {
       setLoading(true)
       setError(null)
-      
+
       // Obtener préstamos activos y vencidos
       const [activeLoans, overdueLoans] = await Promise.all([
         getActiveLoans(),
         getOverdueLoans()
       ])
-      
+
       // Combinar préstamos activos y vencidos
       const allLoans = [...activeLoans, ...overdueLoans]
-      
+
       // Si hay un laboratorio seleccionado, filtrar por laboratorio
-      const filteredLoans = lab 
+      const filteredLoans = lab
         ? allLoans.filter(loan => {
-            const matchById = loan.laboratorio_id._id === lab
-            const matchByName = loan.laboratorio_id.nombre?.toLowerCase().includes(lab.toLowerCase())
-            return matchById || matchByName
-          })
+          const matchById = loan.laboratorio_id._id === lab
+          const matchByName = loan.laboratorio_id.nombre?.toLowerCase().includes(lab.toLowerCase())
+          return matchById || matchByName
+        })
         : allLoans
-      
+
       setLoans(filteredLoans)
     } catch (err) {
       console.error("Error al cargar préstamos:", err)
@@ -158,14 +158,14 @@ export function LoansTable({ lab, searchQuery }: LoansTableProps) {
       loan.correo_beneficiado.toLowerCase().includes(searchLower) ||
       loan.numero_identificacion.toLowerCase().includes(searchLower) ||
       // Buscar en todos los equipos del préstamo
-      loan.equipos.some(equipo => 
+      loan.equipos.some(equipo =>
         equipo.equipo_id.nombre.toLowerCase().includes(searchLower) ||
         equipo.equipo_id.categoria.toLowerCase().includes(searchLower)
       )
     )
   })
 
-  // Abrir modal para devolución
+  // Abrir modal para devolución<
   const openReturnModal = (loan: LoanFromApi) => {
     setSelectedLoan(loan)
     setEquiposDevueltos(loan.equipos.map(eq => ({ equipo_id: eq.equipo_id._id, cantidad: eq.cantidad })))
@@ -343,7 +343,7 @@ export function LoansTable({ lab, searchQuery }: LoansTableProps) {
                 </div>
               ))}
             </div>
-            
+
             <div className="mt-3 pt-3 border-t border-muted-foreground/20">
               <p className="text-sm">
                 <span className="font-medium">{t("loanLaboratory")}</span> {loan.laboratorio_id.nombre}
@@ -371,46 +371,48 @@ export function LoansTable({ lab, searchQuery }: LoansTableProps) {
             </div>
           )}
 
-      {/* Modal para devolución parcial y nota */}
-      <ModalBase open={modalOpen} onOpenChange={setModalOpen} title={t("returnModalTitle")}>
-        {selectedLoan && (
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-medium mb-2">{t("returnModalQuantityTitle")}</h4>
-              {selectedLoan.equipos.map((eq, idx) => (
-                <div key={eq.equipo_id._id} className="flex items-center gap-2 mb-2">
-                  <span className="w-40 truncate">{eq.equipo_id.nombre}</span>
-                  <Input
-                    type="number"
-                    min={0}
-                    max={eq.cantidad}
-                    value={equiposDevueltos.find(e => e.equipo_id === eq.equipo_id._id)?.cantidad ?? eq.cantidad}
-                    onChange={e => handleCantidadDevuelta(eq.equipo_id._id, Math.max(0, Math.min(Number(e.target.value), eq.cantidad)))}
-                    className="w-24"
-                  />
-                  <span className="text-xs text-muted-foreground">{t("returnModalOf")} {eq.cantidad}</span>
+          {/* Modal para devolución parcial y nota */}
+          <ModalBase open={modalOpen} onOpenChange={setModalOpen} title={t("returnModalTitle")}>
+            {selectedLoan && (
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium mb-2">{t("returnModalQuantityTitle")}</h4>
+                  {selectedLoan.equipos.map((eq, idx) => (
+                    <div key={eq.equipo_id._id} className="flex items-center gap-2 mb-2">
+                      <span className="min-w-[10rem] sm:min-w-[20rem] font-medium truncate">
+                        {eq.equipo_id.nombre}
+                      </span>
+                      <Input
+                        type="number"
+                        min={0}
+                        max={eq.cantidad}
+                        value={equiposDevueltos.find(e => e.equipo_id === eq.equipo_id._id)?.cantidad ?? eq.cantidad}
+                        onChange={e => handleCantidadDevuelta(eq.equipo_id._id, Math.max(0, Math.min(Number(e.target.value), eq.cantidad)))}
+                        className="w-24"
+                      />
+                      <span className="text-xs text-muted-foreground">{t("returnModalOf")} {eq.cantidad}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            <div>
-              <label className="block font-medium mb-1">{t("returnModalNoteLabel")}</label>
-              <Textarea
-                value={notaDevolucion}
-                onChange={e => setNotaDevolucion(e.target.value)}
-                placeholder={t("returnModalNotePlaceholder")}
-                className="w-full"
-                rows={3}
-              />
-            </div>
-            <div className="flex justify-end gap-2 mt-4">
-              <Button variant="ghost" onClick={() => setModalOpen(false)} disabled={updatingLoan !== null}>{t("returnModalCancel")}</Button>
-              <Button onClick={handleConfirmReturn} disabled={updatingLoan !== null}>
-                {updatingLoan ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} {t("returnModalConfirm")}
-              </Button>
-            </div>
-          </div>
-        )}
-      </ModalBase>
+                <div>
+                  <label className="block font-medium mb-1">{t("returnModalNoteLabel")}</label>
+                  <Textarea
+                    value={notaDevolucion}
+                    onChange={e => setNotaDevolucion(e.target.value)}
+                    placeholder={t("returnModalNotePlaceholder")}
+                    className="w-full"
+                    rows={3}
+                  />
+                </div>
+                <div className="flex justify-end gap-2 mt-4">
+                  <Button variant="ghost" onClick={() => setModalOpen(false)} disabled={updatingLoan !== null}>{t("returnModalCancel")}</Button>
+                  <Button onClick={handleConfirmReturn} disabled={updatingLoan !== null}>
+                    {updatingLoan ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />} {t("returnModalConfirm")}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </ModalBase>
         </div>
       ))}
 
@@ -418,17 +420,17 @@ export function LoansTable({ lab, searchQuery }: LoansTableProps) {
         <div className="flex h-32 items-center justify-center rounded-lg border">
           <div className="text-center">
             <p className="text-muted-foreground">
-              {searchQuery 
+              {searchQuery
                 ? t("noLoansFoundSearch")
                 : t("noActiveLoans")
               }
             </p>
             {searchQuery && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="mt-2" 
-                onClick={() => {}}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mt-2"
+                onClick={() => { }}
               >
                 {t("clearSearchButton")}
               </Button>
