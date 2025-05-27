@@ -136,8 +136,8 @@ proyecto_final/
 
 1. Clona el repositorio:
    ```bash
-   git clone <url-del-repositorio>
-   cd proyecto_final
+   git clone https://github.com/JulianDevU/labLoanSystem.git
+   cd labLoanSystem
    ```
 
 2. Backend:
