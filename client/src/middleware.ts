@@ -3,7 +3,7 @@ import { NextRequest } from 'next/server';
 import { routing } from './i18n/routing';
 
 export default function middleware(request: NextRequest) {
-  // Crear el middleware de next-intl
+
   const handleI18nRouting = createMiddleware(routing);
   const response = handleI18nRouting(request);
 
