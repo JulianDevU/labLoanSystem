@@ -392,47 +392,70 @@
         "importData": "Import Data"
     },
     "EquipmentSelector": {
-    "loadingEquipment": "Loading equipment...",
-    "errorLoadingEquipment": "Error loading equipment",
-    "selectedEquipment": "Selected Equipment",
-    "remove": "Remove",
-    "availableEquipment": "Available Equipment",
-    "searchPlaceholder": "Search equipment...",
-    "available": "available",
-    "selected": "Selected",
-    "select": "Select",
-    "add": "Add",
-    "decrease": "Decrease",
-    "increase": "Increase",
-    "noElementsFound": "No elements found."
-  },
-  "FileUpload": {
-    "processing": "Processing...",
-    "dragAndDrop": "Drag and drop a file here or click to select",
-    "invalidFileType": "Invalid file type. Please select a {acceptedTypes} file."
-  },
-  
-  "ImageUpload": {
-    "processingImage": "Processing image...",
-    "errorProcessingImage": "Error processing image. Please try again.",
-    "imageSize": "Size:",
-    "capturePhoto": "Capture Photo",
-    "cancel": "Cancel",
-    "takePhoto": "Take Photo",
-    "uploadImage": "Upload Image",
-    "placeholderText1": "Take a photo or upload an image as evidence for this loan",
-    "placeholderText2": "Images are automatically compressed for optimized upload",
-    "compressingImage": "Compressing image..."
-  },
-  "MobileSidebarComponent": {
-    "menu": "Menu"
-  },
-  "InventorySummary": {
-    "loading": "Loading...",
-    "available": "available",
-    "errorTitle": "Error",
-    "errorDescription": "Could not load laboratory equipment",
-    "noEquipmentFound": "No equipment found in this laboratory",
-    "category": "Category"
-  }
+        "loadingEquipment": "Loading equipment...",
+        "errorLoadingEquipment": "Error loading equipment",
+        "selectedEquipment": "Selected Equipment",
+        "remove": "Remove",
+        "availableEquipment": "Available Equipment",
+        "searchPlaceholder": "Search equipment...",
+        "available": "available",
+        "selected": "Selected",
+        "select": "Select",
+        "add": "Add",
+        "decrease": "Decrease",
+        "increase": "Increase",
+        "noElementsFound": "No elements found."
+    },
+    "FileUpload": {
+        "processing": "Processing...",
+        "dragAndDrop": "Drag and drop a file here or click to select",
+        "invalidFileType": "Invalid file type. Please select a {acceptedTypes} file."
+    },
+    "ImageUpload": {
+        "processingImage": "Processing image...",
+        "errorProcessingImage": "Error processing image. Please try again.",
+        "imageSize": "Size:",
+        "capturePhoto": "Capture Photo",
+        "cancel": "Cancel",
+        "takePhoto": "Take Photo",
+        "uploadImage": "Upload Image",
+        "placeholderText1": "Take a photo or upload an image as evidence for this loan",
+        "placeholderText2": "Images are automatically compressed for optimized upload",
+        "compressingImage": "Compressing image..."
+    },
+    "MobileSidebarComponent": {
+        "menu": "Menu"
+    },
+    "InventorySummary": {
+        "loading": "Loading...",
+        "available": "available",
+        "errorTitle": "Error",
+        "errorDescription": "Could not load laboratory equipment",
+        "noEquipmentFound": "No equipment found in this laboratory",
+        "category": "Category"
+    },
+    "InventoryTable": {
+        "errorLoadingEquipmentTitle": "Error",
+        "errorLoadingEquipmentDescription": "Could not load equipment",
+        "selectDropdown": "Select all",
+        "idHeader": "ID",
+        "nameHeader": "Name",
+        "categoryHeader": "Category",
+        "totalHeader": "Total",
+        "availableHeader": "Available",
+        "locationHeader": "Location",
+        "laboratoryHeader": "Laboratory",
+        "actionsHeader": "Actions",
+        "loadingData": "Loading...",
+        "noEquipmentFound": "No equipment found for this laboratory.",
+        "selectedLaboratory": "Selected laboratory",
+        "openMenu": "Open menu",
+        "actionsLabel": "Actions",
+        "editAction": "Edit",
+        "deleteAction": "Delete",
+        "equipmentDeletedTitle": "Equipment Deleted",
+        "equipmentDeletedDescription": "Equipment with ID {id} was successfully deleted.",
+        "errorDeletingTitle": "Error Deleting",
+        "errorDeletingDescription": "Could not delete equipment."
+    }
 }

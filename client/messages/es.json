@@ -86,6 +86,7 @@
     "subtitle": "Gestiona los préstamos de equipos e inventario en los laboratorios.",
     "tabOverview": "Resumen",
     "tabLoans": "Préstamos activos",
+    "tabInventory": "Inventario",
     "physics": "fisica",
     "recentLoansTitle": "Préstamos recientes",
     "recentLoansDescription": "Últimos préstamos de equipos en el laboratorio de {lab}.",
@@ -433,5 +434,29 @@
     "errorDescription": "No se pudieron cargar los equipos del laboratorio",
     "noEquipmentFound": "No se encontraron equipos en este laboratorio",
     "category": "Categoría"
+  },
+  "InventoryTable": {
+    "errorLoadingEquipmentTitle": "Error",
+    "errorLoadingEquipmentDescription": "No se pudieron cargar los equipos",
+    "selectDropdown": "Seleccionar todo",
+    "idHeader": "ID",
+    "nameHeader": "Nombre",
+    "categoryHeader": "Categoría",
+    "totalHeader": "Total",
+    "availableHeader": "Disponible",
+    "locationHeader": "Ubicación",
+    "laboratoryHeader": "Laboratorio",
+    "actionsHeader": "Acciones",
+    "loadingData": "Cargando...",
+    "noEquipmentFound": "No se encontraron equipos para este laboratorio.",
+    "selectedLaboratory": "Laboratorio seleccionado",
+    "openMenu": "Abrir menú",
+    "actionsLabel": "Acciones",
+    "editAction": "Editar",
+    "deleteAction": "Eliminar",
+    "equipmentDeletedTitle": "Equipo eliminado",
+    "equipmentDeletedDescription": "El equipo con ID {id} fue eliminado correctamente.",
+    "errorDeletingTitle": "Error al eliminar",
+    "errorDeletingDescription": "No se pudo eliminar el equipo."
   }
 }

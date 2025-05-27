@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -16,66 +15,9 @@ import { Edit, MoreHorizontal, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/src/hooks/use-toast";
 import { deleteEquipment, getEquipment, updateEquipment } from "../services/equipmentService";
-function RestarStockButton({ item, onRestar }: { item: InventoryItem, onRestar: (restado: number) => void }) {
-  const { toast } = useToast();
-  const [showInput, setShowInput] = useState(false);
-  const [cantidad, setCantidad] = useState(1);
-  const [loading, setLoading] = useState(false);
+import { useTranslations } from "next-intl";
 
-  const handleRestar = async () => {
-    if (!item.cantidad_disponible || cantidad < 1 || cantidad > item.cantidad_disponible) {
-      toast({
-        title: "Cantidad inválida",
-        description: `Debes ingresar un valor entre 1 y ${item.cantidad_disponible}`,
-        variant: "destructive"
-      });
-      return;
-    }
-    setLoading(true);
-    try {
-      await updateEquipment(item.id, { cantidad_disponible: (item.cantidad_disponible ?? 0) - cantidad });
-      toast({
-        title: "Stock actualizado",
-        description: `Se restaron ${cantidad} unidades del inventario.`
-      });
-      onRestar(cantidad);
-      setShowInput(false);
-      setCantidad(1);
-    } catch (error: any) {
-      toast({
-        title: "Error al restar stock",
-        description: error.message || "No se pudo restar el stock.",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  return (
-    <span style={{ marginLeft: 8 }}>
-      {showInput ? (
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-          <input
-            type="number"
-            min={1}
-            max={item.cantidad_disponible}
-            value={cantidad}
-            onChange={e => setCantidad(Number(e.target.value))}
-            style={{ width: 50, fontSize: 12, padding: 2, border: '1px solid #ccc', borderRadius: 4 }}
-            disabled={loading}
-          />
-          <Button size="sm" variant="outline" onClick={handleRestar} disabled={loading} style={{ fontSize: 12, padding: '0 8px' }}>OK</Button>
-          <Button size="sm" variant="ghost" onClick={() => setShowInput(false)} disabled={loading} style={{ fontSize: 12, padding: '0 8px' }}>Cancelar</Button>
-        </span>
-      ) : (
-        <Button size="sm" variant="outline" onClick={() => setShowInput(true)} style={{ fontSize: 12, padding: '0 8px', marginLeft: 4 }}>
-          Restar
-        </Button>
-      )}
-    </span>
-  );
-}
 
 
 interface InventoryItem {
@@ -105,6 +47,7 @@ export function InventoryTable({ lab, searchQuery }: InventoryTableProps) {
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [items, setItems] = useState<InventoryItem[]>([])
   const [loading, setLoading] = useState(false)
+  const l = useTranslations("InventoryTable");
 
   useEffect(() => {
     if (!lab) return
@@ -145,13 +88,13 @@ export function InventoryTable({ lab, searchQuery }: InventoryTableProps) {
       .catch((error) => {
         console.error("Error al obtener equipos:", error)
         toast({
-          title: "Error",
-          description: "No se pudieron cargar los equipos",
+          title: l("errorLoadingEquipmentTitle"),
+          description: l("errorLoadingEquipmentDescription"),
           variant: "destructive"
         })
       })
       .finally(() => setLoading(false))
-  }, [lab, toast])
+  }, [lab, toast, l])
 
   const filteredItems = items.filter(
     (item) =>
@@ -175,17 +118,15 @@ export function InventoryTable({ lab, searchQuery }: InventoryTableProps) {
   const handleDelete = async (id: string) => {
     try {
       await deleteEquipment(id)
-
       toast({
-        title: "Equipo eliminado",
-        description: `El equipo con ID ${id} fue eliminado correctamente.`,
+        title: l("equipmentDeletedTitle"),
+        description: l("equipmentDeletedDescription", { id }),
       })
-
       setItems((prev) => prev.filter((item) => item.id !== id))
     } catch (error: any) {
       toast({
-        title: "Error al eliminar",
-        description: error.message || "No se pudo eliminar el equipo.",
+        title: l("errorDeletingTitle"),
+        description: error.message || l("errorDeletingDescription"),
         variant: "destructive",
       })
     }
@@ -202,33 +143,33 @@ export function InventoryTable({ lab, searchQuery }: InventoryTableProps) {
                 <Checkbox
                   checked={selectedItems.length === filteredItems.length && filteredItems.length > 0}
                   onCheckedChange={toggleSelectAll}
-                  aria-label="Seleccionar todo"
+                  aria-label={l("selectDropdown")}
                 />
               </th>
-              <th className="h-12 px-4 text-left align-middle font-medium">ID</th>
-              <th className="h-12 px-4 text-left align-middle font-medium">Nombre</th>
-              <th className="h-12 px-4 text-left align-middle font-medium">Categoría</th>
-              <th className="h-12 px-4 text-left align-middle font-medium">Total</th>
-              <th className="h-12 px-4 text-left align-middle font-medium">Disponible</th>
-              <th className="h-12 px-4 text-left align-middle font-medium">Ubicación</th>
-              <th className="h-12 px-4 text-left align-middle font-medium">Laboratorio</th>
-              <th className="h-12 px-4 text-left align-middle font-medium">Acciones</th>
+              <th className="h-12 px-4 text-left align-middle font-medium">{l("idHeader")}</th>
+              <th className="h-12 px-4 text-left align-middle font-medium">{l("nameHeader")}</th>
+              <th className="h-12 px-4 text-left align-middle font-medium">{l("categoryHeader")}</th>
+              <th className="h-12 px-4 text-left align-middle font-medium">{l("totalHeader")}</th>
+              <th className="h-12 px-4 text-left align-middle font-medium">{l("availableHeader")}</th>
+              <th className="h-12 px-4 text-left align-middle font-medium">{l("locationHeader")}</th>
+              <th className="h-12 px-4 text-left align-middle font-medium">{l("laboratoryHeader")}</th>
+              <th className="h-12 px-4 text-left align-middle font-medium">{l("actionsHeader")}</th>
             </tr>
           </thead>
           <tbody className="[&_tr:last-child]:border-0">
             {loading ? (
               <tr>
                 <td colSpan={8} className="text-center py-8">
-                  Cargando...
+                  {l("loadingData")}
                 </td>
               </tr>
             ) : filteredItems.length === 0 ? (
               <tr>
                 <td colSpan={8} className="h-24 text-center">
-                  No se encontraron equipos para este laboratorio.
+                  {l("noEquipmentFound")}
                   <br />
                   <small className="text-muted-foreground">
-                    Laboratorio seleccionado: {lab}
+                    {l("selectedLaboratory")}: {lab}
                   </small>
                 </td>
               </tr>
@@ -242,7 +183,7 @@ export function InventoryTable({ lab, searchQuery }: InventoryTableProps) {
                     <Checkbox
                       checked={selectedItems.includes(item.id)}
                       onCheckedChange={() => toggleSelectItem(item.id)}
-                      aria-label={`Seleccionar ${item.nombre}`}
+                      aria-label={`${l("selectDropdown")} ${item.nombre}`}
                     />
                   </td>
                   <td className="p-4 align-middle font-medium">{item.id}</td>
@@ -258,15 +199,15 @@ export function InventoryTable({ lab, searchQuery }: InventoryTableProps) {
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Abrir menú</span>
+                          <span className="sr-only">{l("openMenu")}</span>
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                        <DropdownMenuLabel>{l("actionsLabel")}</DropdownMenuLabel>
                         <DropdownMenuItem onClick={() => router.push(`/inventory/edit?id=${item.id}`)}>
                           <Edit className="mr-2 h-4 w-4" />
-                          Editar
+                          {l("editAction")}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
@@ -274,7 +215,7 @@ export function InventoryTable({ lab, searchQuery }: InventoryTableProps) {
                           onClick={() => handleDelete(item.id)}
                         >
                           <Trash className="mr-2 h-4 w-4" />
-                          Eliminar
+                          {l("deleteAction")}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
