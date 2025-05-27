@@ -14,12 +14,13 @@ import { login } from "@/src/services/loginService"
 import { useTranslations } from "next-intl"
 import { ModalBase } from "@/src/components/modal"
 import { useForm } from "react-hook-form"
-import { LoginSchema, loginSchema } from "@/src/components/utils/validators"
+import { getLoginSchema, LoginSchema } from "@/src/components/utils/validators"
 import { zodResolver } from "@hookform/resolvers/zod"
 
 export default function LoginPage() {
   const router = useRouter()
   const t = useTranslations('Login')
+  const l = useTranslations('Validation')
   const [isLoading, setIsLoading] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
   const [modalInfo, setModalInfo] = useState({
@@ -27,6 +28,7 @@ export default function LoginPage() {
     description: ""
   })
 
+  const loginSchema = getLoginSchema(l)
   const {
     register,
     handleSubmit,
@@ -90,9 +92,7 @@ export default function LoginPage() {
                 <div className="grid gap-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">{t('passwordLabel')}</Label>
-                    <Link href="/forgot-password" className="text-sm text-muted-foreground hover:underline">
-                      {t('forgotPassword')}
-                    </Link>
+
                   </div>
                   <Input
                     id="password"

@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/ta
 import { BeakerIcon } from "@/src/components/icons"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { registerSchema, RegisterSchema } from "@/src/components/utils/validators"
+import { getRegisterSchema, RegisterSchema } from "@/src/components/utils/validators"
 import { registerUser } from "@/src/services/userService"
 import { useTranslations } from "next-intl"
 import { ModalBase } from "@/src/components/modal"
@@ -22,12 +22,14 @@ export default function RegisterPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const t = useTranslations('Register')
+  const l= useTranslations('Validation')
   const [modalOpen, setModalOpen] = useState(false)
   const [modalInfo, setModalInfo] = useState({
     title: "",
     description: ""
   })
 
+  const registerSchema = getRegisterSchema(l)
   const {
     register,
     handleSubmit,

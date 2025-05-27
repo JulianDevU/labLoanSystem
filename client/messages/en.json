@@ -337,12 +337,6 @@
         "techManualCardDescription": "Here is a technical manual to know what the site contains.",
         "techManualButton": "Download manual"
     },
-    "Validation": {
-        "nameMin": "Name must be at least 3 characters long",
-        "emailInvalid": "Invalid email address",
-        "passwordMin": "Password must be at least 6 characters long",
-        "confirmPasswordMismatch": "Passwords do not match"
-    },
     "Laboratory": {
         "physics": "physics",
         "telecommunications": "telecommunications",
@@ -552,5 +546,11 @@
     "profile": "Profile",
     "settings": "Settings",
     "logout": "Log out"
+  },
+  "Validation": {
+    "nameMin": "Name must be at least 3 characters",
+    "invalidEmail": "Invalid email address",
+    "passwordMin": "Password must be at least 6 characters",
+    "passwordsMismatch": "Passwords do not match"
   }
 }
