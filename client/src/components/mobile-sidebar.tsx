@@ -4,9 +4,11 @@ import * as Dialog from "@radix-ui/react-dialog"
 import { Menu, X } from "lucide-react"
 import { useState } from "react"
 import { DashboardNav } from "@/src/components/dashboard-nav"
+import { useTranslations } from "next-intl"
 
 export function MobileSidebar() {
   const [open, setOpen] = useState(false)
+  const t = useTranslations("MobileSidebarComponent")
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -18,9 +20,9 @@ export function MobileSidebar() {
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
         <Dialog.Content className="fixed left-0 top-0 bottom-0 w-64 bg-background z-50 p-4 shadow-lg">
-          <Dialog.Title className="sr-only">Menú</Dialog.Title>
+          <Dialog.Title className="sr-only">{t("menu")}</Dialog.Title>
           <div className="flex justify-between items-center mb-4">
-            <span className="font-semibold text-lg">Menú</span>
+            <span className="font-semibold text-lg">{t("menu")}</span>
             <button onClick={() => setOpen(false)}>
               <X className="w-5 h-5" />
             </button>

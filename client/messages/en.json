@@ -423,5 +423,8 @@
     "placeholderText1": "Take a photo or upload an image as evidence for this loan",
     "placeholderText2": "Images are automatically compressed for optimized upload",
     "compressingImage": "Compressing image..."
+  },
+  "MobileSidebarComponent": {
+    "menu": "Menu"
   }
 }

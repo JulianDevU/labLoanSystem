@@ -422,5 +422,8 @@
     "placeholderText1": "Toma una foto o sube una imagen como evidencia para este préstamo",
     "placeholderText2": "Las imágenes se comprimen automáticamente para optimizar el envío",
     "compressingImage": "Comprimiendo imagen..."
+  },
+  "MobileSidebarComponent": {
+    "menu": "Menú"
   }
 }
