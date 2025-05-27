@@ -435,17 +435,6 @@
     "noEquipmentFound": "No se encontraron equipos en este laboratorio",
     "category": "Categoría"
   },
-  "RestarStockButton": {
-    "invalidQuantityTitle": "Cantidad inválida",
-    "invalidQuantityDescription": "Debes ingresar un valor entre 1 y {maxQuantity}",
-    "stockUpdatedTitle": "Stock actualizado",
-    "stockUpdatedDescription": "Se restaron {quantity} unidades del inventario.",
-    "errorSubtractingStockTitle": "Error al restar stock",
-    "errorSubtractingStockDescription": "No se pudo restar el stock.",
-    "okButton": "OK",
-    "cancelButton": "Cancelar",
-    "subtractButton": "Restar"
-  },
   "InventoryTable": {
     "errorLoadingEquipmentTitle": "Error",
     "errorLoadingEquipmentDescription": "No se pudieron cargar los equipos",

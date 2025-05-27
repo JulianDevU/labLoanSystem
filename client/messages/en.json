@@ -435,17 +435,6 @@
     "noEquipmentFound": "No equipment found in this laboratory",
     "category": "Category"
   },
-  "RestarStockButton": {
-    "invalidQuantityTitle": "Invalid Quantity",
-    "invalidQuantityDescription": "You must enter a value between 1 and {maxQuantity}",
-    "stockUpdatedTitle": "Stock Updated",
-    "stockUpdatedDescription": "{quantity} units were subtracted from the inventory.",
-    "errorSubtractingStockTitle": "Error Subtracting Stock",
-    "errorSubtractingStockDescription": "Could not subtract stock.",
-    "okButton": "OK",
-    "cancelButton": "Cancel",
-    "subtractButton": "Subtract"
-  },
   "InventoryTable": {
     "errorLoadingEquipmentTitle": "Error",
     "errorLoadingEquipmentDescription": "Could not load equipment",
