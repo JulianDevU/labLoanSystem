@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { useLocale } from "next-intl"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/components/ui/tabs"
@@ -35,6 +35,7 @@ export default function SettingsPage() {
   const t = useTranslations("Settings")
   const [tab, setTab] = useState("account")
   const [isChangingPassword, setIsChangingPassword] = useState(false)
+  const [isPending, startTransition] = useTransition();
 
   const changePasswordSchema = createChangePasswordSchema(t)
   type ChangePasswordSchema = z.infer<typeof changePasswordSchema>
@@ -88,13 +89,19 @@ export default function SettingsPage() {
   const pathname = usePathname()
   const locale = useLocale()
 
-  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newLocale = e.target.value;
-  
-    document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000`;
-  
-    router.push(pathname, { locale: newLocale });
-  }
+  const handleLanguageChange = (newLocale: string) => {
+    startTransition(() => {
+      // Establecer cookie con configuración más robusta
+      document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000; SameSite=Lax${process.env.NODE_ENV === 'production' ? '; Secure' : ''
+        }`;
+
+      // También establecer en localStorage como respaldo
+      localStorage.setItem('preferred-locale', newLocale);
+
+      // Navegar a la nueva ruta con el locale
+      router.push(pathname, { locale: newLocale });
+    });
+  };
 
   return (
     <DashboardShell>
@@ -171,12 +178,13 @@ export default function SettingsPage() {
               <CardContent>
                 <form className="space-y-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="language">{t('languageLabel')}</Label>
+                    <label htmlFor="language">{t('languageLabel')}</label>
                     <select
                       id="language"
                       name="language"
-                      onChange={handleLanguageChange}
-                      defaultValue={locale}
+                      value={locale}
+                      onChange={(e) => handleLanguageChange(e.target.value)}
+                      disabled={isPending}
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <option value="es">{t('spanishOption')}</option>
@@ -185,6 +193,11 @@ export default function SettingsPage() {
                       <option value="de">{t('germanOption')}</option>
                       <option value="fr">{t('frenchOption')}</option>
                     </select>
+                    {isPending && (
+                      <p className="text-sm text-muted-foreground">
+                        {t('changingLanguage', { default: 'Cambiando idioma...' })}
+                      </p>
+                    )}
                   </div>
                 </form>
               </CardContent>
