@@ -106,7 +106,7 @@
         "processing": "Processando arquivo...",
         "progress": "{progress}% concluído",
         "successTitle": "Importação bem-sucedida",
-        "successImported": "<strong>{count}</strong> equipamentos importados com sucesso.",
+        "successImported": "{count} equipamentos importados com sucesso.",
         "successSkipped": "{skipped} linhas vazias foram ignoradas.",
         "successWarnings": "Ver {count} avisos",
         "successMoreWarnings": "... e mais {more}",
@@ -383,6 +383,7 @@
         "activeLoans": "Empréstimos Ativos",
         "newLoan": "Novo Empréstimo",
         "loanHistory": "Histórico de Empréstimos",
+        "calendar": "Calendário",
         "inventory": "Inventário",
         "viewInventory": "Ver Inventário",
         "addItem": "Adicionar Item",
@@ -554,5 +555,33 @@
         "invalidEmail": "Endereço de email inválido",
         "passwordMin": "Senha deve ter pelo menos 6 caracteres",
         "passwordsMismatch": "Senhas não coincidem"
+    },
+    "CalendarPage": {
+        "heading": "Calendário de vencimentos de empréstimos",
+        "text": "Veja quantos empréstimos vencem a cada dia e confira os detalhes.",
+        "calendarTitle": "Calendário",
+        "calendarDescription": "Clique em um dia para ver os empréstimos que vencem.",
+        "oneLoanDue": "1 empréstimo vence",
+        "manyLoansDue": "{count} empréstimos vencem",
+        "loansDueOn": "Empréstimos que vencem em {date}",
+        "noLoansForDay": "Não há empréstimos pendentes para este dia.",
+        "calendarLocale": "pt-BR",
+        "weekdaysShort": "{day, select, 1 {SEG} 2 {TER} 3 {QUA} 4 {QUI} 5 {SEX} 6 {SÁB} 0 {DOM} other {}}",
+        "labLabel": "Laboratório",
+        "loanDateLabel": "Data do empréstimo",
+        "dueDateLabel": "Data de vencimento",
+        "statusLabel": "Status",
+        "equipmentsLabel": "Equipamentos",
+        "descriptionLabel": "Descrição",
+        "overdueStatus": "Atrasado",
+        "status": {
+            "activo": "Ativo",
+            "devuelto": "Devolvido"
+        },
+        "beneficiaryType": {
+            "estudiante": "Estudante",
+            "docente": "Professor",
+            "profesor": "Professor"
+        }
     }
 }

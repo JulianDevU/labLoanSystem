@@ -106,7 +106,7 @@
         "processing": "Traitement du fichier...",
         "progress": "{progress}% terminé",
         "successTitle": "Importation réussie",
-        "successImported": "<strong>{count}</strong> équipements importés avec succès.",
+        "successImported": "{count} équipements importés avec succès.",
         "successSkipped": "{skipped} lignes vides ont été ignorées.",
         "successWarnings": "Afficher {count} avertissements",
         "successMoreWarnings": "... et {more} autres",
@@ -383,6 +383,7 @@
         "activeLoans": "Prêts actifs",
         "newLoan": "Nouveau prêt",
         "loanHistory": "Historique des prêts",
+        "calendar": "Calendrier",
         "inventory": "Inventaire",
         "viewInventory": "Voir l'inventaire",
         "addItem": "Ajouter un article",
@@ -554,5 +555,33 @@
         "invalidEmail": "Adresse e-mail invalide",
         "passwordMin": "Le mot de passe doit contenir au moins 6 caractères",
         "passwordsMismatch": "Les mots de passe ne correspondent pas"
+    },
+    "CalendarPage": {
+        "heading": "Calendrier des échéances de prêts",
+        "text": "Consultez le nombre de prêts arrivant à échéance chaque jour et voyez le détail.",
+        "calendarTitle": "Calendrier",
+        "calendarDescription": "Cliquez sur un jour pour voir les prêts arrivant à échéance.",
+        "oneLoanDue": "1 prêt arrive à échéance",
+        "manyLoansDue": "{count} prêts arrivent à échéance",
+        "loansDueOn": "Prêts arrivant à échéance le {date}",
+        "noLoansForDay": "Aucun prêt en attente pour ce jour.",
+        "calendarLocale": "fr-FR",
+        "weekdaysShort": "{day, select, 1 {LUN} 2 {MAR} 3 {MER} 4 {JEU} 5 {VEN} 6 {SAM} 0 {DIM} other {}}",
+        "labLabel": "Laboratoire",
+        "loanDateLabel": "Date du prêt",
+        "dueDateLabel": "Date d'échéance",
+        "statusLabel": "Statut",
+        "equipmentsLabel": "Équipement",
+        "descriptionLabel": "Description",
+        "overdueStatus": "En retard",
+        "status": {
+            "activo": "Actif",
+            "devuelto": "Retourné"
+        },
+        "beneficiaryType": {
+            "estudiante": "Étudiant",
+            "docente": "Enseignant",
+            "profesor": "Enseignant"
+        }
     }
 }

@@ -33,6 +33,10 @@ export function DashboardNav() {
           title: t("loanHistory"),
           href: "/loans/history",
         },
+        {
+          title: t("calendar"),
+          href: "/loans/calendar",
+        }
       ],
     },
     {

@@ -106,7 +106,7 @@
         "processing": "Processing file...",
         "progress": "{progress}% completed",
         "successTitle": "Import successful",
-        "successImported": "<strong>{count}</strong> equipment imported successfully.",
+        "successImported": "{count} equipment imported successfully.",
         "successSkipped": "{skipped} empty rows were skipped.",
         "successWarnings": "View {count} warnings",
         "successMoreWarnings": "... and {more} more",
@@ -383,6 +383,7 @@
         "activeLoans": "Active Loans",
         "newLoan": "New Loan",
         "loanHistory": "Loan History",
+        "calendar": "Calendar",
         "inventory": "Inventory",
         "viewInventory": "View Inventory",
         "addItem": "Add Item",
@@ -555,5 +556,33 @@
     "invalidEmail": "Invalid email address",
     "passwordMin": "Password must be at least 6 characters",
     "passwordsMismatch": "Passwords do not match"
+  },
+  "CalendarPage": {
+    "heading": "Loan Due Dates Calendar",
+    "text": "See how many loans are due each day and review the details.",
+    "calendarTitle": "Calendar",
+    "calendarDescription": "Click on a day to see the loans due.",
+    "oneLoanDue": "1 loan due",
+    "manyLoansDue": "{count} loans due",
+    "loansDueOn": "Loans due on {date}",
+    "noLoansForDay": "No pending loans for this day.",
+    "calendarLocale": "en-US",
+    "weekdaysShort": "{day, select, 1 {MON} 2 {TUE} 3 {WED} 4 {THU} 5 {FRI} 6 {SAT} 0 {SUN} other {}}",
+    "labLabel": "Laboratory",
+    "loanDateLabel": "Loan date",
+    "dueDateLabel": "Due date",
+    "statusLabel": "Status",
+    "equipmentsLabel": "Equipment",
+    "descriptionLabel": "Description",
+    "overdueStatus": "Overdue",
+    "status": {
+      "activo": "Active",
+      "devuelto": "Returned"
+    },
+    "beneficiaryType": {
+      "estudiante": "Student",
+      "docente": "Teacher",
+      "profesor": "Teacher"
+    }
   }
 }

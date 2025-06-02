@@ -106,7 +106,7 @@
         "processing": "Datei wird verarbeitet...",
         "progress": "{progress}% abgeschlossen",
         "successTitle": "Import erfolgreich",
-        "successImported": "<strong>{count}</strong> Geräte erfolgreich importiert.",
+        "successImported": "{count} Geräte erfolgreich importiert.",
         "successSkipped": "{skipped} leere Zeilen wurden übersprungen.",
         "successWarnings": "{count} Warnungen anzeigen",
         "successMoreWarnings": "... und {more} weitere",
@@ -383,6 +383,7 @@
         "activeLoans": "Aktive Leihen",
         "newLoan": "Neue Leihe",
         "loanHistory": "Leihhistorie",
+        "calendar": "Kalender",
         "inventory": "Inventar",
         "viewInventory": "Inventar anzeigen",
         "addItem": "Artikel hinzufügen",
@@ -554,5 +555,33 @@
         "invalidEmail": "Ungültige E-Mail-Adresse",
         "passwordMin": "Passwort muss mindestens 6 Zeichen lang sein",
         "passwordsMismatch": "Passwörter stimmen nicht überein"
+    },
+    "CalendarPage": {
+        "heading": "Fälligkeitskalender für Ausleihen",
+        "text": "Sehen Sie, wie viele Ausleihen täglich fällig werden und prüfen Sie die Details.",
+        "calendarTitle": "Kalender",
+        "calendarDescription": "Klicken Sie auf einen Tag, um die fälligen Ausleihen zu sehen.",
+        "oneLoanDue": "1 Ausleihe fällig",
+        "manyLoansDue": "{count} Ausleihen fällig",
+        "loansDueOn": "Ausleihen fällig am {date}",
+        "noLoansForDay": "Keine ausstehenden Ausleihen für diesen Tag.",
+        "calendarLocale": "de-DE",
+        "weekdaysShort": "{day, select, 1 {MO} 2 {DI} 3 {MI} 4 {DO} 5 {FR} 6 {SA} 0 {SO} other {}}",
+        "labLabel": "Labor",
+        "loanDateLabel": "Ausleihdatum",
+        "dueDateLabel": "Fälligkeitsdatum",
+        "statusLabel": "Status",
+        "equipmentsLabel": "Geräte",
+        "descriptionLabel": "Beschreibung",
+        "overdueStatus": "Überfällig",
+        "status": {
+            "activo": "Aktiv",
+            "devuelto": "Zurückgegeben"
+        },
+        "beneficiaryType": {
+            "estudiante": "Student",
+            "docente": "Lehrer",
+            "profesor": "Lehrer"
+        }
     }
 }

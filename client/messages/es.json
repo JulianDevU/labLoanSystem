@@ -107,7 +107,7 @@
     "processing": "Procesando archivo...",
     "progress": "{progress}% completado",
     "successTitle": "Importación exitosa",
-    "successImported": "Se importaron correctamente <strong>{count}</strong> equipos.",
+    "successImported": "Se importaron correctamente {count} equipos.",
     "successSkipped": "Se omitieron {skipped} filas vacías.",
     "successWarnings": "Ver {count} advertencias",
     "successMoreWarnings": "... y {more} más",
@@ -384,6 +384,7 @@
     "activeLoans": "Préstamos Activos",
     "newLoan": "Nuevo Préstamo",
     "loanHistory": "Historial de Préstamos",
+    "calendar": "Calendario",
     "inventory": "Inventario",
     "viewInventory": "Ver Inventario",
     "addItem": "Agregar Artículo",
@@ -555,5 +556,33 @@
     "invalidEmail": "Correo electrónico inválido",
     "passwordMin": "La contraseña debe tener al menos 6 caracteres",
     "passwordsMismatch": "Las contraseñas no coinciden"
+  },
+  "CalendarPage": {
+    "heading": "Calendario de vencimientos de préstamos",
+    "text": "Consulta cuántos préstamos se vencen cada día y revisa el detalle.",
+    "calendarTitle": "Calendario",
+    "calendarDescription": "Haz clic en un día para ver los préstamos que vencen.",
+    "oneLoanDue": "1 préstamo vence",
+    "manyLoansDue": "{count} préstamos vencen",
+    "loansDueOn": "Préstamos que vencen el {date}",
+    "noLoansForDay": "No hay préstamos pendientes para este día.",
+    "calendarLocale": "es-ES",
+    "weekdaysShort": "{day, select, 1 {LUN} 2 {MAR} 3 {MIÉ} 4 {JUE} 5 {VIE} 6 {SÁB} 0 {DOM} other {}}",
+    "labLabel": "Laboratorio",
+    "loanDateLabel": "Fecha de préstamo",
+    "dueDateLabel": "Fecha de vencimiento",
+    "statusLabel": "Estado",
+    "equipmentsLabel": "Equipos",
+    "descriptionLabel": "Descripción",
+    "overdueStatus": "Vencido",
+    "status": {
+      "activo": "Activo",
+      "devuelto": "Devuelto"
+    },
+    "beneficiaryType": {
+      "estudiante": "Estudiante",
+      "docente": "Docente",
+      "profesor": "Profesor"
+    }
   }
 }

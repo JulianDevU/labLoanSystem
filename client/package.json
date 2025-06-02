@@ -52,6 +52,7 @@
     "next-intl": "^4.1.0",
     "next-themes": "latest",
     "react": "^19",
+    "react-calendar": "^6.0.0",
     "react-day-picker": "8.10.1",
     "react-dom": "^19",
     "react-hook-form": "latest",
